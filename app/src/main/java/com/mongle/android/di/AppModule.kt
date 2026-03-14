@@ -1,10 +1,10 @@
 package com.mongle.android.di
 
 import com.mongle.android.data.mock.MockAnswerRepository
-import com.mongle.android.data.mock.MockAuthRepository
 import com.mongle.android.data.mock.MockMongleRepository
 import com.mongle.android.data.mock.MockQuestionRepository
 import com.mongle.android.data.mock.MockTreeRepository
+import com.mongle.android.data.remote.ApiAuthRepository
 import com.mongle.android.domain.repository.AnswerRepository
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
@@ -22,7 +22,7 @@ abstract class AppModule {
 
     @Binds
     @Singleton
-    abstract fun bindAuthRepository(impl: MockAuthRepository): AuthRepository
+    abstract fun bindAuthRepository(impl: ApiAuthRepository): AuthRepository
 
     @Binds
     @Singleton
