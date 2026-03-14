@@ -1,5 +1,8 @@
 package com.mongle.android.ui.login
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,18 +25,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mongle.android.domain.model.GoogleLoginCredential
-import com.mongle.android.domain.model.KakaoLoginCredential
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleButtonStyle
@@ -45,7 +48,11 @@ import com.mongle.android.ui.theme.MongleGradientStart
 import com.mongle.android.ui.theme.MongleKakao
 import com.mongle.android.ui.theme.MongleKakaoText
 import com.mongle.android.ui.theme.MongleSpacing
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.text.KeyboardOptions as KeyboardOptionsCompose
+
+// Google Web Client ID (Firebase Console → OAuth 2.0 클라이언트 ID)
+private const val GOOGLE_WEB_CLIENT_ID = "YOUR_GOOGLE_WEB_CLIENT_ID"
 
 @Composable
 fun LoginScreen(
@@ -53,6 +60,22 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Google Sign-In Activity Result 처리
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            try {
+                val credential = handleGoogleSignInResult(result.data)
+                viewModel.loginWithSocial(credential)
+            } catch (e: Exception) {
+                viewModel.setError("Google 로그인에 실패했습니다: ${e.message}")
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -188,41 +211,35 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(MongleSpacing.md))
 
-            // 카카오 로그인 버튼 (목업)
+            // 카카오 로그인
             SocialLoginButton(
                 text = "카카오로 계속하기",
                 backgroundColor = MongleKakao,
                 contentColor = MongleKakaoText,
                 emoji = "💬",
                 onClick = {
-                    // 실제 카카오 SDK 연동 시 토큰 획득 후 호출
-                    viewModel.loginWithSocial(
-                        KakaoLoginCredential(
-                            accessToken = "mock_kakao_token",
-                            name = "카카오 사용자",
-                            email = "kakao_user@mongle.com"
-                        )
-                    )
+                    scope.launch {
+                        try {
+                            val credential = loginWithKakao(context)
+                            viewModel.loginWithSocial(credential)
+                        } catch (e: Exception) {
+                            viewModel.setError("카카오 로그인에 실패했습니다: ${e.message}")
+                        }
+                    }
                 }
             )
 
             Spacer(modifier = Modifier.height(MongleSpacing.sm))
 
-            // 구글 로그인 버튼 (목업)
+            // Google 로그인
             SocialLoginButton(
                 text = "Google로 계속하기",
                 backgroundColor = Color.White,
                 contentColor = Color(0xFF1A1A1A),
                 emoji = "G",
                 onClick = {
-                    // 실제 Google SDK 연동 시 idToken 획득 후 호출
-                    viewModel.loginWithSocial(
-                        GoogleLoginCredential(
-                            idToken = "mock_google_token",
-                            name = "구글 사용자",
-                            email = "google_user@mongle.com"
-                        )
-                    )
+                    val intent = getGoogleSignInIntent(context, GOOGLE_WEB_CLIENT_ID)
+                    googleLauncher.launch(intent)
                 }
             )
 
