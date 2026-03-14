@@ -74,4 +74,10 @@ dependencies {
     // Social Login
     implementation(libs.play.services.auth)
     implementation(libs.kakao.auth)
+
+    // Network
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.okhttp.logging)
+    implementation(libs.moshi.kotlin)
 }
