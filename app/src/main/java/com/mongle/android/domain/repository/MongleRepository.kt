@@ -19,6 +19,9 @@ interface MongleRepository {
 
     /** 현재 인증된 유저의 가족을 구성원 목록과 함께 조회. 가족이 없으면 null. */
     suspend fun getMyFamily(): Pair<MongleGroup, List<User>>?
+
+    /** 방장이 멤버를 강제 탈퇴. */
+    suspend fun kickMember(memberId: java.util.UUID)
 }
 
 sealed class MongleError(message: String) : Exception(message) {

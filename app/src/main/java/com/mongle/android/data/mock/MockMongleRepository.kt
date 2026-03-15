@@ -95,4 +95,8 @@ class MockMongleRepository @Inject constructor() : MongleRepository {
         delay(500)
         return Pair(mockFamily, mockMembers)
     }
+
+    override suspend fun kickMember(memberId: UUID) {
+        delay(300)
+    }
 }
