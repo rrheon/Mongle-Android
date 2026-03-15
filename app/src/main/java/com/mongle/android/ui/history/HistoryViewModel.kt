@@ -3,9 +3,9 @@ package com.mongle.android.ui.history
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Question
-import com.mongle.android.domain.model.QuestionCategory
+import com.mongle.android.domain.repository.MongleRepository
+import com.mongle.android.domain.repository.QuestionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -49,7 +49,10 @@ sealed class HistoryEvent {
 }
 
 @HiltViewModel
-class HistoryViewModel @Inject constructor() : ViewModel() {
+class HistoryViewModel @Inject constructor(
+    private val questionRepository: QuestionRepository,
+    private val mongleRepository: MongleRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
@@ -63,21 +66,52 @@ class HistoryViewModel @Inject constructor() : ViewModel() {
 
     private fun loadHistory() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            delay(500)
-            val mockData = generateMockData()
-            _uiState.update {
-                it.copy(isLoading = false, historyItems = mockData)
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
+                val totalMembers = familyResult?.second?.size ?: 1
+
+                val history = questionRepository.getDailyHistory(page = 1, limit = 50)
+
+                val historyMap = mutableMapOf<Long, HistoryItem>()
+                history.forEach { item ->
+                    val cal = Calendar.getInstance().apply {
+                        time = item.date
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    historyMap[cal.timeInMillis] = HistoryItem(
+                        id = runCatching { UUID.fromString(item.id) }.getOrElse { UUID.randomUUID() },
+                        date = item.date,
+                        question = item.question,
+                        answerCount = item.familyAnswerCount,
+                        totalMembers = totalMembers,
+                        isCompleted = item.familyAnswerCount >= totalMembers,
+                        userAnswered = item.hasMyAnswer
+                    )
+                }
+
+                _uiState.update {
+                    it.copy(isLoading = false, historyItems = historyMap)
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = e.message)
+                }
             }
         }
     }
 
     fun onDateSelected(date: Date) {
-        val cal = Calendar.getInstance().apply { time = date }
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
+        val cal = Calendar.getInstance().apply {
+            time = date
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
         val dayKey = cal.timeInMillis
         val item = _uiState.value.historyItems[dayKey]
         _uiState.update { it.copy(selectedDate = date, selectedItem = item) }
@@ -101,37 +135,7 @@ class HistoryViewModel @Inject constructor() : ViewModel() {
         }
     }
 
-    private fun generateMockData(): Map<Long, HistoryItem> {
-        val questions = listOf(
-            Question(UUID.randomUUID(), "오늘 가장 감사했던 순간은 언제인가요?", QuestionCategory.GRATITUDE, 1),
-            Question(UUID.randomUUID(), "어릴 때 가장 좋아했던 놀이는 무엇이었나요?", QuestionCategory.MEMORY, 2),
-            Question(UUID.randomUUID(), "요즘 가장 관심 있는 것은 무엇인가요?", QuestionCategory.DAILY, 3),
-            Question(UUID.randomUUID(), "10년 후 어떤 모습이고 싶은가요?", QuestionCategory.FUTURE, 4),
-            Question(UUID.randomUUID(), "가족에게 가장 고마웠던 순간은?", QuestionCategory.GRATITUDE, 5)
-        )
-        val result = mutableMapOf<Long, HistoryItem>()
-        val cal = Calendar.getInstance()
-        repeat(30) { dayOffset ->
-            cal.time = Date()
-            cal.add(Calendar.DAY_OF_YEAR, -dayOffset)
-            cal.set(Calendar.HOUR_OF_DAY, 0)
-            cal.set(Calendar.MINUTE, 0)
-            cal.set(Calendar.SECOND, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-            if (Math.random() < 0.7) {
-                val q = questions[dayOffset % questions.size]
-                val totalMembers = 4
-                val answerCount = (Math.random() * totalMembers).toInt()
-                result[cal.timeInMillis] = HistoryItem(
-                    date = cal.time,
-                    question = q,
-                    answerCount = answerCount,
-                    totalMembers = totalMembers,
-                    isCompleted = answerCount == totalMembers,
-                    userAnswered = Math.random() < 0.8
-                )
-            }
-        }
-        return result
+    fun refresh() {
+        loadHistory()
     }
 }

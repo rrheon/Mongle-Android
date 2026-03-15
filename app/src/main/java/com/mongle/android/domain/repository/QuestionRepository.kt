@@ -1,5 +1,6 @@
 package com.mongle.android.domain.repository
 
+import com.mongle.android.domain.model.DailyQuestionHistory
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.QuestionCategory
 import java.util.UUID
@@ -14,6 +15,9 @@ interface QuestionRepository {
     suspend fun delete(id: UUID)
     /** 오늘의 질문을 조회. 질문이 없으면 null. */
     suspend fun getTodayQuestion(): Question?
+
+    /** 히스토리 목록 조회. */
+    suspend fun getDailyHistory(page: Int = 1, limit: Int = 50): List<DailyQuestionHistory>
 }
 
 sealed class QuestionError(message: String) : Exception(message) {

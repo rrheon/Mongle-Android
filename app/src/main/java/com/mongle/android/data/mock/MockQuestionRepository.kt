@@ -1,5 +1,6 @@
 package com.mongle.android.data.mock
 
+import com.mongle.android.domain.model.DailyQuestionHistory
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.QuestionCategory
 import com.mongle.android.domain.repository.QuestionRepository
@@ -62,8 +63,12 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
 
     override suspend fun getTodayQuestion(): Question? {
         delay(400)
-        // 날짜 기반으로 오늘의 질문 선택 (순환)
         val dayOfYear = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR)
         return mockQuestions[dayOfYear % mockQuestions.size]
+    }
+
+    override suspend fun getDailyHistory(page: Int, limit: Int): List<DailyQuestionHistory> {
+        delay(400)
+        return emptyList()
     }
 }
