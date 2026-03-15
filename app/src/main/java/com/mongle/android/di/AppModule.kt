@@ -1,15 +1,17 @@
 package com.mongle.android.di
 
 import com.mongle.android.data.mock.MockAnswerRepository
-import com.mongle.android.data.mock.MockMongleRepository
-import com.mongle.android.data.mock.MockQuestionRepository
-import com.mongle.android.data.mock.MockTreeRepository
 import com.mongle.android.data.remote.ApiAuthRepository
+import com.mongle.android.data.remote.ApiFamilyRepository
+import com.mongle.android.data.remote.ApiQuestionRepository
+import com.mongle.android.data.remote.ApiTreeRepository
+import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.repository.AnswerRepository
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
+import com.mongle.android.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -26,11 +28,11 @@ abstract class AppModule {
 
     @Binds
     @Singleton
-    abstract fun bindMongleRepository(impl: MockMongleRepository): MongleRepository
+    abstract fun bindMongleRepository(impl: ApiFamilyRepository): MongleRepository
 
     @Binds
     @Singleton
-    abstract fun bindQuestionRepository(impl: MockQuestionRepository): QuestionRepository
+    abstract fun bindQuestionRepository(impl: ApiQuestionRepository): QuestionRepository
 
     @Binds
     @Singleton
@@ -38,5 +40,9 @@ abstract class AppModule {
 
     @Binds
     @Singleton
-    abstract fun bindTreeRepository(impl: MockTreeRepository): TreeRepository
+    abstract fun bindTreeRepository(impl: ApiTreeRepository): TreeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(impl: ApiUserRepository): UserRepository
 }

@@ -15,6 +15,7 @@ import javax.inject.Singleton
 
 private const val PREF_NAME = "mongle_auth"
 private const val KEY_TOKEN = "auth_token"
+private const val KEY_REFRESH_TOKEN = "refresh_token"
 private const val KEY_USER_ID = "user_id"
 private const val KEY_USER_EMAIL = "user_email"
 private const val KEY_USER_NAME = "user_name"
@@ -30,9 +31,10 @@ class ApiAuthRepository @Inject constructor(
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
-    private fun saveSession(user: ApiUserResponse, token: String) {
+    private fun saveSession(user: ApiUserResponse, token: String, refreshToken: String? = null) {
         prefs.edit()
             .putString(KEY_TOKEN, token)
+            .also { editor -> refreshToken?.let { editor.putString(KEY_REFRESH_TOKEN, it) } }
             .putString(KEY_USER_ID, user.id)
             .putString(KEY_USER_EMAIL, user.email)
             .putString(KEY_USER_NAME, user.name)
@@ -65,7 +67,7 @@ class ApiAuthRepository @Inject constructor(
     override suspend fun login(email: String, password: String): User {
         return safeCall {
             val response = api.emailLogin(EmailLoginRequest(email, password))
-            saveSession(response.user, response.token)
+            saveSession(response.user, response.token, response.refresh_token)
             response.user.toDomain()
         }
     }
@@ -73,7 +75,7 @@ class ApiAuthRepository @Inject constructor(
     override suspend fun signup(name: String, email: String, password: String, role: FamilyRole): User {
         return safeCall {
             val response = api.emailSignup(EmailSignupRequest(name, email, password))
-            saveSession(response.user, response.token)
+            saveSession(response.user, response.token, response.refresh_token)
             response.user.toDomain()
         }
     }
@@ -106,7 +108,7 @@ class ApiAuthRepository @Inject constructor(
                 )
             }
             val response = api.socialLogin(request)
-            saveSession(response.user, response.token)
+            saveSession(response.user, response.token, response.refresh_token)
             response.user.toDomain()
         }
     }
@@ -116,6 +118,7 @@ class ApiAuthRepository @Inject constructor(
     }
 
     override suspend fun deleteAccount() {
+        safeCall { api.deleteAccount() }
         clearSession()
     }
 

@@ -8,7 +8,10 @@ data class Question(
     val content: String,
     val category: QuestionCategory,
     val order: Int,
-    val createdAt: Date = Date()
+    val createdAt: Date = Date(),
+    val dailyQuestionId: String? = null,
+    val hasMyAnswer: Boolean = false,
+    val familyAnswerCount: Int = 0
 )
 
 enum class QuestionCategory(val displayName: String) {

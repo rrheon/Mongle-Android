@@ -77,7 +77,8 @@ class RootViewModel @Inject constructor(
                         todayQuestion = question,
                         familyTree = tree ?: TreeProgress(),
                         family = family,
-                        familyMembers = members
+                        familyMembers = members,
+                        hasAnsweredToday = question?.hasMyAnswer ?: false
                     )
                 }
             } catch (e: Exception) {
