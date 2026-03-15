@@ -49,6 +49,7 @@ import com.mongle.android.ui.theme.MongleTextSecondary
 fun QuestionDetailScreen(
     question: Question,
     currentUser: User?,
+    familyMembers: List<User> = emptyList(),
     onAnswerSubmitted: (Answer) -> Unit,
     onClose: () -> Unit,
     viewModel: QuestionDetailViewModel = hiltViewModel()
@@ -56,7 +57,7 @@ fun QuestionDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(question, currentUser) {
-        viewModel.initialize(question, currentUser)
+        viewModel.initialize(question, currentUser, familyMembers)
     }
 
     LaunchedEffect(Unit) {

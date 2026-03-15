@@ -62,6 +62,7 @@ fun MongleNavHost(
                     QuestionDetailScreen(
                         question = showQuestionDetail!!,
                         currentUser = uiState.currentUser,
+                        familyMembers = uiState.familyMembers,
                         onAnswerSubmitted = {
                             rootViewModel.onAnswerSubmitted()
                             showQuestionDetail = null

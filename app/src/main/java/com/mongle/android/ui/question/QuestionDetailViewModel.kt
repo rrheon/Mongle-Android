@@ -3,12 +3,10 @@ package com.mongle.android.ui.question
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Answer
-import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AnswerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,6 +28,7 @@ data class FamilyAnswer(
 data class QuestionDetailUiState(
     val question: Question? = null,
     val currentUser: User? = null,
+    val familyMembers: List<User> = emptyList(),
     val myAnswer: Answer? = null,
     val familyAnswers: List<FamilyAnswer> = emptyList(),
     val answerText: String = "",
@@ -57,39 +56,51 @@ class QuestionDetailViewModel @Inject constructor(
     private val _events = MutableSharedFlow<QuestionDetailEvent>()
     val events: SharedFlow<QuestionDetailEvent> = _events.asSharedFlow()
 
-    fun initialize(question: Question, currentUser: User?) {
+    fun initialize(question: Question, currentUser: User?, familyMembers: List<User> = emptyList()) {
         _uiState.update {
             it.copy(
                 question = question,
                 currentUser = currentUser,
+                familyMembers = familyMembers,
                 isLoading = true
             )
         }
-        loadFamilyAnswers(question)
+        loadAnswers(question, currentUser)
     }
 
-    private fun loadFamilyAnswers(question: Question) {
-        viewModelScope.launch {
-            delay(500) // 네트워크 시뮬레이션
-            val mockUsers = listOf(
-                User(UUID.randomUUID(), "dad@example.com", "아빠", null, FamilyRole.FATHER, Date()),
-                User(UUID.randomUUID(), "mom@example.com", "엄마", null, FamilyRole.MOTHER, Date())
-            )
-            val mockFamilyAnswers = mockUsers.map { user ->
-                FamilyAnswer(
-                    user = user,
-                    answer = Answer(
-                        id = UUID.randomUUID(),
-                        dailyQuestionId = question.id,
-                        userId = user.id,
-                        content = "${user.name}의 답변입니다. 오늘 하루도 감사한 일이 많았어요.",
-                        imageUrl = null,
-                        createdAt = Date()
-                    )
-                )
+    private fun loadAnswers(question: Question, currentUser: User?) {
+        val dailyQId = question.dailyQuestionId
+            ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+            ?: run {
+                _uiState.update { it.copy(isLoading = false) }
+                return
             }
-            _uiState.update {
-                it.copy(isLoading = false, familyAnswers = mockFamilyAnswers)
+
+        viewModelScope.launch {
+            try {
+                val allAnswers = answerRepository.getByDailyQuestion(dailyQId)
+                val myAnswer = currentUser?.id?.let {
+                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
+                }
+
+                val members = _uiState.value.familyMembers
+                val familyAnswers = allAnswers
+                    .filter { it.userId != currentUser?.id }
+                    .mapNotNull { answer ->
+                        val user = members.firstOrNull { it.id == answer.userId }
+                        user?.let { FamilyAnswer(user = it, answer = answer) }
+                    }
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        myAnswer = myAnswer,
+                        familyAnswers = familyAnswers,
+                        answerText = myAnswer?.content ?: ""
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
         }
     }
@@ -105,25 +116,38 @@ class QuestionDetailViewModel @Inject constructor(
             return
         }
         val question = state.question ?: return
-        val userId = state.currentUser?.id ?: UUID.randomUUID()
+        val userId = state.currentUser?.id ?: return
+        val dailyQId = question.dailyQuestionId
+            ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+            ?: run {
+                _uiState.update { it.copy(errorMessage = "질문 정보를 불러올 수 없습니다.") }
+                return
+            }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
-            delay(1000) // 네트워크 시뮬레이션
-            val answer = Answer(
-                id = state.myAnswer?.id ?: UUID.randomUUID(),
-                dailyQuestionId = question.id,
-                userId = userId,
-                content = state.answerText.trim(),
-                imageUrl = null,
-                createdAt = Date(),
-                updatedAt = if (state.myAnswer != null) Date() else null
-            )
-            val savedAnswer = runCatching { answerRepository.create(answer) }.getOrDefault(answer)
-            _uiState.update {
-                it.copy(isSubmitting = false, myAnswer = savedAnswer)
+            try {
+                val answer = Answer(
+                    id = state.myAnswer?.id ?: UUID.randomUUID(),
+                    dailyQuestionId = dailyQId,
+                    userId = userId,
+                    content = state.answerText.trim(),
+                    imageUrl = null,
+                    createdAt = Date(),
+                    updatedAt = if (state.myAnswer != null) Date() else null
+                )
+                val savedAnswer = if (state.myAnswer != null) {
+                    answerRepository.update(answer)
+                } else {
+                    answerRepository.create(answer)
+                }
+                _uiState.update { it.copy(isSubmitting = false, myAnswer = savedAnswer) }
+                _events.emit(QuestionDetailEvent.AnswerSubmitted(savedAnswer))
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isSubmitting = false, errorMessage = e.message ?: "답변 제출에 실패했습니다.")
+                }
             }
-            _events.emit(QuestionDetailEvent.AnswerSubmitted(savedAnswer))
         }
     }
 
