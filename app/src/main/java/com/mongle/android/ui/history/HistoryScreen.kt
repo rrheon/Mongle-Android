@@ -1,6 +1,7 @@
 package com.mongle.android.ui.history
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -123,7 +125,7 @@ fun HistoryScreen(
                             style = MaterialTheme.typography.labelMedium,
                             color = when (day) {
                                 "일" -> MaterialTheme.colorScheme.error
-                                "토" -> MaterialTheme.colorScheme.primary
+                                "토" -> Color(0xFF1565C0)
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
@@ -163,25 +165,33 @@ fun HistoryScreen(
                 uiState.selectedItem?.let { item ->
                     Spacer(modifier = Modifier.height(MongleSpacing.lg))
                     MongleCard(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.5.dp, MonglePrimary.copy(alpha = 0.4f), RoundedCornerShape(20.dp)),
                         onClick = { viewModel.onItemTapped(item) }
                     ) {
                         Column(modifier = Modifier.padding(MongleSpacing.md)) {
-                            Text(
-                                text = "# ${item.question.category.displayName}",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(MongleSpacing.xs)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = null,
+                                    tint = MonglePrimary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Text(
+                                    text = "# ${item.question.category.displayName}  ·  ${item.answerCount}/${item.totalMembers}명 답변",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MonglePrimary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(MongleSpacing.xs))
                             Text(
                                 text = item.question.content,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Spacer(modifier = Modifier.height(MongleSpacing.sm))
-                            Text(
-                                text = "${item.answerCount}/${item.totalMembers}명 답변",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }

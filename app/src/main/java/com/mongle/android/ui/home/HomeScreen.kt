@@ -1,7 +1,6 @@
 package com.mongle.android.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -19,21 +19,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,22 +36,29 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.TreeStage
+import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleCard
-import com.mongle.android.ui.theme.MongleGradientEnd
-import com.mongle.android.ui.theme.MongleGradientStart
+import com.mongle.android.ui.common.MongleCharacter
+import com.mongle.android.ui.theme.MongleHeartRed
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextSecondary
 
-@OptIn(ExperimentalMaterial3Api::class)
+// 홈 배경 그라디언트 색상 (iOS: FFF8F0 → FFF2EB → EFF8F1)
+private val HomeBgStart = Color(0xFFFFF8F0)
+private val HomeBgMid   = Color(0xFFFFF2EB)
+private val HomeBgEnd   = Color(0xFFEFF8F1)
+
 @Composable
 fun HomeScreen(
     onNavigateToQuestionDetail: (Question) -> Unit,
@@ -66,7 +67,6 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val pullRefreshState = rememberPullToRefreshState()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -83,150 +83,140 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(pullRefreshState.isRefreshing) {
-        if (pullRefreshState.isRefreshing) {
-            viewModel.refresh()
-        }
-    }
-
-    LaunchedEffect(uiState.isRefreshing) {
-        if (!uiState.isRefreshing) {
-            pullRefreshState.endRefresh()
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "몽글",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "새로고침")
-                    }
-                    IconButton(onClick = onNavigateToNotifications) {
-                        Icon(Icons.Default.Notifications, contentDescription = "알림")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(colors = listOf(HomeBgStart, HomeBgMid, HomeBgEnd))
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(pullRefreshState.nestedScrollConnection)
-        ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            } else {
-                Column(
+    ) {
+        if (uiState.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = MonglePrimary
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // 상단 여백 (TopBar 높이만큼)
+                Spacer(modifier = Modifier.height(72.dp))
+
+                // 오늘의 질문 카드
+                TodayQuestionCard(
+                    question = uiState.todayQuestion,
+                    hasAnsweredToday = uiState.hasAnsweredToday,
+                    onTap = { viewModel.onQuestionTapped() },
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .verticalScroll(rememberScrollState())
-                        .padding(MongleSpacing.md)
-                ) {
-                    // 가족 나무 카드
-                    TreeProgressCard(treeProgress = uiState.familyTree)
+                        .padding(horizontal = MongleSpacing.md)
+                        .fillMaxWidth()
+                )
 
-                    Spacer(modifier = Modifier.height(MongleSpacing.md))
+                Spacer(modifier = Modifier.height(MongleSpacing.md))
 
-                    // 오늘의 질문 카드
-                    TodayQuestionCard(
-                        question = uiState.todayQuestion,
-                        hasAnsweredToday = uiState.hasAnsweredToday,
-                        onTap = { viewModel.onQuestionTapped() }
-                    )
+                // 몽글 씬 (가족 캐릭터들)
+                MongleSceneSection(
+                    familyMembers = uiState.familyMembers,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MongleSpacing.md)
+                )
 
-                    Spacer(modifier = Modifier.height(MongleSpacing.md))
+                Spacer(modifier = Modifier.height(MongleSpacing.md))
 
-                    // 가족 구성원 답변 현황
-                    if (uiState.familyMembers.isNotEmpty()) {
-                        FamilyStatusCard(
-                            members = uiState.familyMembers,
-                            familyName = uiState.family?.name ?: "우리 가족"
-                        )
-                    }
-                }
+                // 나무 진행도 (작은 뱃지)
+                TreeProgressBadge(
+                    treeProgress = uiState.familyTree,
+                    modifier = Modifier
+                        .padding(horizontal = MongleSpacing.md)
+                        .fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(MongleSpacing.xl))
             }
-
-            PullToRefreshContainer(
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
         }
-    }
-}
 
-@Composable
-private fun TreeProgressCard(treeProgress: TreeProgress) {
-    MongleCard(modifier = Modifier.fillMaxWidth()) {
-        Box(
+        // 상단 앱바 (floating)
+        HomeTopBar(
+            familyName = uiState.family?.name ?: "몽글",
+            onNotificationsTapped = onNavigateToNotifications,
             modifier = Modifier
+                .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            MongleGradientStart.copy(alpha = 0.3f),
-                            MongleGradientEnd.copy(alpha = 0.3f)
-                        )
-                    )
-                )
-                .padding(MongleSpacing.lg)
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // 나무 이모지
-                val treeEmoji = when (treeProgress.stage) {
-                    TreeStage.SEED -> "🌱"
-                    TreeStage.SPROUT -> "🌿"
-                    TreeStage.SAPLING -> "🌲"
-                    TreeStage.YOUNG_TREE -> "🌳"
-                    TreeStage.MATURE_TREE -> "🌴"
-                    TreeStage.FLOWERING -> "🌸"
-                    TreeStage.BOUND -> "🍎"
-                }
-                Text(text = treeEmoji, style = MaterialTheme.typography.headlineLarge.copy(fontSize = 60.sp))
-                Spacer(modifier = Modifier.height(MongleSpacing.xs))
-                Text(
-                    text = treeProgress.stage.displayName,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(MongleSpacing.xxs))
-                Row(horizontalArrangement = Arrangement.spacedBy(MongleSpacing.lg)) {
-                    StatItem(label = "총 답변", value = "${treeProgress.totalAnswers}개")
-                    StatItem(label = "연속 일수", value = "${treeProgress.consecutiveDays}일")
-                }
-            }
-        }
+        )
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
 @Composable
-private fun StatItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun HomeTopBar(
+    familyName: String,
+    onNotificationsTapped: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .background(Color.White.copy(alpha = 0.95f))
+            .shadow(elevation = 2.dp)
+            .statusBarsPadding()
+            .height(56.dp)
+            .padding(horizontal = MongleSpacing.md),
+        contentAlignment = Alignment.Center
+    ) {
+        // 가족 이름 (중앙)
         Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.primary
+            text = familyName,
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.align(Alignment.Center)
         )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+
+        // 우측 버튼들
+        Row(
+            modifier = Modifier.align(Alignment.CenterEnd),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 하트 버튼
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MongleHeartRed.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "하트",
+                    tint = MongleHeartRed,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            // 알림 버튼
+            IconButton(onClick = onNotificationsTapped) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MonglePrimary.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "알림",
+                        tint = MonglePrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -234,13 +224,11 @@ private fun StatItem(label: String, value: String) {
 private fun TodayQuestionCard(
     question: Question?,
     hasAnsweredToday: Boolean,
-    onTap: () -> Unit
+    onTap: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    MongleCard(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onTap
-    ) {
-        Column(modifier = Modifier.padding(MongleSpacing.lg)) {
+    MongleCard(modifier = modifier, onClick = onTap) {
+        Column(modifier = Modifier.padding(MongleSpacing.md)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -248,44 +236,47 @@ private fun TodayQuestionCard(
             ) {
                 Text(
                     text = "오늘의 질문",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MonglePrimary
                 )
                 if (hasAnsweredToday) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "답변 완료",
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
                             tint = MonglePrimary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "답변 완료",
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MonglePrimary
                         )
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(MongleSpacing.sm))
+            Spacer(modifier = Modifier.height(MongleSpacing.xs))
             if (question != null) {
                 Text(
                     text = question.content,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2
                 )
                 Spacer(modifier = Modifier.height(MongleSpacing.xs))
                 Text(
                     text = "# ${question.category.displayName}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MongleTextSecondary
                 )
             } else {
                 Text(
                     text = "오늘의 질문을 불러오는 중...",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MongleTextSecondary
                 )
             }
         }
@@ -293,44 +284,110 @@ private fun TodayQuestionCard(
 }
 
 @Composable
-private fun FamilyStatusCard(
-    members: List<com.mongle.android.domain.model.User>,
-    familyName: String
+private fun MongleSceneSection(
+    familyMembers: List<User>,
+    modifier: Modifier = Modifier
 ) {
-    MongleCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(MongleSpacing.lg)) {
+    MongleCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(MongleSpacing.md)) {
             Text(
-                text = familyName,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
+                text = "우리 가족",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MonglePrimary
             )
             Spacer(modifier = Modifier.height(MongleSpacing.sm))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
-            ) {
-                members.take(5).forEach { member ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = member.name.take(1),
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = member.role.displayName,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+
+            if (familyMembers.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "가족을 초대해보세요 👨‍👩‍👧‍👦",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MongleTextSecondary
+                    )
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    familyMembers.take(5).forEachIndexed { index, member ->
+                        MongleCharacter(
+                            user = member,
+                            index = index,
+                            size = 56.dp,
+                            hasAnswered = false,
+                            showName = true
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TreeProgressBadge(
+    treeProgress: TreeProgress,
+    modifier: Modifier = Modifier
+) {
+    val emoji = when (treeProgress.stage) {
+        TreeStage.SEED        -> "🌱"
+        TreeStage.SPROUT      -> "🌿"
+        TreeStage.SAPLING     -> "🌲"
+        TreeStage.YOUNG_TREE  -> "🌳"
+        TreeStage.MATURE_TREE -> "🌴"
+        TreeStage.FLOWERING   -> "🌸"
+        TreeStage.BOUND       -> "🍎"
+    }
+
+    MongleCard(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(MongleSpacing.xs)
+            ) {
+                Text(text = emoji, fontSize = 28.sp)
+                Column {
+                    Text(
+                        text = treeProgress.stage.displayName,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MonglePrimary
+                    )
+                    Text(
+                        text = "총 ${treeProgress.totalAnswers}개 답변",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MongleTextSecondary
+                    )
+                }
+            }
+            if (treeProgress.consecutiveDays > 0) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(Color(0xFFF5978E), Color(0xFFF7B4A0))
+                            )
+                        )
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "🔥 ${treeProgress.consecutiveDays}일 연속",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = Color.White
+                    )
                 }
             }
         }

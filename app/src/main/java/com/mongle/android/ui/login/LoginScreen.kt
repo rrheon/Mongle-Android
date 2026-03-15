@@ -43,8 +43,6 @@ import com.mongle.android.ui.common.MongleButtonStyle
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.common.MongleTextField
-import com.mongle.android.ui.theme.MongleGradientEnd
-import com.mongle.android.ui.theme.MongleGradientStart
 import com.mongle.android.ui.theme.MongleKakao
 import com.mongle.android.ui.theme.MongleKakaoText
 import com.mongle.android.ui.theme.MongleSpacing
@@ -89,8 +87,12 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.linearGradient(
-                    colors = listOf(MongleGradientStart, MongleGradientEnd)
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFFFF8F0),
+                        Color(0xFFFFF2EB),
+                        Color(0xFFEFF8F1)
+                    )
                 )
             )
     ) {

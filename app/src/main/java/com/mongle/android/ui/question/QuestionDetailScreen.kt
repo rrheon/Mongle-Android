@@ -1,6 +1,5 @@
 package com.mongle.android.ui.question
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,7 +30,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,8 +38,11 @@ import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleCard
+import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.common.MongleTextField
+import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,22 +184,15 @@ fun QuestionDetailScreen(
 
 @Composable
 private fun FamilyAnswerItem(familyAnswer: FamilyAnswer) {
+    val index = familyAnswer.user.role.ordinal
     MongleCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(MongleSpacing.md)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = familyAnswer.user.name.take(1),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                MongleCharacterAvatar(
+                    name = familyAnswer.user.name,
+                    index = index,
+                    size = 44.dp
+                )
                 Spacer(modifier = Modifier.width(MongleSpacing.sm))
                 Column {
                     Text(
@@ -209,14 +202,15 @@ private fun FamilyAnswerItem(familyAnswer: FamilyAnswer) {
                     Text(
                         text = familyAnswer.user.role.displayName,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MongleTextSecondary
                     )
                 }
             }
             Spacer(modifier = Modifier.height(MongleSpacing.sm))
             Text(
                 text = familyAnswer.answer.content,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
