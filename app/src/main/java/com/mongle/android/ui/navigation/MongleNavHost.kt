@@ -20,6 +20,7 @@ import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.login.LoginScreen
 import com.mongle.android.ui.main.MainTabScreen
+import com.mongle.android.ui.notification.NotificationScreen
 import com.mongle.android.ui.question.QuestionDetailScreen
 import com.mongle.android.ui.root.AppState
 import com.mongle.android.ui.root.RootViewModel
@@ -31,6 +32,7 @@ fun MongleNavHost(
 ) {
     val uiState by rootViewModel.uiState.collectAsState()
     var showQuestionDetail by remember { mutableStateOf<Question?>(null) }
+    var showNotifications by remember { mutableStateOf(false) }
 
     when (uiState.appState) {
         AppState.Loading -> {
@@ -55,22 +57,29 @@ fun MongleNavHost(
         }
 
         AppState.Authenticated -> {
-            if (showQuestionDetail != null) {
-                QuestionDetailScreen(
-                    question = showQuestionDetail!!,
-                    currentUser = uiState.currentUser,
-                    onAnswerSubmitted = {
-                        rootViewModel.onAnswerSubmitted()
-                        showQuestionDetail = null
-                    },
-                    onClose = { showQuestionDetail = null }
-                )
-            } else {
-                MainTabScreen(
-                    rootUiState = uiState,
-                    onNavigateToQuestionDetail = { question -> showQuestionDetail = question },
-                    onLogout = { rootViewModel.logout() }
-                )
+            when {
+                showQuestionDetail != null -> {
+                    QuestionDetailScreen(
+                        question = showQuestionDetail!!,
+                        currentUser = uiState.currentUser,
+                        onAnswerSubmitted = {
+                            rootViewModel.onAnswerSubmitted()
+                            showQuestionDetail = null
+                        },
+                        onClose = { showQuestionDetail = null }
+                    )
+                }
+                showNotifications -> {
+                    NotificationScreen(onBack = { showNotifications = false })
+                }
+                else -> {
+                    MainTabScreen(
+                        rootUiState = uiState,
+                        onNavigateToQuestionDetail = { question -> showQuestionDetail = question },
+                        onNavigateToNotifications = { showNotifications = true },
+                        onLogout = { rootViewModel.logout() }
+                    )
+                }
             }
         }
     }

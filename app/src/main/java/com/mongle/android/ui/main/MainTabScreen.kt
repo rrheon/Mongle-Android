@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
 import com.mongle.android.ui.history.HistoryScreen
@@ -26,15 +27,16 @@ import com.mongle.android.ui.root.RootUiState
 import com.mongle.android.ui.settings.SettingsScreen
 
 enum class MainTab(val label: String) {
-    HOME("홈"),
-    HISTORY("히스토리"),
-    SETTINGS("설정")
+    HOME("HOME"),
+    HISTORY("HISTORY"),
+    SETTINGS("MY")
 }
 
 @Composable
 fun MainTabScreen(
     rootUiState: RootUiState,
     onNavigateToQuestionDetail: (Question) -> Unit,
+    onNavigateToNotifications: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(MainTab.HOME) }
@@ -54,24 +56,24 @@ fun MainTabScreen(
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = Color.White) {
                 NavigationBarItem(
                     selected = selectedTab == MainTab.HOME,
                     onClick = { selectedTab = MainTab.HOME },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "홈") },
-                    label = { Text("홈") }
+                    icon = { Icon(Icons.Default.Home, contentDescription = "HOME") },
+                    label = { Text("HOME") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.HISTORY,
                     onClick = { selectedTab = MainTab.HISTORY },
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = "히스토리") },
-                    label = { Text("히스토리") }
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = "HISTORY") },
+                    label = { Text("HISTORY") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { selectedTab = MainTab.SETTINGS },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "설정") },
-                    label = { Text("설정") }
+                    icon = { Icon(Icons.Default.Person, contentDescription = "MY") },
+                    label = { Text("MY") }
                 )
             }
         }
@@ -79,6 +81,7 @@ fun MainTabScreen(
         when (selectedTab) {
             MainTab.HOME -> HomeScreen(
                 onNavigateToQuestionDetail = onNavigateToQuestionDetail,
+                onNavigateToNotifications = onNavigateToNotifications,
                 viewModel = homeViewModel
             )
             MainTab.HISTORY -> HistoryScreen(
