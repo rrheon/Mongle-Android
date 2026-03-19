@@ -29,6 +29,8 @@ data class SettingsUiState(
     val showLogoutConfirmation: Boolean = false,
     val showDeleteAccountConfirmation: Boolean = false,
     val showLeaveGroupConfirmation: Boolean = false,
+    val showTransferSheet: Boolean = false,
+    val selectedTransferMemberId: java.util.UUID? = null,
     val showEditProfile: Boolean = false,
     val editName: String = "",
     val editRole: FamilyRole = FamilyRole.OTHER,
@@ -37,6 +39,7 @@ data class SettingsUiState(
     val errorMessage: String? = null
 ) {
     val isOwner: Boolean get() = family?.createdBy == currentUser?.id
+    val transferCandidates: List<User> get() = familyMembers.filter { it.id != currentUser?.id }
 }
 
 sealed class SettingsEvent {
@@ -142,13 +145,20 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onLeaveGroupConfirmed() {
-        _uiState.update { it.copy(showLeaveGroupConfirmation = false, isLoading = true) }
+        val state = _uiState.value
+        _uiState.update { it.copy(showLeaveGroupConfirmation = false) }
+
+        if (state.isOwner && state.transferCandidates.isNotEmpty()) {
+            // 방장이고 다른 멤버가 있으면 위임 시트 표시
+            _uiState.update { it.copy(showTransferSheet = true) }
+            return
+        }
+
+        // 일반 멤버이거나 방장 혼자인 경우 바로 나가기
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             try {
-                mongleRepository.removeMember(
-                    _uiState.value.currentUser!!.id,
-                    _uiState.value.family!!.id
-                )
+                mongleRepository.leaveFamily()
                 _uiState.update { it.copy(isLoading = false, family = null, familyMembers = emptyList()) }
                 _events.emit(SettingsEvent.LeftGroup)
             } catch (e: Exception) {
@@ -161,6 +171,31 @@ class SettingsViewModel @Inject constructor(
 
     fun onLeaveGroupCancelled() {
         _uiState.update { it.copy(showLeaveGroupConfirmation = false) }
+    }
+
+    fun onTransferMemberSelected(userId: java.util.UUID) {
+        _uiState.update { it.copy(selectedTransferMemberId = userId) }
+    }
+
+    fun onConfirmTransferAndLeave() {
+        val newCreatorId = _uiState.value.selectedTransferMemberId ?: return
+        _uiState.update { it.copy(showTransferSheet = false, isLoading = true) }
+        viewModelScope.launch {
+            try {
+                mongleRepository.transferCreator(newCreatorId)
+                mongleRepository.leaveFamily()
+                _uiState.update { it.copy(isLoading = false, family = null, familyMembers = emptyList()) }
+                _events.emit(SettingsEvent.LeftGroup)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = e.message ?: "그룹 탈퇴에 실패했습니다.")
+                }
+            }
+        }
+    }
+
+    fun onDismissTransferSheet() {
+        _uiState.update { it.copy(showTransferSheet = false, selectedTransferMemberId = null) }
     }
 
     fun onKickMember(member: User) {

@@ -164,9 +164,19 @@ data class CreateFamilyRequest(
 )
 
 @JsonClass(generateAdapter = true)
+data class TransferCreatorRequest(
+    val newCreatorId: String
+)
+
+@JsonClass(generateAdapter = true)
 data class JoinFamilyRequest(
     val inviteCode: String,
     val role: String
+)
+
+@JsonClass(generateAdapter = true)
+data class FamiliesListResponse(
+    val families: List<FamilyResponse>
 )
 
 // ── 나무 ──────────────────────────────────────────
@@ -287,6 +297,12 @@ interface MongleApiService {
     @GET("families/my")
     suspend fun getMyFamily(): FamilyResponse
 
+    @GET("families/all")
+    suspend fun getMyFamilies(): FamiliesListResponse
+
+    @POST("families/{familyId}/select")
+    suspend fun selectFamily(@Path("familyId") familyId: String): FamilyResponse
+
     @POST("families")
     suspend fun createFamily(@Body body: CreateFamilyRequest): FamilyResponse
 
@@ -298,6 +314,9 @@ interface MongleApiService {
 
     @DELETE("families/members/{memberId}")
     suspend fun kickMember(@Path("memberId") memberId: String)
+
+    @PATCH("families/transfer-creator")
+    suspend fun transferCreator(@Body body: TransferCreatorRequest)
 
     // Tree
     @GET("tree/progress")

@@ -54,6 +54,20 @@ class ApiFamilyRepository @Inject constructor(
         }
     }
 
+    override suspend fun getMyFamilies(): List<MongleGroup> = safeCall {
+        try {
+            val response = api.getMyFamilies()
+            response.families.map { it.toGroup() }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    override suspend fun selectFamily(familyId: java.util.UUID): MongleGroup = safeCall {
+        val response = api.selectFamily(familyId.toString())
+        response.toGroup()
+    }
+
     override suspend fun create(family: MongleGroup): MongleGroup =
         throw UnsupportedOperationException("createFamily(name, role) 사용")
 
@@ -101,5 +115,13 @@ class ApiFamilyRepository @Inject constructor(
 
     override suspend fun kickMember(memberId: UUID) = safeCall {
         api.kickMember(memberId.toString())
+    }
+
+    override suspend fun leaveFamily() = safeCall {
+        api.leaveFamily()
+    }
+
+    override suspend fun transferCreator(newCreatorId: UUID) = safeCall {
+        api.transferCreator(TransferCreatorRequest(newCreatorId.toString()))
     }
 }

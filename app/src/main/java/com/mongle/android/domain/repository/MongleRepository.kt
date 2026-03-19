@@ -20,8 +20,20 @@ interface MongleRepository {
     /** 현재 인증된 유저의 가족을 구성원 목록과 함께 조회. 가족이 없으면 null. */
     suspend fun getMyFamily(): Pair<MongleGroup, List<User>>?
 
+    /** 내 모든 가족 목록 조회 (최대 3개) */
+    suspend fun getMyFamilies(): List<MongleGroup>
+
+    /** 활성 가족 전환 */
+    suspend fun selectFamily(familyId: java.util.UUID): MongleGroup
+
     /** 방장이 멤버를 강제 탈퇴. */
     suspend fun kickMember(memberId: java.util.UUID)
+
+    /** 현재 활성 가족에서 나가기. DELETE /families/leave */
+    suspend fun leaveFamily()
+
+    /** 방장 위임 — 현재 방장이 다른 멤버에게 방장 권한을 넘김. PATCH /families/transfer-creator */
+    suspend fun transferCreator(newCreatorId: java.util.UUID)
 }
 
 sealed class MongleError(message: String) : Exception(message) {

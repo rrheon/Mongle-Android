@@ -37,7 +37,8 @@ fun MainTabScreen(
     rootUiState: RootUiState,
     onNavigateToQuestionDetail: (Question) -> Unit,
     onNavigateToNotifications: () -> Unit = {},
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onGroupLeft: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(MainTab.HOME) }
     val homeViewModel: HomeViewModel = hiltViewModel()
@@ -91,7 +92,8 @@ fun MainTabScreen(
                 currentUser = rootUiState.currentUser,
                 loginProviderType = null,
                 onLogout = onLogout,
-                onAccountDeleted = onLogout
+                onAccountDeleted = onLogout,
+                onGroupLeft = onGroupLeft
             )
         }
     }

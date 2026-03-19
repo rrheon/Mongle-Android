@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
+import com.mongle.android.ui.groupselect.GroupSelectScreen
 import com.mongle.android.ui.login.LoginScreen
 import com.mongle.android.ui.main.MainTabScreen
 import com.mongle.android.ui.notification.NotificationScreen
@@ -33,6 +34,7 @@ fun MongleNavHost(
     val uiState by rootViewModel.uiState.collectAsState()
     var showQuestionDetail by remember { mutableStateOf<Question?>(null) }
     var showNotifications by remember { mutableStateOf(false) }
+    var groupLeftToast by remember { mutableStateOf(false) }
 
     when (uiState.appState) {
         AppState.Loading -> {
@@ -53,6 +55,22 @@ fun MongleNavHost(
         AppState.Unauthenticated -> {
             LoginScreen(
                 onLoggedIn = { user -> rootViewModel.onLoggedIn(user) }
+            )
+        }
+
+        AppState.GroupSelection -> {
+            GroupSelectScreen(
+                pendingInviteCode = uiState.pendingInviteCode,
+                showGroupLeftToast = groupLeftToast,
+                onGroupSelected = { familyId ->
+                    groupLeftToast = false
+                    rootViewModel.onGroupSelected(familyId)
+                },
+                onCreatedOrJoined = {
+                    groupLeftToast = false
+                    rootViewModel.onGroupCreatedOrJoined()
+                },
+                onPendingCodeConsumed = { rootViewModel.clearPendingInviteCode() }
             )
         }
 
@@ -78,7 +96,11 @@ fun MongleNavHost(
                         rootUiState = uiState,
                         onNavigateToQuestionDetail = { question -> showQuestionDetail = question },
                         onNavigateToNotifications = { showNotifications = true },
-                        onLogout = { rootViewModel.logout() }
+                        onLogout = { rootViewModel.logout() },
+                        onGroupLeft = {
+                            groupLeftToast = true
+                            rootViewModel.loadHomeData()
+                        }
                     )
                 }
             }
