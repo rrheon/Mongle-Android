@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -211,7 +212,7 @@ fun SettingsScreen(
     }
 
     if (uiState.showEditProfile) {
-        ProfileEditDialog(
+        ProfileEditBottomSheet(
             name = uiState.editName,
             role = uiState.editRole,
             onNameChanged = viewModel::onEditNameChanged,
@@ -364,7 +365,7 @@ fun SettingsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ProfileEditDialog(
+private fun ProfileEditBottomSheet(
     name: String,
     role: FamilyRole,
     onNameChanged: (String) -> Unit,
@@ -372,60 +373,92 @@ private fun ProfileEditDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var roleExpanded by remember { mutableStateOf(false) }
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        title = { Text("프로필 편집") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = onNameChanged,
-                    label = { Text("이름") },
-                    modifier = Modifier.fillMaxWidth()
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MongleSpacing.md)
+                .padding(bottom = MongleSpacing.xl)
+        ) {
+            // 헤더
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "프로필 편집",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                 )
-                Spacer(modifier = Modifier.height(MongleSpacing.sm))
-                ExposedDropdownMenuBox(
-                    expanded = roleExpanded,
-                    onExpandedChange = { roleExpanded = it }
+                TextButton(
+                    onClick = onConfirm,
+                    enabled = name.isNotBlank()
                 ) {
-                    OutlinedTextField(
-                        value = role.displayName,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("역할") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleExpanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = roleExpanded,
-                        onDismissRequest = { roleExpanded = false }
-                    ) {
-                        FamilyRole.entries.forEach { r ->
-                            DropdownMenuItem(
-                                text = { Text(r.displayName) },
-                                onClick = {
-                                    onRoleChanged(r)
-                                    roleExpanded = false
-                                }
-                            )
-                        }
+                    Text("저장", color = MaterialTheme.colorScheme.primary)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(MongleSpacing.md))
+
+            // 이름 필드
+            OutlinedTextField(
+                value = name,
+                onValueChange = onNameChanged,
+                label = { Text("이름") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(MongleSpacing.sm))
+
+            // 역할 선택
+            ExposedDropdownMenuBox(
+                expanded = roleExpanded,
+                onExpandedChange = { roleExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = role.displayName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("역할") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = roleExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+                ExposedDropdownMenu(
+                    expanded = roleExpanded,
+                    onDismissRequest = { roleExpanded = false }
+                ) {
+                    FamilyRole.entries.forEach { r ->
+                        DropdownMenuItem(
+                            text = { Text(r.displayName) },
+                            onClick = {
+                                onRoleChanged(r)
+                                roleExpanded = false
+                            }
+                        )
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm, enabled = name.isNotBlank()) {
-                Text("저장")
+
+            Spacer(modifier = Modifier.height(MongleSpacing.lg))
+
+            // 취소 버튼
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("취소", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("취소") }
         }
-    )
+    }
 }
 
 @Composable
