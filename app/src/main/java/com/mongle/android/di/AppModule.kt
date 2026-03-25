@@ -3,12 +3,14 @@ package com.mongle.android.di
 import com.mongle.android.data.remote.ApiAnswerRepository
 import com.mongle.android.data.remote.ApiAuthRepository
 import com.mongle.android.data.remote.ApiFamilyRepository
+import com.mongle.android.data.remote.ApiNudgeRepository
 import com.mongle.android.data.remote.ApiQuestionRepository
 import com.mongle.android.data.remote.ApiTreeRepository
 import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.repository.AnswerRepository
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
+import com.mongle.android.domain.repository.NudgeRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
 import com.mongle.android.domain.repository.UserRepository
@@ -45,4 +47,8 @@ abstract class AppModule {
     @Binds
     @Singleton
     abstract fun bindUserRepository(impl: ApiUserRepository): UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNudgeRepository(impl: ApiNudgeRepository): NudgeRepository
 }
