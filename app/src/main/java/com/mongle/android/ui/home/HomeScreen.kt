@@ -1,6 +1,7 @@
 package com.mongle.android.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,12 +28,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -47,6 +55,8 @@ import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.TreeStage
 import com.mongle.android.domain.model.User
+import java.util.UUID
+import com.mongle.android.domain.model.Answer
 import com.mongle.android.ui.common.MongleCard
 import com.mongle.android.ui.common.MongleCharacter
 import com.mongle.android.ui.theme.MongleHeartRed
@@ -63,15 +73,24 @@ private val HomeBgEnd   = Color(0xFFEFF8F1)
 fun HomeScreen(
     onNavigateToQuestionDetail: (Question) -> Unit,
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToNudge: (User) -> Unit = {},
+    onNavigateToWriteQuestion: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var peerAnswerTarget by remember {
+        mutableStateOf<Triple<User, Int, com.mongle.android.domain.model.Answer>?>(null)
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is HomeEvent.NavigateToQuestionDetail -> onNavigateToQuestionDetail(event.question)
+                is HomeEvent.NavigateToNudge -> onNavigateToNudge(event.targetUser)
+                is HomeEvent.ShowPeerAnswer -> {
+                    peerAnswerTarget = Triple(event.member, event.memberIndex, event.answer)
+                }
             }
         }
     }
@@ -119,6 +138,9 @@ fun HomeScreen(
                 // 몽글 씬 (가족 캐릭터들)
                 MongleSceneSection(
                     familyMembers = uiState.familyMembers,
+                    currentUserId = uiState.currentUser?.id,
+                    memberAnswerStatus = uiState.memberAnswerStatus,
+                    onMemberTapped = { member -> viewModel.onMemberTapped(member) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MongleSpacing.md)
@@ -141,7 +163,9 @@ fun HomeScreen(
         // 상단 앱바 (floating)
         HomeTopBar(
             familyName = uiState.family?.name ?: "몽글",
+            hearts = uiState.currentUser?.hearts ?: 0,
             onNotificationsTapped = onNavigateToNotifications,
+            onWriteQuestionTapped = onNavigateToWriteQuestion,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
@@ -152,14 +176,34 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+
+    // 가족 답변 보기 BottomSheet
+    peerAnswerTarget?.let { (member, memberIndex, answer) ->
+        PeerAnswerSheet(
+            member = member,
+            memberIndex = memberIndex,
+            questionText = uiState.todayQuestion?.content ?: "",
+            answer = answer,
+            onDismiss = { peerAnswerTarget = null }
+        )
+    }
 }
 
 @Composable
 private fun HomeTopBar(
     familyName: String,
+    hearts: Int,
     onNotificationsTapped: () -> Unit,
+    onWriteQuestionTapped: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var showGroupDropdown by remember { mutableStateOf(false) }
+    var showHeartMenu by remember { mutableStateOf(false) }
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (showGroupDropdown) 180f else 0f,
+        label = "arrow_rotation"
+    )
+
     Box(
         modifier = modifier
             .background(Color.White.copy(alpha = 0.95f))
@@ -169,13 +213,54 @@ private fun HomeTopBar(
             .padding(horizontal = MongleSpacing.md),
         contentAlignment = Alignment.Center
     ) {
-        // 가족 이름 (중앙)
-        Text(
-            text = familyName,
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        // 가족 이름 (좌측 드롭다운 버튼)
+        Box(modifier = Modifier.align(Alignment.CenterStart)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { showGroupDropdown = true }
+            ) {
+                Text(
+                    text = familyName,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "그룹 선택",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .rotate(arrowRotation)
+                )
+            }
+
+            DropdownMenu(
+                expanded = showGroupDropdown,
+                onDismissRequest = { showGroupDropdown = false }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = familyName,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MonglePrimary
+                        )
+                    },
+                    onClick = { showGroupDropdown = false }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "그룹 관리",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    onClick = { showGroupDropdown = false }
+                )
+            }
+        }
 
         // 우측 버튼들
         Row(
@@ -183,22 +268,64 @@ private fun HomeTopBar(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 하트 버튼
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MongleHeartRed.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = "하트",
-                    tint = MongleHeartRed,
-                    modifier = Modifier.size(20.dp)
-                )
+            // 하트 뱃지 (탭 시 드롭다운)
+            Box {
+                Row(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MongleHeartRed.copy(alpha = 0.12f))
+                        .clickable { showHeartMenu = true }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "하트",
+                        tint = MongleHeartRed,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "$hearts",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MongleHeartRed
+                    )
+                }
+                DropdownMenu(
+                    expanded = showHeartMenu,
+                    onDismissRequest = { showHeartMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(
+                                    text = "현재 보유 ${hearts}개 ❤️",
+                                    style = MaterialTheme.typography.labelMedium.copy(FontWeight.SemiBold),
+                                    color = MongleHeartRed
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                HorizontalDivider()
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("✏️ 나만의 질문 작성  하트 3개", style = MaterialTheme.typography.bodySmall)
+                                Text("📣 재촉하기  하트 1개", style = MaterialTheme.typography.bodySmall)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                HorizontalDivider()
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("🌅 매일 오전 +1 · 답변 완료 +3", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        },
+                        onClick = {}
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = { Text("✏️ 나만의 질문 작성하기", style = MaterialTheme.typography.bodyMedium) },
+                        onClick = {
+                            showHeartMenu = false
+                            onWriteQuestionTapped()
+                        }
+                    )
+                }
             }
-            Spacer(modifier = Modifier.width(4.dp))
             // 알림 버튼
             IconButton(onClick = onNotificationsTapped) {
                 Box(
@@ -286,6 +413,9 @@ private fun TodayQuestionCard(
 @Composable
 private fun MongleSceneSection(
     familyMembers: List<User>,
+    currentUserId: UUID?,
+    memberAnswerStatus: Map<UUID, Boolean>,
+    onMemberTapped: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
     MongleCard(modifier = modifier) {
@@ -317,12 +447,19 @@ private fun MongleSceneSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     familyMembers.take(5).forEachIndexed { index, member ->
+                        val isMe = member.id == currentUserId
+                        val hasAnswered = memberAnswerStatus[member.id] == true
                         MongleCharacter(
                             user = member,
                             index = index,
                             size = 56.dp,
-                            hasAnswered = false,
-                            showName = true
+                            hasAnswered = hasAnswered,
+                            showName = true,
+                            modifier = if (!isMe) {
+                                Modifier.clickable { onMemberTapped(member) }
+                            } else {
+                                Modifier
+                            }
                         )
                     }
                 }
