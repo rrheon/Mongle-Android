@@ -1,5 +1,6 @@
 package com.mongle.android.ui.root
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.MongleGroup
@@ -11,6 +12,7 @@ import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,9 +22,14 @@ import javax.inject.Inject
 
 sealed class AppState {
     data object Loading : AppState()
+    data object Onboarding : AppState()
     data object Unauthenticated : AppState()
+    data object GroupSelection : AppState()
     data object Authenticated : AppState()
 }
+
+private const val PREFS_NAME = "mongle_app_prefs"
+private const val KEY_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
 
 data class RootUiState(
     val appState: AppState = AppState.Loading,
@@ -32,7 +39,8 @@ data class RootUiState(
     val family: MongleGroup? = null,
     val familyMembers: List<User> = emptyList(),
     val hasAnsweredToday: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val pendingInviteCode: String? = null
 )
 
 @HiltViewModel
@@ -40,8 +48,25 @@ class RootViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val mongleRepository: MongleRepository,
     private val questionRepository: QuestionRepository,
-    private val treeRepository: TreeRepository
+    private val treeRepository: TreeRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    private val prefs by lazy {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    }
+
+    private fun hasSeenOnboarding(): Boolean =
+        prefs.getBoolean(KEY_HAS_SEEN_ONBOARDING, false)
+
+    fun onOnboardingCompleted() {
+        _uiState.update { it.copy(appState = AppState.Unauthenticated) }
+    }
+
+    fun onOnboardingNeverShowAgain() {
+        prefs.edit().putBoolean(KEY_HAS_SEEN_ONBOARDING, true).apply()
+        _uiState.update { it.copy(appState = AppState.Unauthenticated) }
+    }
 
     private val _uiState = MutableStateFlow(RootUiState())
     val uiState: StateFlow<RootUiState> = _uiState.asStateFlow()
@@ -56,6 +81,8 @@ class RootViewModel @Inject constructor(
             if (user != null) {
                 _uiState.update { it.copy(currentUser = user) }
                 loadHomeData()
+            } else if (!hasSeenOnboarding()) {
+                _uiState.update { it.copy(appState = AppState.Onboarding) }
             } else {
                 _uiState.update { it.copy(appState = AppState.Unauthenticated) }
             }
@@ -71,15 +98,20 @@ class RootViewModel @Inject constructor(
                 val question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
                 val tree = runCatching { treeRepository.getMyTreeProgress() }.getOrElse { TreeProgress() }
 
-                _uiState.update {
-                    it.copy(
-                        appState = AppState.Authenticated,
-                        todayQuestion = question,
-                        familyTree = tree ?: TreeProgress(),
-                        family = family,
-                        familyMembers = members,
-                        hasAnsweredToday = question?.hasMyAnswer ?: false
-                    )
+                if (family == null) {
+                    // No active family → go to GroupSelection
+                    _uiState.update { it.copy(appState = AppState.GroupSelection) }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            appState = AppState.Authenticated,
+                            todayQuestion = question,
+                            familyTree = tree ?: TreeProgress(),
+                            family = family,
+                            familyMembers = members,
+                            hasAnsweredToday = question?.hasMyAnswer ?: false
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -90,6 +122,33 @@ class RootViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onGroupSelected(familyId: java.util.UUID) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(appState = AppState.Loading) }
+            runCatching { mongleRepository.selectFamily(familyId) }
+            loadHomeData()
+        }
+    }
+
+    fun onGroupCreatedOrJoined() {
+        loadHomeData()
+    }
+
+    fun handleDeepLink(uri: android.net.Uri) {
+        val code = when {
+            uri.scheme == "monggle" && uri.host == "join" -> uri.pathSegments.firstOrNull()?.uppercase()
+            uri.host == "monggle.app" && uri.pathSegments.size >= 2 && uri.pathSegments[0] == "join" -> uri.pathSegments[1].uppercase()
+            else -> null
+        }
+        if (code != null) {
+            _uiState.update { it.copy(pendingInviteCode = code) }
+        }
+    }
+
+    fun clearPendingInviteCode() {
+        _uiState.update { it.copy(pendingInviteCode = null) }
     }
 
     fun onLoggedIn(user: User) {
