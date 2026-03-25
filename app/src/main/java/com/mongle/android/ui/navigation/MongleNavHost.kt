@@ -16,27 +16,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
+import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.groupselect.GroupSelectScreen
 import com.mongle.android.ui.login.LoginScreen
 import com.mongle.android.ui.main.MainTabScreen
 import com.mongle.android.ui.notification.NotificationScreen
+import com.mongle.android.ui.nudge.PeerNudgeScreen
+import com.mongle.android.ui.onboarding.OnboardingScreen
 import com.mongle.android.ui.question.QuestionDetailScreen
+import com.mongle.android.ui.question.WriteQuestionScreen
 import com.mongle.android.ui.root.AppState
 import com.mongle.android.ui.root.RootViewModel
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.util.AdManager
 
 @Composable
 fun MongleNavHost(
-    rootViewModel: RootViewModel = hiltViewModel()
+    rootViewModel: RootViewModel = hiltViewModel(),
+    adManager: AdManager? = null
 ) {
     val uiState by rootViewModel.uiState.collectAsState()
     var showQuestionDetail by remember { mutableStateOf<Question?>(null) }
     var showNotifications by remember { mutableStateOf(false) }
+    var showNudgeTarget by remember { mutableStateOf<User?>(null) }
+    var showWriteQuestion by remember { mutableStateOf(false) }
     var groupLeftToast by remember { mutableStateOf(false) }
 
     when (uiState.appState) {
+        AppState.Onboarding -> {
+            OnboardingScreen(
+                onGetStarted = { rootViewModel.onOnboardingCompleted() },
+                onNeverShowAgain = { rootViewModel.onOnboardingNeverShowAgain() }
+            )
+        }
+
         AppState.Loading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -91,11 +106,30 @@ fun MongleNavHost(
                 showNotifications -> {
                     NotificationScreen(onBack = { showNotifications = false })
                 }
+                showNudgeTarget != null -> {
+                    PeerNudgeScreen(
+                        targetUser = showNudgeTarget!!,
+                        currentUserHearts = uiState.currentUser?.hearts ?: 0,
+                        adManager = adManager ?: return@when,
+                        onBack = { showNudgeTarget = null }
+                    )
+                }
+                showWriteQuestion -> {
+                    WriteQuestionScreen(
+                        onClose = { showWriteQuestion = false },
+                        onQuestionSubmitted = { question ->
+                            showWriteQuestion = false
+                            rootViewModel.onAnswerSubmitted()
+                        }
+                    )
+                }
                 else -> {
                     MainTabScreen(
                         rootUiState = uiState,
                         onNavigateToQuestionDetail = { question -> showQuestionDetail = question },
                         onNavigateToNotifications = { showNotifications = true },
+                        onNavigateToNudge = { user -> showNudgeTarget = user },
+                        onNavigateToWriteQuestion = { showWriteQuestion = true },
                         onLogout = { rootViewModel.logout() },
                         onGroupLeft = {
                             groupLeftToast = true

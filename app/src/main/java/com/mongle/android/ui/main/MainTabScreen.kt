@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -20,15 +21,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
+import com.mongle.android.domain.model.User
 import com.mongle.android.ui.history.HistoryScreen
 import com.mongle.android.ui.home.HomeScreen
 import com.mongle.android.ui.home.HomeViewModel
 import com.mongle.android.ui.root.RootUiState
+import com.mongle.android.ui.search.SearchScreen
 import com.mongle.android.ui.settings.SettingsScreen
 
 enum class MainTab(val label: String) {
     HOME("HOME"),
     HISTORY("HISTORY"),
+    SEARCH("SEARCH"),
     SETTINGS("MY")
 }
 
@@ -37,6 +41,8 @@ fun MainTabScreen(
     rootUiState: RootUiState,
     onNavigateToQuestionDetail: (Question) -> Unit,
     onNavigateToNotifications: () -> Unit = {},
+    onNavigateToNudge: (User) -> Unit = {},
+    onNavigateToWriteQuestion: () -> Unit = {},
     onLogout: () -> Unit,
     onGroupLeft: () -> Unit = {}
 ) {
@@ -71,6 +77,12 @@ fun MainTabScreen(
                     label = { Text("HISTORY") }
                 )
                 NavigationBarItem(
+                    selected = selectedTab == MainTab.SEARCH,
+                    onClick = { selectedTab = MainTab.SEARCH },
+                    icon = { Icon(Icons.Default.Search, contentDescription = "SEARCH") },
+                    label = { Text("SEARCH") }
+                )
+                NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { selectedTab = MainTab.SETTINGS },
                     icon = { Icon(Icons.Default.Person, contentDescription = "MY") },
@@ -83,11 +95,14 @@ fun MainTabScreen(
             MainTab.HOME -> HomeScreen(
                 onNavigateToQuestionDetail = onNavigateToQuestionDetail,
                 onNavigateToNotifications = onNavigateToNotifications,
+                onNavigateToNudge = onNavigateToNudge,
+                onNavigateToWriteQuestion = onNavigateToWriteQuestion,
                 viewModel = homeViewModel
             )
             MainTab.HISTORY -> HistoryScreen(
                 onNavigateToQuestionDetail = onNavigateToQuestionDetail
             )
+            MainTab.SEARCH -> SearchScreen()
             MainTab.SETTINGS -> SettingsScreen(
                 currentUser = rootUiState.currentUser,
                 loginProviderType = null,
