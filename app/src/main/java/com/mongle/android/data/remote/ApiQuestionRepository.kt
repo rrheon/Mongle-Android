@@ -1,6 +1,7 @@
 package com.mongle.android.data.remote
 
 import com.mongle.android.domain.model.DailyQuestionHistory
+import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.QuestionCategory
 import com.mongle.android.domain.repository.QuestionRepository
@@ -60,6 +61,24 @@ class ApiQuestionRepository @Inject constructor(
     override suspend fun create(question: Question): Question =
         throw UnsupportedOperationException("서버에서 질문 생성을 지원하지 않습니다.")
 
+    suspend fun skipTodayQuestion(): Question = safeCall {
+        val response = api.skipQuestion()
+        response.question.toDomain(
+            dailyQuestionId = response.id,
+            hasMyAnswer = response.hasMyAnswer,
+            familyAnswerCount = response.familyAnswerCount
+        )
+    }
+
+    override suspend fun createCustomQuestion(content: String): Question = safeCall {
+        val response = api.createCustomQuestion(CreateCustomQuestionRequest(content))
+        response.question.toDomain(
+            dailyQuestionId = response.id,
+            hasMyAnswer = response.hasMyAnswer,
+            familyAnswerCount = response.familyAnswerCount
+        )
+    }
+
     override suspend fun get(id: UUID): Question =
         throw UnsupportedOperationException()
 
@@ -86,7 +105,16 @@ class ApiQuestionRepository @Inject constructor(
                 ),
                 date = parseDate(item.date),
                 hasMyAnswer = item.hasMyAnswer,
-                familyAnswerCount = item.familyAnswerCount
+                familyAnswerCount = item.familyAnswerCount,
+                answers = item.answers.map { a ->
+                    HistoryAnswerSummary(
+                        id = a.id,
+                        userId = a.userId,
+                        userName = a.userName,
+                        content = a.content,
+                        imageUrl = a.imageUrl
+                    )
+                }
             )
         }
     }

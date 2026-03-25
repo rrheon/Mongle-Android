@@ -18,6 +18,9 @@ interface QuestionRepository {
 
     /** 히스토리 목록 조회. */
     suspend fun getDailyHistory(page: Int = 1, limit: Int = 50): List<DailyQuestionHistory>
+
+    /** 나만의 질문 작성 (하트 3개 차감). */
+    suspend fun createCustomQuestion(content: String): Question
 }
 
 sealed class QuestionError(message: String) : Exception(message) {
