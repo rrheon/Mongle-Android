@@ -31,6 +31,8 @@ class ApiFamilyRepository @Inject constructor(
         name = name,
         profileImageUrl = profileImageUrl,
         role = FamilyRole.entries.firstOrNull { it.name == role } ?: FamilyRole.OTHER,
+        hearts = hearts,
+        moodId = moodId,
         createdAt = Date()
     )
 

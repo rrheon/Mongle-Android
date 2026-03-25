@@ -9,6 +9,8 @@ data class User(
     val name: String,
     val profileImageUrl: String?,
     val role: FamilyRole,
+    val hearts: Int = 0,
+    val moodId: String? = null,
     val createdAt: Date
 )
 

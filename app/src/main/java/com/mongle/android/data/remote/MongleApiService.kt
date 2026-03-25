@@ -53,6 +53,7 @@ data class ApiUserResponse(
     val role: String,
     val familyId: String?,
     val hearts: Int = 0,
+    val moodId: String? = null,
     val createdAt: String
 )
 
@@ -247,6 +248,32 @@ data class MarkAllReadResponse(
     val count: Int
 )
 
+// ── 재촉하기 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class NudgeResponse(
+    val heartsRemaining: Int
+)
+
+// ── 광고 보상 하트 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class AdHeartRewardRequest(
+    val amount: Int
+)
+
+@JsonClass(generateAdapter = true)
+data class AdHeartRewardResponse(
+    val heartsRemaining: Int
+)
+
+// ── 질문 패스 응답 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class SkipQuestionResponse(
+    val heartsRemaining: Int
+)
+
 // ── Retrofit 인터페이스 ──────────────────────────────
 
 interface MongleApiService {
@@ -276,6 +303,9 @@ interface MongleApiService {
 
     @GET("users/me/streak")
     suspend fun getMyStreak(): StreakResponse
+
+    @POST("users/me/hearts/ad-reward")
+    suspend fun grantAdHearts(@Body body: AdHeartRewardRequest): AdHeartRewardResponse
 
     // Questions
     @GET("questions/today")
@@ -337,6 +367,10 @@ interface MongleApiService {
         @Path("answerId") answerId: String,
         @Body body: UpdateAnswerRequest
     ): AnswerResponse
+
+    // Nudge
+    @POST("nudge/{targetUserId}")
+    suspend fun sendNudge(@Path("targetUserId") targetUserId: String): NudgeResponse
 
     // Notifications
     @GET("notifications")

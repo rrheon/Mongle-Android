@@ -29,6 +29,8 @@ class ApiUserRepository @Inject constructor(
         name = name,
         profileImageUrl = profileImageUrl,
         role = FamilyRole.entries.firstOrNull { it.name == role } ?: FamilyRole.OTHER,
+        hearts = hearts,
+        moodId = moodId,
         createdAt = Date()
     )
 
@@ -52,5 +54,9 @@ class ApiUserRepository @Inject constructor(
 
     suspend fun getMyStreak(): Int = safeCall {
         api.getMyStreak().streakDays
+    }
+
+    suspend fun grantAdHearts(amount: Int): Int = safeCall {
+        api.grantAdHearts(AdHeartRewardRequest(amount)).heartsRemaining
     }
 }
