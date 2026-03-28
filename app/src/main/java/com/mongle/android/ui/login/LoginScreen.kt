@@ -1,8 +1,5 @@
 package com.mongle.android.ui.login
 
-import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,10 +44,6 @@ import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import kotlinx.coroutines.launch
 
-// Google Web Client ID: Google Cloud Console → APIs & Services → Credentials
-// → OAuth 2.0 클라이언트 ID 중 "웹 애플리케이션" 타입의 ID 사용
-private const val GOOGLE_WEB_CLIENT_ID = "YOUR_GOOGLE_WEB_CLIENT_ID"
-
 @Composable
 fun LoginScreen(
     onLoggedIn: (User) -> Unit,
@@ -60,20 +53,6 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
-    // Google Sign-In Activity Result 처리
-    val googleLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            try {
-                val credential = handleGoogleSignInResult(result.data)
-                viewModel.loginWithSocial(credential)
-            } catch (e: Exception) {
-                viewModel.setError("Google 로그인에 실패했습니다: ${e.message}")
-            }
-        }
-    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -166,21 +145,6 @@ fun LoginScreen(
                                 viewModel.setError("카카오 로그인에 실패했습니다: ${e.message}")
                             }
                         }
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(MongleSpacing.sm))
-
-                // Google 로그인
-                SocialLoginButton(
-                    text = "Google로 계속하기",
-                    backgroundColor = Color.White,
-                    contentColor = Color(0xFF1A1A1A),
-                    emoji = "G",
-                    enabled = !uiState.isLoading,
-                    onClick = {
-                        val intent = getGoogleSignInIntent(context, GOOGLE_WEB_CLIENT_ID)
-                        googleLauncher.launch(intent)
                     }
                 )
 
