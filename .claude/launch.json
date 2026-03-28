@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Android Debug Build (Emulator)",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["gradlew", ":app:installDebug"],
+      "port": null
+    },
+    {
+      "name": "Android Assemble Debug",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["gradlew", ":app:assembleDebug"],
+      "port": null
+    },
+    {
+      "name": "Backend API Server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "port": 3000
+    }
+  ]
+}
