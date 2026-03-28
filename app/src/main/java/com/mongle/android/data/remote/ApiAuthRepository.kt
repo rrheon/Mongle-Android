@@ -1,6 +1,7 @@
 package com.mongle.android.data.remote
 
 import android.content.Context
+import android.util.Log
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.SocialLoginCredential
 import com.mongle.android.domain.model.SocialProviderType
@@ -61,8 +62,12 @@ class ApiAuthRepository @Inject constructor(
         return try {
             block()
         } catch (e: HttpException) {
-            val msg = e.response()?.errorBody()?.string() ?: e.message()
-            throw Exception(msg)
+            val body = e.response()?.errorBody()?.string() ?: e.message()
+            Log.e("MongleApi", "❌ HTTP ${e.code()} | body=$body")
+            throw Exception("서버 오류 [${e.code()}]: $body")
+        } catch (e: Exception) {
+            Log.e("MongleApi", "❌ API 호출 실패: ${e.message}", e)
+            throw e
         }
     }
 

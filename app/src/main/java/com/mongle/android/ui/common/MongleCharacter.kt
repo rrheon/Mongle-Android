@@ -122,21 +122,6 @@ fun MongleCharacter(
                 )
             }
 
-            // 답변 완료 시 초록 뺨 표시
-            if (hasAnswered) {
-                Box(
-                    modifier = Modifier
-                        .size(eyeSize * 0.9f)
-                        .offset(x = -eyeOffset * 1.1f, y = eyeSize * 0.8f)
-                        .background(Color(0xFF66BB6A).copy(alpha = 0.6f), CircleShape)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(eyeSize * 0.9f)
-                        .offset(x = eyeOffset * 1.1f, y = eyeSize * 0.8f)
-                        .background(Color(0xFF66BB6A).copy(alpha = 0.6f), CircleShape)
-                )
-            }
         }
 
         if (showName) {
@@ -283,10 +268,10 @@ fun MongleSceneView(
     modifier: Modifier = Modifier
 ) {
     val stepSize = 2f
-    val collisionRadius = 76f
-    val targetThreshold = 12f
-    val wallPadding = 50f
-    val charSizePx = 76f // 캐릭터 크기 (dp→px 근사, offset 계산용)
+    val collisionRadius = 60f
+    val targetThreshold = 10f
+    val wallPadding = 36f
+    val charSizePx = 52f // 캐릭터 크기 (dp→px 근사, offset 계산용)
 
     var sceneMembers by remember { mutableStateOf<List<SceneMember>>(emptyList()) }
     var sceneSize by remember { mutableStateOf(IntSize.Zero) }
@@ -350,31 +335,28 @@ fun MongleSceneView(
                 var newX = member.x + (dx / dist) * stepSize
                 var newY = member.y + (dy / dist) * stepSize
 
+                // 벽 충돌: 현재 위치 고정 + 잠시 멈춤 → 새 방향 선택
                 if (newX < wallPadding || newX > w - wallPadding ||
                     newY < wallPadding || newY > h - wallPadding
                 ) {
-                    newX = newX.coerceIn(wallPadding, w - wallPadding)
-                    newY = newY.coerceIn(wallPadding, h - wallPadding)
                     return@mapIndexed member.copy(
-                        x = newX, y = newY,
-                        targetX = randomInRange(wallPadding, w - wallPadding),
-                        targetY = randomInRange(wallPadding, h - wallPadding)
+                        x = member.x.coerceIn(wallPadding, w - wallPadding),
+                        y = member.y.coerceIn(wallPadding, h - wallPadding),
+                        restFramesLeft = (3..6).random(),
+                        overlapCounter = 0
                     )
                 }
 
+                // 캐릭터 충돌: 즉시 멈추고 잠시 휴식 → 새 방향 선택
                 val collides = current.indices.any { j ->
                     if (j == i) false
                     else hypot(newX - current[j].x, newY - current[j].y) < collisionRadius
                 }
                 if (collides) {
-                    val newOverlap = member.overlapCounter + 1
-                    return@mapIndexed if (newOverlap >= 10) {
-                        member.copy(
-                            overlapCounter = 0,
-                            targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(wallPadding, h - wallPadding)
-                        )
-                    } else member.copy(overlapCounter = newOverlap)
+                    return@mapIndexed member.copy(
+                        restFramesLeft = (3..7).random(),
+                        overlapCounter = 0
+                    )
                 }
 
                 member.copy(x = newX, y = newY, stepCount = member.stepCount + 1, overlapCounter = 0)
@@ -395,7 +377,7 @@ fun MongleSceneView(
         sceneMembers.forEach { member ->
             val info = members.find { it.id == member.id } ?: return@forEach
             val half = (charSizePx / 2).roundToInt()
-            val hopY = (-abs(sin(member.stepCount * PI / 5.0)) * 12).toFloat()
+            val hopY = (-abs(sin(member.stepCount * PI / 5.0)) * 8).toFloat()
             Box(
                 modifier = Modifier
                     .offset {
@@ -440,7 +422,7 @@ private fun SceneMongleItem(
     hasCurrentUserAnswered: Boolean,
     hasCurrentUserSkipped: Boolean = false
 ) {
-    val size = 76.dp
+    val size = 52.dp
     val eyeSize = size * 0.18f
     val eyeOffset = size * 0.14f
 
@@ -585,21 +567,6 @@ private fun SceneMongleItem(
                     modifier = Modifier
                         .size(eyeSize)
                         .background(Color.Black, CircleShape)
-                )
-            }
-            // 답변 완료 시 초록 뺨
-            if (hasAnswered) {
-                Box(
-                    modifier = Modifier
-                        .size(eyeSize * 0.9f)
-                        .offset(x = -eyeOffset * 1.1f, y = eyeSize * 0.8f)
-                        .background(Color(0xFF66BB6A).copy(alpha = 0.6f), CircleShape)
-                )
-                Box(
-                    modifier = Modifier
-                        .size(eyeSize * 0.9f)
-                        .offset(x = eyeOffset * 1.1f, y = eyeSize * 0.8f)
-                        .background(Color(0xFF66BB6A).copy(alpha = 0.6f), CircleShape)
                 )
             }
         }

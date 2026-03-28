@@ -8,6 +8,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
@@ -24,14 +25,17 @@ suspend fun loginWithKakao(context: Context): KakaoLoginCredential =
     suspendCancellableCoroutine { cont ->
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             if (error != null) {
-                cont.resumeWithException(error)
+                Log.e("KakaoLogin", "❌ 카카오 로그인 실패: ${error.message}", error)
+                cont.resumeWithException(Exception("카카오 로그인 실패: ${error.message}"))
             } else if (token != null) {
+                Log.d("KakaoLogin", "✅ 카카오 토큰 획득 | token=${token.accessToken.take(20)}...")
                 // 사용자 정보 조회
                 UserApiClient.instance.me { user, infoError ->
                     if (infoError != null) {
-                        Log.w("KakaoLogin", "사용자 정보 조회 실패, 토큰만 사용", infoError)
+                        Log.w("KakaoLogin", "⚠️ 사용자 정보 조회 실패, 토큰만 사용: ${infoError.message}")
                         cont.resume(KakaoLoginCredential(accessToken = token.accessToken))
                     } else {
+                        Log.d("KakaoLogin", "✅ 사용자 정보 조회 성공 | name=${user?.kakaoAccount?.profile?.nickname}")
                         cont.resume(
                             KakaoLoginCredential(
                                 accessToken = token.accessToken,
@@ -78,14 +82,29 @@ fun getGoogleSignInIntent(context: Context, webClientId: String): Intent {
 }
 
 fun handleGoogleSignInResult(data: Intent?): GoogleLoginCredential {
-    val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-    val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
-    val idToken = account.idToken ?: throw Exception("Google ID Token을 가져올 수 없습니다.")
-    return GoogleLoginCredential(
-        idToken = idToken,
-        name = account.displayName,
-        email = account.email
-    )
+    return try {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
+        val idToken = account.idToken
+            ?: throw Exception("Google ID Token이 null입니다. Google Cloud Console에 Android OAuth 클라이언트 등록 필요 (패키지: com.mongle.android)")
+        Log.d("GoogleLogin", "✅ 토큰 획득 성공 | email=${account.email} | token=${idToken.take(30)}...")
+        GoogleLoginCredential(
+            idToken = idToken,
+            name = account.displayName,
+            email = account.email
+        )
+    } catch (e: ApiException) {
+        val desc = CommonStatusCodes.getStatusCodeString(e.statusCode)
+        Log.e("GoogleLogin", "❌ Google Sign-In 실패 | statusCode=${e.statusCode} ($desc)")
+        val hint = when (e.statusCode) {
+            10 -> " → DEVELOPER_ERROR: SHA-1 미등록 또는 패키지명 불일치. Google Cloud Console에서 Android OAuth 클라이언트 확인 필요"
+            12501 -> " → 사용자가 로그인을 취소했습니다"
+            12500 -> " → Sign-In 실패 (일반). Google Play Services 버전 확인 필요"
+            7 -> " → 네트워크 연결 오류"
+            else -> ""
+        }
+        throw Exception("Google 로그인 실패 [${e.statusCode}: $desc]$hint")
+    }
 }
 
 fun signOutGoogle(context: Context, webClientId: String) {
