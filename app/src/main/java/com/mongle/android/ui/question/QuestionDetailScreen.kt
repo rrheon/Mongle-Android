@@ -43,6 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -289,28 +291,50 @@ private fun MoodCell(
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 몽글 캐릭터 (원형)
+        // 몽글 캐릭터 (원형) — iOS MongleMonggle 스타일
         Box(
             modifier = Modifier
                 .scale(scale)
                 .size(36.dp)
+                .shadow(
+                    elevation = 4.dp,
+                    shape = CircleShape,
+                    ambientColor = mood.color.copy(alpha = 0.3f),
+                    spotColor = mood.color.copy(alpha = 0.3f)
+                )
                 .background(mood.color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             val eyeSize = 36.dp * 0.18f
             val eyeOffset = 36.dp * 0.14f
+            // 왼쪽 눈 (흰 테두리)
             Box(
                 modifier = Modifier
-                    .size(eyeSize)
-                    .align(Alignment.Center)
-                    .then(Modifier.padding(bottom = 3.dp))
-            )
+                    .size(eyeSize + 2.dp)
+                    .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize)
+                        .background(Color.Black, CircleShape)
+                )
+            }
+            // 오른쪽 눈 (흰 테두리)
             Box(
                 modifier = Modifier
-                    .size(eyeSize)
-                    .background(Color.Black, CircleShape)
-                    .align(Alignment.Center)
-            )
+                    .size(eyeSize + 2.dp)
+                    .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize)
+                        .background(Color.Black, CircleShape)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))

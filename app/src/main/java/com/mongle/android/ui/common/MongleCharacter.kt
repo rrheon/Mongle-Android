@@ -82,20 +82,34 @@ fun MongleCharacter(
                 .background(bodyColor, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            // 왼쪽 눈
+            // 왼쪽 눈 (흰 테두리 + 검정 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize)
+                    .size(eyeSize + 3.dp)
                     .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
-                    .background(Color.Black, CircleShape)
-            )
-            // 오른쪽 눈
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize)
+                        .background(Color.Black, CircleShape)
+                )
+            }
+            // 오른쪽 눈 (흰 테두리 + 검정 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize)
+                    .size(eyeSize + 3.dp)
                     .offset(x = eyeOffset, y = -eyeSize * 0.3f)
-                    .background(Color.Black, CircleShape)
-            )
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize)
+                        .background(Color.Black, CircleShape)
+                )
+            }
 
             // 답변 완료 시 초록 뺨 표시
             if (hasAnswered) {
@@ -151,18 +165,34 @@ fun MongleCharacterAvatar(
             .background(bodyColor, CircleShape),
         contentAlignment = Alignment.Center
     ) {
+        // 왼쪽 눈 (흰 테두리)
         Box(
             modifier = Modifier
-                .size(eyeSize)
+                .size(eyeSize + 3.dp)
                 .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
-                .background(Color.Black, CircleShape)
-        )
+                .background(Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(eyeSize)
+                    .background(Color.Black, CircleShape)
+            )
+        }
+        // 오른쪽 눈 (흰 테두리)
         Box(
             modifier = Modifier
-                .size(eyeSize)
+                .size(eyeSize + 3.dp)
                 .offset(x = eyeOffset, y = -eyeSize * 0.3f)
-                .background(Color.Black, CircleShape)
-        )
+                .background(Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(eyeSize)
+                    .background(Color.Black, CircleShape)
+            )
+        }
     }
 }
 
@@ -399,20 +429,34 @@ private fun SceneMongleItem(
                 .background(color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            // 왼쪽 눈
+            // 왼쪽 눈 (흰 테두리 + 검정 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize)
+                    .size(eyeSize + 3.dp)
                     .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
-                    .background(Color.Black, CircleShape)
-            )
-            // 오른쪽 눈
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize)
+                        .background(Color.Black, CircleShape)
+                )
+            }
+            // 오른쪽 눈 (흰 테두리 + 검정 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize)
+                    .size(eyeSize + 3.dp)
                     .offset(x = eyeOffset, y = -eyeSize * 0.3f)
-                    .background(Color.Black, CircleShape)
-            )
+                    .background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize)
+                        .background(Color.Black, CircleShape)
+                )
+            }
             // 답변 완료 시 초록 뺨
             if (hasAnswered) {
                 Box(
