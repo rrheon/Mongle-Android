@@ -14,8 +14,7 @@ class MongleApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // 카카오 SDK 초기화 (실제 앱 키로 교체 필요)
-        KakaoSdk.init(this, "YOUR_KAKAO_NATIVE_APP_KEY")
+        KakaoSdk.init(this, "73b4d3e9a62701280ec877fe441949b3")
         // AdMob 초기화
         adManager.initialize()
     }

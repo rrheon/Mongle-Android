@@ -18,9 +18,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    // 로컬 개발: 10.0.2.2 (에뮬레이터 → 호스트 머신)
-    // 실제 서버 배포 시 URL 변경
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/"
 
     @Provides
     @Singleton

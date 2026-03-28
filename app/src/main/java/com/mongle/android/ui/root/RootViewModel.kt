@@ -151,6 +151,16 @@ class RootViewModel @Inject constructor(
         _uiState.update { it.copy(pendingInviteCode = null) }
     }
 
+    fun onBrowse() {
+        // 게스트 모드: 빈 데이터로 인증 상태 진입
+        _uiState.update {
+            it.copy(
+                appState = AppState.Authenticated,
+                currentUser = null
+            )
+        }
+    }
+
     fun onLoggedIn(user: User) {
         _uiState.update { it.copy(currentUser = user) }
         loadHomeData()

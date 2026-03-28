@@ -69,7 +69,8 @@ fun MongleNavHost(
 
         AppState.Unauthenticated -> {
             LoginScreen(
-                onLoggedIn = { user -> rootViewModel.onLoggedIn(user) }
+                onLoggedIn = { user -> rootViewModel.onLoggedIn(user) },
+                onBrowse = { rootViewModel.onBrowse() }
             )
         }
 
