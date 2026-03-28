@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.PowerSettingsNew
@@ -75,6 +77,11 @@ import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleCharacterAvatar
+import com.mongle.android.ui.theme.MongleMoodCalm
+import com.mongle.android.ui.theme.MongleMoodHappy
+import com.mongle.android.ui.theme.MongleMoodLoved
+import com.mongle.android.ui.theme.MongleMoodSad
+import com.mongle.android.ui.theme.MongleMoodTired
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
@@ -282,21 +289,32 @@ fun SettingsScreen(
                     uiState.currentUser?.let { user ->
                         ProfileCard(
                             user = user,
-                            userIndex = 0
+                            userIndex = 0,
+                            onEditMood = { /* TODO: 기분 수정 */ },
+                            onEditProfile = viewModel::onEditProfileTapped,
+                            onGroupConnect = {}
                         )
                     }
 
-                    // ── 프로필 설정 섹션 ──
+                    // ── 오늘의 기분 섹션 ──
                     SettingsSection(
-                        title = "프로필",
+                        title = "오늘의 기분",
                         rows = listOf(
                             SettingsRowData(
-                                icon = Icons.Default.Settings,
+                                icon = Icons.Default.Mood,
+                                iconBgColor = Color(0xFFFFF3C4),
+                                iconTint = Color(0xFFF59E0B),
+                                title = "오늘의 기분 설정",
+                                subtitle = "오늘 기분을 기록해 보세요",
+                                onClick = { /* TODO */ }
+                            ),
+                            SettingsRowData(
+                                icon = Icons.Default.History,
                                 iconBgColor = MonglePrimaryLight,
                                 iconTint = MonglePrimary,
-                                title = "프로필 편집",
-                                subtitle = "이름과 역할을 변경할 수 있어요",
-                                onClick = viewModel::onEditProfileTapped
+                                title = "기분 히스토리",
+                                subtitle = "지난 기분 기록을 확인해요",
+                                onClick = { /* TODO */ }
                             )
                         )
                     )
@@ -423,37 +441,118 @@ fun SettingsScreen(
 
 // ── 프로필 카드 ──
 
+private fun moodLabelFor(moodId: String?) = when (moodId) {
+    "happy" -> "행복"
+    "calm"  -> "평온"
+    "loved" -> "사랑"
+    "sad"   -> "슬픔"
+    "tired" -> "피곤"
+    else    -> null
+}
+
 @Composable
-private fun ProfileCard(user: User, userIndex: Int) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+private fun moodColorFor(moodId: String?) = when (moodId) {
+    "happy" -> MongleMoodHappy
+    "calm"  -> MongleMoodCalm
+    "loved" -> MongleMoodLoved
+    "sad"   -> MongleMoodSad
+    "tired" -> MongleMoodTired
+    else    -> MonglePrimary
+}
+
+@Composable
+private fun ProfileCard(
+    user: User,
+    userIndex: Int,
+    onEditMood: () -> Unit,
+    onEditProfile: () -> Unit,
+    onGroupConnect: () -> Unit
+) {
+    val moodLabel = moodLabelFor(user.moodId)
+    val moodColor = moodColorFor(user.moodId)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFFFFF3E8), Color(0xFFEFF8F1))))
+            .padding(MongleSpacing.md)
     ) {
-        Row(
-            modifier = Modifier.padding(MongleSpacing.md),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            MongleCharacterAvatar(
-                name = user.name,
-                index = userIndex,
-                size = 52.dp
+            // 액센트 아이콘 (68dp 원)
+            Box(
+                modifier = Modifier
+                    .size(68.dp)
+                    .background(moodColor.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                MongleCharacterAvatar(name = user.name, index = userIndex, size = 52.dp)
+            }
+            Spacer(modifier = Modifier.height(MongleSpacing.sm))
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MongleTextPrimary
             )
-            Spacer(modifier = Modifier.width(MongleSpacing.md))
-            Column {
-                Text(
-                    text = user.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MongleTextPrimary
-                )
-                Text(
-                    text = user.role.displayName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MongleTextSecondary
-                )
+            Text(
+                text = user.role.displayName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MongleTextSecondary
+            )
+            if (moodLabel != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "오늘의 기분  ",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MongleTextSecondary
+                    )
+                    Box(
+                        modifier = Modifier
+                            .background(moodColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = moodLabel,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = moodColor
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(MongleSpacing.md))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(MongleSpacing.sm, Alignment.CenterHorizontally)
+            ) {
+                ProfileChip(label = "감정 수정", onClick = onEditMood)
+                ProfileChip(label = "프로필 편집", onClick = onEditProfile)
+                ProfileChip(label = "그룹 연결", onClick = onGroupConnect)
             }
         }
+    }
+}
+
+@Composable
+private fun ProfileChip(label: String, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color.White)
+            .clickable { onClick() }
+            .padding(horizontal = MongleSpacing.sm, vertical = 6.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+            color = MongleTextPrimary
+        )
     }
 }
 
