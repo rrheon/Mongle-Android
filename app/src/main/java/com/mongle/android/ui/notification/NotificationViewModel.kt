@@ -67,6 +67,10 @@ class NotificationViewModel @Inject constructor(
         }
     }
 
+    fun onDeleteAll() {
+        _uiState.update { it.copy(notifications = emptyList()) }
+    }
+
     fun dismissError() {
         _uiState.update { it.copy(errorMessage = null) }
     }

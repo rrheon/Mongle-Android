@@ -4,32 +4,34 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,12 +40,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.data.remote.AppNotification
 import com.mongle.android.ui.theme.MonglePrimary
+import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextHint
+import com.mongle.android.ui.theme.MongleTextPrimary
+import com.mongle.android.ui.theme.MongleTextSecondary
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +78,7 @@ fun NotificationScreen(
                 title = {
                     Text(
                         text = "알림",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                     )
                 },
                 navigationIcon = {
@@ -76,23 +87,44 @@ fun NotificationScreen(
                     }
                 },
                 actions = {
-                    if (uiState.unreadCount > 0) {
-                        IconButton(onClick = viewModel::onMarkAllAsRead) {
-                            Icon(Icons.Default.DoneAll, contentDescription = "모두 읽음")
+                    if (uiState.notifications.isNotEmpty()) {
+                        TextButton(onClick = viewModel::onMarkAllAsRead) {
+                            Text(
+                                text = "모두 읽음",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = MongleTextSecondary
+                            )
+                        }
+                        TextButton(onClick = viewModel::onDeleteAll) {
+                            Text(
+                                text = "모두 제거",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
+        containerColor = Color(0xFFF8FAF8),
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         when {
-            uiState.isLoading -> {
+            uiState.isLoading && uiState.notifications.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = MonglePrimary)
+                        Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                        Text(
+                            text = "알림을 불러오는 중...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MongleTextSecondary
+                        )
+                    }
                 }
             }
             uiState.notifications.isEmpty() -> {
@@ -104,28 +136,39 @@ fun NotificationScreen(
                         Icon(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            modifier = Modifier.size(56.dp),
+                            tint = MongleTextHint
                         )
                         Spacer(modifier = Modifier.height(MongleSpacing.sm))
                         Text(
-                            text = "알림이 없습니다",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            text = "알림이 없어요",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = MongleTextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "새로운 소식이 오면 알려드릴게요",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MongleTextSecondary
                         )
                     }
                 }
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
                 ) {
                     items(uiState.notifications, key = { it.id }) { notification ->
-                        NotificationItem(
+                        NotificationCard(
                             notification = notification,
                             onClick = { viewModel.onMarkAsRead(notification.id) }
                         )
-                        HorizontalDivider()
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 76.dp),
+                            color = Color(0xFFE0E0E0)
+                        )
                     }
                 }
             }
@@ -134,34 +177,98 @@ fun NotificationScreen(
 }
 
 @Composable
-private fun NotificationItem(
+private fun NotificationCard(
     notification: AppNotification,
     onClick: () -> Unit
 ) {
-    val unreadColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .background(Color.White)
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 아이콘
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(notificationIconBg(notification.type)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = null,
+                tint = notificationIconTint(notification.type),
+                modifier = Modifier.size(20.dp)
+            )
+        }
 
-    ListItem(
-        headlineContent = {
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // 내용
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = notification.title,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = if (!notification.isRead) FontWeight.Bold else FontWeight.Normal
+                ),
+                color = MongleTextPrimary,
+                maxLines = 1
             )
-        },
-        supportingContent = { Text(notification.body, style = MaterialTheme.typography.bodySmall) },
-        trailingContent = {
-            if (!notification.isRead) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(MonglePrimary)
-                )
-            }
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = if (!notification.isRead) unreadColor
-            else MaterialTheme.colorScheme.surface
-        ),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)
-    )
+            Text(
+                text = timeAgo(notification.createdAt),
+                style = MaterialTheme.typography.labelSmall,
+                color = MongleTextHint
+            )
+        }
+
+        // 안 읽음 점
+        if (!notification.isRead) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(MonglePrimary)
+            )
+        }
+    }
+}
+
+private fun notificationIconBg(type: String): Color = when (type) {
+    "member_answered" -> MonglePrimaryLight
+    "all_answered" -> Color(0xFFE8F5E9)
+    "answer_request" -> Color(0xFFFFF3E0)
+    "new_question" -> Color(0xFFE3F2FD)
+    else -> Color(0xFFF5F5F5)
+}
+
+private fun notificationIconTint(type: String): Color = when (type) {
+    "member_answered" -> MonglePrimary
+    "all_answered" -> Color(0xFF388E3C)
+    "answer_request" -> Color(0xFFFF6D00)
+    "new_question" -> Color(0xFF1976D2)
+    else -> Color(0xFF9E9E9E)
+}
+
+private val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+private val isoFormatZ = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+
+private fun timeAgo(createdAt: String): String {
+    val date = runCatching { isoFormatZ.parse(createdAt) }.getOrNull()
+        ?: runCatching { isoFormat.parse(createdAt) }.getOrNull()
+        ?: return ""
+    val diffMs = Date().time - date.time
+    val diffMin = TimeUnit.MILLISECONDS.toMinutes(diffMs)
+    val diffHours = TimeUnit.MILLISECONDS.toHours(diffMs)
+    val diffDays = TimeUnit.MILLISECONDS.toDays(diffMs)
+    return when {
+        diffMin < 1 -> "방금 전"
+        diffMin < 60 -> "${diffMin}분 전"
+        diffHours < 24 -> "${diffHours}시간 전"
+        diffDays < 7 -> "${diffDays}일 전"
+        else -> SimpleDateFormat("M월 d일", Locale.KOREAN).format(date)
+    }
 }
