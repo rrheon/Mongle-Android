@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,12 +26,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.PowerSettingsNew
@@ -66,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -76,7 +77,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
-import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.theme.MongleMoodCalm
 import com.mongle.android.ui.theme.MongleMoodHappy
 import com.mongle.android.ui.theme.MongleMoodLoved
@@ -106,6 +106,11 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+
+    // 서브 시트 상태
+    var showNotificationSheet by remember { mutableStateOf(false) }
+    var showGroupSheet by remember { mutableStateOf(false) }
+    var showAccountSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentUser, loginProviderType) {
         viewModel.initialize(currentUser, loginProviderType)
@@ -246,6 +251,191 @@ fun SettingsScreen(
         )
     }
 
+    // ── 서브 시트들 ──
+
+    if (showNotificationSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showNotificationSheet = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(MongleSpacing.md)
+                    .padding(bottom = MongleSpacing.xl)
+            ) {
+                Text(
+                    text = "알림 설정",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(MongleSpacing.md))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "알림 허용",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                            color = MongleTextPrimary
+                        )
+                        Text(
+                            text = "답변 알림, 리마인더",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MongleTextHint
+                        )
+                    }
+                    Switch(
+                        checked = uiState.notificationsEnabled,
+                        onCheckedChange = viewModel::onNotificationsToggled
+                    )
+                }
+            }
+        }
+    }
+
+    if (showGroupSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showGroupSheet = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = MongleSpacing.xl)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "그룹 관리",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { showGroupSheet = false }) {
+                        Icon(Icons.Default.Close, contentDescription = "닫기", tint = MongleTextHint)
+                    }
+                }
+                uiState.family?.let { family ->
+                    SettingsSection(
+                        title = "그룹 ${family.name}",
+                        modifier = Modifier.padding(horizontal = MongleSpacing.md),
+                        rows = buildList {
+                            add(
+                                SettingsRowData(
+                                    icon = Icons.Default.ContentCopy,
+                                    iconBgColor = Color(0xFFE3F2FD),
+                                    iconTint = Color(0xFF1976D2),
+                                    title = "초대 코드 복사",
+                                    subtitle = family.inviteCode,
+                                    onClick = viewModel::onCopyInviteCode
+                                )
+                            )
+                            uiState.familyMembers.forEachIndexed { index, member ->
+                                val isCurrentUser = member.id == uiState.currentUser?.id
+                                add(
+                                    SettingsRowData(
+                                        icon = null,
+                                        iconBgColor = Color.Transparent,
+                                        iconTint = Color.Transparent,
+                                        title = if (isCurrentUser) "${member.name} (나)" else member.name,
+                                        subtitle = member.role.displayName,
+                                        trailing = if (uiState.isOwner && !isCurrentUser) {
+                                            {
+                                                IconButton(
+                                                    onClick = { viewModel.onKickMember(member) },
+                                                    modifier = Modifier.size(32.dp)
+                                                ) {
+                                                    Icon(
+                                                        Icons.Default.PersonRemove,
+                                                        contentDescription = "내보내기",
+                                                        tint = MaterialTheme.colorScheme.error,
+                                                        modifier = Modifier.size(18.dp)
+                                                    )
+                                                }
+                                            }
+                                        } else null,
+                                        memberIndex = index
+                                    )
+                                )
+                            }
+                            add(
+                                SettingsRowData(
+                                    icon = Icons.Default.ExitToApp,
+                                    iconBgColor = Color(0xFFFFEBEE),
+                                    iconTint = MaterialTheme.colorScheme.error,
+                                    title = "그룹 탈퇴",
+                                    subtitle = "",
+                                    isDestructive = true,
+                                    onClick = viewModel::onLeaveGroupTapped
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    if (showAccountSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showAccountSheet = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = MongleSpacing.xl)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "계정 관리",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { showAccountSheet = false }) {
+                        Icon(Icons.Default.Close, contentDescription = "닫기", tint = MongleTextHint)
+                    }
+                }
+                SettingsSection(
+                    title = "계정",
+                    modifier = Modifier.padding(horizontal = MongleSpacing.md),
+                    rows = listOf(
+                        SettingsRowData(
+                            icon = Icons.Default.PowerSettingsNew,
+                            iconBgColor = Color(0xFFFFF3E0),
+                            iconTint = Color(0xFFFF6D00),
+                            title = "로그아웃",
+                            subtitle = "",
+                            onClick = viewModel::onLogoutTapped
+                        ),
+                        SettingsRowData(
+                            icon = Icons.Default.Delete,
+                            iconBgColor = Color(0xFFFFEBEE),
+                            iconTint = MaterialTheme.colorScheme.error,
+                            title = "계정 삭제",
+                            subtitle = "",
+                            isDestructive = true,
+                            onClick = viewModel::onDeleteAccountTapped
+                        )
+                    )
+                )
+            }
+        }
+    }
+
     // ── 메인 UI ──
 
     Box(
@@ -263,7 +453,7 @@ fun SettingsScreen(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ── 헤더 "설정" ──
+                // ── 헤더 "MY" ──
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -273,7 +463,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "설정",
+                        text = "MY",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MongleTextPrimary
                     )
@@ -287,139 +477,51 @@ fun SettingsScreen(
                 ) {
                     // ── 프로필 카드 ──
                     uiState.currentUser?.let { user ->
-                        ProfileCard(
-                            user = user,
-                            userIndex = 0,
-                            onEditMood = { /* TODO: 기분 수정 */ },
-                            onEditProfile = viewModel::onEditProfileTapped,
-                            onGroupConnect = {}
-                        )
+                        MyProfileCard(user = user)
                     }
 
-                    // ── 오늘의 기분 섹션 ──
+                    // ── 프로필 섹션 ──
                     SettingsSection(
-                        title = "오늘의 기분",
+                        title = "프로필",
                         rows = listOf(
                             SettingsRowData(
-                                icon = Icons.Default.Mood,
-                                iconBgColor = Color(0xFFFFF3C4),
-                                iconTint = Color(0xFFF59E0B),
-                                title = "오늘의 기분 설정",
-                                subtitle = "오늘 기분을 기록해 보세요",
-                                onClick = { /* TODO */ }
-                            ),
-                            SettingsRowData(
-                                icon = Icons.Default.History,
+                                icon = Icons.Default.Settings,
                                 iconBgColor = MonglePrimaryLight,
                                 iconTint = MonglePrimary,
-                                title = "기분 히스토리",
-                                subtitle = "지난 기분 기록을 확인해요",
-                                onClick = { /* TODO */ }
+                                title = "프로필 편집",
+                                subtitle = "이름을 변경할 수 있어요",
+                                onClick = viewModel::onEditProfileTapped
                             )
                         )
                     )
 
-                    // ── 알림 섹션 ──
+                    // ── 앱 설정 섹션 ──
                     SettingsSection(
-                        title = "알림",
+                        title = "앱 설정",
                         rows = listOf(
                             SettingsRowData(
                                 icon = Icons.Default.Notifications,
                                 iconBgColor = MonglePrimaryLight,
                                 iconTint = MonglePrimary,
-                                title = "알림 허용",
+                                title = "알림 설정",
                                 subtitle = "답변 알림, 리마인더",
-                                trailing = {
-                                    Switch(
-                                        checked = uiState.notificationsEnabled,
-                                        onCheckedChange = viewModel::onNotificationsToggled
-                                    )
-                                }
-                            )
-                        )
-                    )
-
-                    // ── 그룹 관리 섹션 ──
-                    uiState.family?.let { family ->
-                        SettingsSection(
-                            title = "그룹 ${family.name}",
-                            rows = buildList {
-                                // 초대 코드 복사
-                                add(
-                                    SettingsRowData(
-                                        icon = Icons.Default.ContentCopy,
-                                        iconBgColor = Color(0xFFE3F2FD),
-                                        iconTint = Color(0xFF1976D2),
-                                        title = "초대 코드 복사",
-                                        subtitle = family.inviteCode,
-                                        onClick = viewModel::onCopyInviteCode
-                                    )
-                                )
-                                // 멤버 목록 (방장이면 내보내기)
-                                uiState.familyMembers.forEachIndexed { index, member ->
-                                    val isCurrentUser = member.id == uiState.currentUser?.id
-                                    add(
-                                        SettingsRowData(
-                                            icon = null,
-                                            iconBgColor = Color.Transparent,
-                                            iconTint = Color.Transparent,
-                                            title = if (isCurrentUser) "${member.name} (나)" else member.name,
-                                            subtitle = member.role.displayName,
-                                            trailing = if (uiState.isOwner && !isCurrentUser) {
-                                                {
-                                                    IconButton(
-                                                        onClick = { viewModel.onKickMember(member) },
-                                                        modifier = Modifier.size(32.dp)
-                                                    ) {
-                                                        Icon(
-                                                            Icons.Default.PersonRemove,
-                                                            contentDescription = "내보내기",
-                                                            tint = MaterialTheme.colorScheme.error,
-                                                            modifier = Modifier.size(18.dp)
-                                                        )
-                                                    }
-                                                }
-                                            } else null,
-                                            memberIndex = index
-                                        )
-                                    )
-                                }
-                                // 그룹 탈퇴
-                                add(
-                                    SettingsRowData(
-                                        icon = Icons.Default.ExitToApp,
-                                        iconBgColor = Color(0xFFFFEBEE),
-                                        iconTint = MaterialTheme.colorScheme.error,
-                                        title = "그룹 탈퇴",
-                                        subtitle = "",
-                                        isDestructive = true,
-                                        onClick = viewModel::onLeaveGroupTapped
-                                    )
-                                )
-                            }
-                        )
-                    }
-
-                    // ── 계정 섹션 ──
-                    SettingsSection(
-                        title = "계정",
-                        rows = listOf(
+                                onClick = { showNotificationSheet = true }
+                            ),
+                            SettingsRowData(
+                                icon = Icons.Default.Group,
+                                iconBgColor = Color(0xFFE3F2FD),
+                                iconTint = Color(0xFF1976D2),
+                                title = "그룹 관리",
+                                subtitle = "멤버 초대, 그룹 설정",
+                                onClick = { showGroupSheet = true }
+                            ),
                             SettingsRowData(
                                 icon = Icons.Default.PowerSettingsNew,
                                 iconBgColor = Color(0xFFFFF3E0),
                                 iconTint = Color(0xFFFF6D00),
-                                title = "로그아웃",
-                                subtitle = "",
-                                onClick = viewModel::onLogoutTapped
-                            ),
-                            SettingsRowData(
-                                icon = Icons.Default.Delete,
-                                iconBgColor = Color(0xFFFFEBEE),
-                                iconTint = MaterialTheme.colorScheme.error,
-                                title = "계정 삭제",
-                                subtitle = "",
-                                isDestructive = true,
-                                onClick = viewModel::onDeleteAccountTapped
+                                title = "계정 관리",
+                                subtitle = "로그아웃, 탈퇴",
+                                onClick = { showAccountSheet = true }
                             )
                         )
                     )
@@ -439,7 +541,7 @@ fun SettingsScreen(
     }
 }
 
-// ── 프로필 카드 ──
+// ── MY 프로필 카드 ──
 
 private fun moodLabelFor(moodId: String?) = when (moodId) {
     "happy" -> "행복"
@@ -457,102 +559,95 @@ private fun moodColorFor(moodId: String?) = when (moodId) {
     "loved" -> MongleMoodLoved
     "sad"   -> MongleMoodSad
     "tired" -> MongleMoodTired
-    else    -> MonglePrimary
+    else    -> MongleMoodLoved
 }
 
+/** iOS ProfileEditView 프로필 카드: MongleMonggle(기분색) + 이름 + 기분 라벨 */
 @Composable
-private fun ProfileCard(
-    user: User,
-    userIndex: Int,
-    onEditMood: () -> Unit,
-    onEditProfile: () -> Unit,
-    onGroupConnect: () -> Unit
-) {
-    val moodLabel = moodLabelFor(user.moodId)
+private fun MyProfileCard(user: User) {
     val moodColor = moodColorFor(user.moodId)
+    val moodLabel = moodLabelFor(user.moodId)
+    val charSize = 56.dp
+    val eyeSize = charSize * 0.18f
+    val eyeOffset = charSize * 0.14f
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFFFFF3E8), Color(0xFFEFF8F1))))
-            .padding(MongleSpacing.md)
+            .background(Color.White.copy(alpha = 0.85f))
+            .padding(MongleSpacing.lg),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 액센트 아이콘 (68dp 원)
+            // MongleMonggle (iOS forMood)
             Box(
                 modifier = Modifier
-                    .size(68.dp)
-                    .background(moodColor.copy(alpha = 0.2f), CircleShape),
+                    .size(charSize)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        ambientColor = moodColor.copy(alpha = 0.3f),
+                        spotColor = moodColor.copy(alpha = 0.3f)
+                    )
+                    .background(moodColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                MongleCharacterAvatar(name = user.name, index = userIndex, size = 52.dp)
+                // 왼쪽 눈 (흰 테두리)
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize + 3.dp)
+                        .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                        .background(Color.White, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(eyeSize)
+                            .background(MongleTextPrimary, CircleShape)
+                    )
+                }
+                // 오른쪽 눈 (흰 테두리)
+                Box(
+                    modifier = Modifier
+                        .size(eyeSize + 3.dp)
+                        .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                        .background(Color.White, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(eyeSize)
+                            .background(MongleTextPrimary, CircleShape)
+                    )
+                }
             }
+
             Spacer(modifier = Modifier.height(MongleSpacing.sm))
+
             Text(
                 text = user.name,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MongleTextPrimary
             )
-            Text(
-                text = user.role.displayName,
-                style = MaterialTheme.typography.bodySmall,
-                color = MongleTextSecondary
-            )
+
             if (moodLabel != null) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier
+                        .background(moodColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "오늘의 기분  ",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MongleTextSecondary
+                        text = moodLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = moodColor
                     )
-                    Box(
-                        modifier = Modifier
-                            .background(moodColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = moodLabel,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = moodColor
-                        )
-                    }
                 }
             }
-            Spacer(modifier = Modifier.height(MongleSpacing.md))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(MongleSpacing.sm, Alignment.CenterHorizontally)
-            ) {
-                ProfileChip(label = "감정 수정", onClick = onEditMood)
-                ProfileChip(label = "프로필 편집", onClick = onEditProfile)
-                ProfileChip(label = "그룹 연결", onClick = onGroupConnect)
-            }
         }
-    }
-}
-
-@Composable
-private fun ProfileChip(label: String, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
-            .clickable { onClick() }
-            .padding(horizontal = MongleSpacing.sm, vertical = 6.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-            color = MongleTextPrimary
-        )
     }
 }
 
@@ -573,9 +668,10 @@ private data class SettingsRowData(
 @Composable
 private fun SettingsSection(
     title: String,
-    rows: List<SettingsRowData>
+    rows: List<SettingsRowData>,
+    modifier: Modifier = Modifier
 ) {
-    Column {
+    Column(modifier = modifier) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
