@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,7 +28,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -37,13 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mongle.android.ui.common.MongleButton
+import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
-import com.mongle.android.ui.theme.MongleMonggleBlue
-import com.mongle.android.ui.theme.MongleMonggleGreenLight
-import com.mongle.android.ui.theme.MongleMonggleOrange
-import com.mongle.android.ui.theme.MongleMongglePink
-import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
@@ -187,15 +181,7 @@ private fun OnboardingPage2() {
         verticalArrangement = Arrangement.Center
     ) {
         // 그룹 카드 미리보기
-        MongleGroupCard(
-            groupName = "우리 가족 🩷",
-            memberColors = listOf(
-                MongleMonggleOrange,
-                MongleMonggleYellow,
-                MongleMonggleGreenLight,
-                MongleMongglePink
-            )
-        )
+        MongleGroupCard(groupName = "우리 가족 🩷")
 
         Spacer(modifier = Modifier.height(44.dp))
 
@@ -234,19 +220,17 @@ private fun OnboardingPage3() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 몽글 캐릭터 5개
+        // 몽글 캐릭터 5개 (HistoryView와 동일한 MongleCharacterAvatar)
         Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            listOf(
-                MongleMonggleYellow,
-                MongleMonggleGreenLight,
-                MongleMongglePink,
-                MongleMonggleBlue,
-                MongleMonggleOrange
-            ).forEach { color ->
-                MiniMonggle(color = color, size = 52)
+            repeat(5) { index ->
+                MongleCharacterAvatar(
+                    name = "",
+                    index = index,
+                    size = 52.dp
+                )
             }
         }
 
@@ -274,10 +258,7 @@ private fun OnboardingPage3() {
 // ── 공통 컴포넌트 ──────────────────────────────────────────
 
 @Composable
-private fun MongleGroupCard(
-    groupName: String,
-    memberColors: List<Color>
-) {
+private fun MongleGroupCard(groupName: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -292,8 +273,12 @@ private fun MongleGroupCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                memberColors.forEach { color ->
-                    MiniMonggle(color = color, size = 44)
+                repeat(4) { index ->
+                    MongleCharacterAvatar(
+                        name = "",
+                        index = index,
+                        size = 44.dp
+                    )
                 }
             }
         }
@@ -324,35 +309,3 @@ private fun MongleQuestionCard(question: String) {
     }
 }
 
-@Composable
-private fun MiniMonggle(color: Color, size: Int) {
-    val sizeDp = size.dp
-    val eyeSize = sizeDp * 0.18f
-    val eyeOffset = sizeDp * 0.14f
-
-    Box(
-        modifier = Modifier
-            .size(sizeDp)
-            .shadow(
-                elevation = 4.dp,
-                shape = CircleShape,
-                ambientColor = color.copy(alpha = 0.3f),
-                spotColor = color.copy(alpha = 0.3f)
-            )
-            .background(color, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .size(eyeSize)
-                .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
-                .background(Color.Black, CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .size(eyeSize)
-                .offset(x = eyeOffset, y = -eyeSize * 0.3f)
-                .background(Color.Black, CircleShape)
-        )
-    }
-}
