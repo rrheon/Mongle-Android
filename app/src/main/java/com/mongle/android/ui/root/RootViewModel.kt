@@ -38,6 +38,7 @@ data class RootUiState(
     val familyTree: TreeProgress = TreeProgress(),
     val family: MongleGroup? = null,
     val familyMembers: List<User> = emptyList(),
+    val allFamilies: List<MongleGroup> = emptyList(),
     val hasAnsweredToday: Boolean = false,
     val errorMessage: String? = null,
     val pendingInviteCode: String? = null
@@ -98,9 +99,11 @@ class RootViewModel @Inject constructor(
                 val question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
                 val tree = runCatching { treeRepository.getMyTreeProgress() }.getOrElse { TreeProgress() }
 
+                val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
+
                 if (family == null) {
                     // No active family → go to GroupSelection
-                    _uiState.update { it.copy(appState = AppState.GroupSelection) }
+                    _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
                 } else {
                     _uiState.update {
                         it.copy(
@@ -109,6 +112,7 @@ class RootViewModel @Inject constructor(
                             familyTree = tree ?: TreeProgress(),
                             family = family,
                             familyMembers = members,
+                            allFamilies = allFamilies,
                             hasAnsweredToday = question?.hasMyAnswer ?: false
                         )
                     }

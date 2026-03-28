@@ -57,6 +57,7 @@ fun MainTabScreen(
             familyTree = rootUiState.familyTree,
             family = rootUiState.family,
             familyMembers = rootUiState.familyMembers,
+            allFamilies = rootUiState.allFamilies,
             currentUser = rootUiState.currentUser,
             hasAnsweredToday = rootUiState.hasAnsweredToday
         )

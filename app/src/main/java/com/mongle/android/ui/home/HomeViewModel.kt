@@ -28,6 +28,7 @@ data class HomeUiState(
     val familyTree: TreeProgress = TreeProgress(),
     val family: MongleGroup? = null,
     val familyMembers: List<User> = emptyList(),
+    val allFamilies: List<MongleGroup> = emptyList(),
     val currentUser: User? = null,
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
@@ -66,6 +67,7 @@ class HomeViewModel @Inject constructor(
         familyTree: TreeProgress,
         family: MongleGroup?,
         familyMembers: List<User>,
+        allFamilies: List<MongleGroup> = emptyList(),
         currentUser: User?,
         hasAnsweredToday: Boolean
     ) {
@@ -75,6 +77,7 @@ class HomeViewModel @Inject constructor(
                 familyTree = familyTree,
                 family = family,
                 familyMembers = familyMembers,
+                allFamilies = allFamilies,
                 currentUser = currentUser,
                 hasAnsweredToday = hasAnsweredToday
             )
