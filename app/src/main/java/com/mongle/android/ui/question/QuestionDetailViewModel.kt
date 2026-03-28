@@ -32,12 +32,14 @@ data class QuestionDetailUiState(
     val myAnswer: Answer? = null,
     val familyAnswers: List<FamilyAnswer> = emptyList(),
     val answerText: String = "",
+    val selectedMoodIndex: Int? = null,
+    val showMoodRequiredAlert: Boolean = false,
     val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
 ) {
     val hasMyAnswer: Boolean get() = myAnswer != null
-    val isValidAnswer: Boolean get() = answerText.trim().isNotEmpty()
+    val isValidAnswer: Boolean get() = answerText.trim().isNotEmpty() && selectedMoodIndex != null
 }
 
 sealed class QuestionDetailEvent {
@@ -106,13 +108,26 @@ class QuestionDetailViewModel @Inject constructor(
     }
 
     fun onAnswerTextChanged(text: String) {
+        if (text.length > 200) return
         _uiState.update { it.copy(answerText = text, errorMessage = null) }
+    }
+
+    fun onMoodSelected(index: Int) {
+        _uiState.update { it.copy(selectedMoodIndex = index, showMoodRequiredAlert = false) }
+    }
+
+    fun dismissMoodRequiredAlert() {
+        _uiState.update { it.copy(showMoodRequiredAlert = false) }
     }
 
     fun submitAnswer() {
         val state = _uiState.value
-        if (!state.isValidAnswer) {
+        if (state.answerText.trim().isEmpty()) {
             _uiState.update { it.copy(errorMessage = "답변을 입력해주세요.") }
+            return
+        }
+        if (state.selectedMoodIndex == null) {
+            _uiState.update { it.copy(showMoodRequiredAlert = true) }
             return
         }
         val question = state.question ?: return
