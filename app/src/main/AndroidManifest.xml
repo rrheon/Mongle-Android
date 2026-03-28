@@ -21,18 +21,22 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- 초대 링크 딥링크 -->
-            <intent-filter android:autoVerify="true">
+
+            <!-- Custom Scheme Deep Link -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="monggle" android:host="join" />
             </intent-filter>
+
+            <!-- Android App Links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="monggle.app" android:pathPrefix="/join" />
+                <data android:scheme="http" />
             </intent-filter>
         </activity>
 
@@ -51,7 +55,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- 카카오 앱 키를 여기에 설정 (kakao{NATIVE_APP_KEY}) -->
                 <data android:host="oauth"
-                    android:scheme="kakao{YOUR_KAKAO_NATIVE_APP_KEY}" />
+                    android:scheme="kakao00000000000000000000000000000000" />
             </intent-filter>
         </activity>
 
