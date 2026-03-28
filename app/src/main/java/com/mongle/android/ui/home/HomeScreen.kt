@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Answer
+import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleSceneView
@@ -58,7 +61,6 @@ import com.mongle.android.ui.theme.MongleMonggleOrange
 import com.mongle.android.ui.theme.MongleMongglePink
 import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
-import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
@@ -78,11 +80,13 @@ fun HomeScreen(
     onNavigateToNotifications: () -> Unit,
     onNavigateToNudge: (User) -> Unit,
     onNavigateToWriteQuestion: () -> Unit,
+    onNavigateToGroupSelect: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // PeerAnswerSheet 상태
+    // QuestionSheet / PeerAnswerSheet 상태
+    var showQuestionSheet by remember { mutableStateOf(false) }
     var peerAnswerData by remember { mutableStateOf<Triple<User, Int, Answer>?>(null) }
 
     // ViewModel 이벤트 처리
@@ -124,13 +128,16 @@ fun HomeScreen(
             // ── TopBar (그룹명 + 하트 + 알림 + 오늘의 질문 카드) ──
             HomeTopBar(
                 groupName = uiState.family?.name ?: "몽글",
+                currentFamilyId = uiState.family?.id,
+                allFamilies = uiState.allFamilies,
                 hearts = uiState.currentUser?.hearts ?: 0,
                 hasNotification = false,
                 todayQuestion = uiState.todayQuestion,
                 hasAnsweredToday = uiState.hasAnsweredToday,
-                onQuestionTap = { uiState.todayQuestion?.let { onNavigateToQuestionDetail(it) } },
+                onQuestionTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
                 onNotificationTap = onNavigateToNotifications,
-                onWriteQuestionTap = onNavigateToWriteQuestion
+                onWriteQuestionTap = onNavigateToWriteQuestion,
+                onGroupManage = onNavigateToGroupSelect
             )
 
             // ── MongleScene (나머지 공간 전체) ──
@@ -163,6 +170,23 @@ fun HomeScreen(
         }
     }
 
+    // QuestionSheet
+    if (showQuestionSheet && uiState.todayQuestion != null) {
+        QuestionSheetBottomSheet(
+            question = uiState.todayQuestion!!,
+            hasAnswered = uiState.hasAnsweredToday,
+            onDismiss = { showQuestionSheet = false },
+            onAnswerTap = {
+                showQuestionSheet = false
+                onNavigateToQuestionDetail(uiState.todayQuestion!!)
+            },
+            onWriteQuestionTap = {
+                showQuestionSheet = false
+                onNavigateToWriteQuestion()
+            }
+        )
+    }
+
     // PeerAnswerSheet
     peerAnswerData?.let { (member, index, answer) ->
         PeerAnswerSheet(
@@ -180,13 +204,16 @@ fun HomeScreen(
 @Composable
 private fun HomeTopBar(
     groupName: String,
+    currentFamilyId: java.util.UUID?,
+    allFamilies: List<MongleGroup>,
     hearts: Int,
     hasNotification: Boolean,
     todayQuestion: Question?,
     hasAnsweredToday: Boolean,
     onQuestionTap: () -> Unit,
     onNotificationTap: () -> Unit,
-    onWriteQuestionTap: () -> Unit
+    onWriteQuestionTap: () -> Unit,
+    onGroupManage: () -> Unit = {}
 ) {
     var showHeartMenu by remember { mutableStateOf(false) }
     var showGroupDropdown by remember { mutableStateOf(false) }
@@ -230,9 +257,67 @@ private fun HomeTopBar(
                     expanded = showGroupDropdown,
                     onDismissRequest = { showGroupDropdown = false }
                 ) {
+                    // 그룹 목록: 현재 그룹에 체크마크
+                    if (allFamilies.isNotEmpty()) {
+                        allFamilies.forEach { family ->
+                            val isSelected = family.id == currentFamilyId
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = family.name,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                            ),
+                                            color = if (isSelected) MonglePrimary else MongleTextPrimary
+                                        )
+                                        if (isSelected) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = MonglePrimary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                },
+                                onClick = { showGroupDropdown = false }
+                            )
+                        }
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text(groupName, style = MaterialTheme.typography.bodyMedium) },
+                            onClick = { showGroupDropdown = false }
+                        )
+                    }
+                    HorizontalDivider()
+                    // 그룹 관리 버튼
                     DropdownMenuItem(
-                        text = { Text(groupName, style = MaterialTheme.typography.bodyMedium) },
-                        onClick = { showGroupDropdown = false }
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Group,
+                                    contentDescription = null,
+                                    tint = MongleTextSecondary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "그룹 관리",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MongleTextSecondary
+                                )
+                            }
+                        },
+                        onClick = {
+                            showGroupDropdown = false
+                            onGroupManage()
+                        }
                     )
                 }
             }
