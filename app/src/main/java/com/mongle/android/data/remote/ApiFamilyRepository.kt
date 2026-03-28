@@ -83,12 +83,8 @@ class ApiFamilyRepository @Inject constructor(
         response.toGroup()
     }
 
-    suspend fun leaveFamily() = safeCall {
+    override suspend fun leaveFamily() = safeCall {
         api.leaveFamily()
-    }
-
-    suspend fun kickMember(memberId: String) = safeCall {
-        api.kickMember(memberId)
     }
 
     override suspend fun get(id: UUID): MongleGroup =
@@ -117,10 +113,6 @@ class ApiFamilyRepository @Inject constructor(
 
     override suspend fun kickMember(memberId: UUID) = safeCall {
         api.kickMember(memberId.toString())
-    }
-
-    override suspend fun leaveFamily() = safeCall {
-        api.leaveFamily()
     }
 
     override suspend fun transferCreator(newCreatorId: UUID) = safeCall {
