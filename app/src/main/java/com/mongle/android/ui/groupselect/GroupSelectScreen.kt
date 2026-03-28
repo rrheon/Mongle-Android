@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -181,11 +182,39 @@ private fun SelectStep(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = MongleSpacing.lg)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(64.dp))
+        // ── iOS 스타일 헤더: "몽글" + 알림 벨 ──
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = MongleSpacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "몽글",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = MonglePrimary
+            )
+            IconButton(onClick = { /* TODO: 알림 */ }) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "알림",
+                    tint = MongleTextPrimary
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = MongleSpacing.lg)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+        Spacer(modifier = Modifier.height(MongleSpacing.xl))
 
         Text(
             text = "내 공간",
@@ -244,7 +273,8 @@ private fun SelectStep(
         }
 
         Spacer(modifier = Modifier.height(MongleSpacing.xl))
-    }
+        } // inner scrollable Column
+    } // outer Column
 }
 
 @Composable
