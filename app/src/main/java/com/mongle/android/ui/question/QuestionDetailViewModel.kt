@@ -139,6 +139,9 @@ class QuestionDetailViewModel @Inject constructor(
                 return
             }
 
+        val moodIds = listOf("happy", "calm", "loved", "sad", "tired")
+        val moodId = state.selectedMoodIndex?.let { moodIds.getOrNull(it) }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
@@ -148,6 +151,7 @@ class QuestionDetailViewModel @Inject constructor(
                     userId = userId,
                     content = state.answerText.trim(),
                     imageUrl = null,
+                    moodId = moodId,
                     createdAt = Date(),
                     updatedAt = if (state.myAnswer != null) Date() else null
                 )

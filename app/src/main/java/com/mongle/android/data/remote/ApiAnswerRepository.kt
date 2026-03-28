@@ -17,7 +17,8 @@ class ApiAnswerRepository @Inject constructor(
         val req = CreateAnswerRequest(
             questionId = answer.dailyQuestionId.toString(),
             content = answer.content,
-            imageUrl = answer.imageUrl
+            imageUrl = answer.imageUrl,
+            moodId = answer.moodId
         )
         api.createAnswer(req).toDomain()
     }
@@ -38,7 +39,7 @@ class ApiAnswerRepository @Inject constructor(
     override suspend fun getByUser(userId: UUID): List<Answer> = throw UnsupportedOperationException()
 
     override suspend fun update(answer: Answer): Answer = safeCall {
-        val req = UpdateAnswerRequest(content = answer.content, imageUrl = answer.imageUrl)
+        val req = UpdateAnswerRequest(content = answer.content, imageUrl = answer.imageUrl, moodId = answer.moodId)
         api.updateAnswer(answer.id.toString(), req).toDomain()
     }
 
@@ -50,6 +51,7 @@ class ApiAnswerRepository @Inject constructor(
         userId = UUID.fromString(user.id),
         content = content,
         imageUrl = imageUrl,
+        moodId = moodId,
         createdAt = Date(),
         updatedAt = Date()
     )

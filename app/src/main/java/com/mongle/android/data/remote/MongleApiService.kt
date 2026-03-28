@@ -112,7 +112,8 @@ data class HistoryAnswerSummaryDto(
     val userId: String,
     val userName: String,
     val content: String,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val moodId: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -199,6 +200,7 @@ data class AnswerResponse(
     val id: String,
     val content: String,
     val imageUrl: String? = null,
+    val moodId: String? = null,
     val user: ApiUserResponse,
     val questionId: String,
     val createdAt: String,
@@ -216,13 +218,15 @@ data class FamilyAnswersResponse(
 data class CreateAnswerRequest(
     val questionId: String,
     val content: String,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val moodId: String? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class UpdateAnswerRequest(
     val content: String? = null,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val moodId: String? = null
 )
 
 // ── 알림 ──────────────────────────────────────────
