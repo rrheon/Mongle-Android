@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class MockQuestionRepository @Inject constructor() : QuestionRepository {
 
-    private val mockQuestions = listOf(
+    private val mockQuestions = mutableListOf(
         Question(UUID.randomUUID(), "오늘 가장 감사했던 순간은 언제인가요?", QuestionCategory.GRATITUDE, 1),
         Question(UUID.randomUUID(), "어릴 때 가장 좋아했던 놀이는 무엇이었나요?", QuestionCategory.MEMORY, 2),
         Question(UUID.randomUUID(), "요즘 가장 관심 있는 것은 무엇인가요?", QuestionCategory.DAILY, 3),
@@ -28,6 +28,7 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
 
     override suspend fun create(question: Question): Question {
         delay(300)
+        mockQuestions.add(question)
         return question
     }
 
@@ -54,11 +55,16 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
 
     override suspend fun update(question: Question): Question {
         delay(300)
+        val index = mockQuestions.indexOfFirst { it.id == question.id }
+        if (index != -1) {
+            mockQuestions[index] = question
+        }
         return question
     }
 
     override suspend fun delete(id: UUID) {
         delay(200)
+        mockQuestions.removeAll { it.id == id }
     }
 
     override suspend fun getTodayQuestion(): Question? {
@@ -70,5 +76,17 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
     override suspend fun getDailyHistory(page: Int, limit: Int): List<DailyQuestionHistory> {
         delay(400)
         return emptyList()
+    }
+
+    override suspend fun createCustomQuestion(content: String): Question {
+        delay(500)
+        val newQuestion = Question(
+            id = UUID.randomUUID(),
+            content = content,
+            category = QuestionCategory.DAILY,
+            order = mockQuestions.size + 1
+        )
+        mockQuestions.add(newQuestion)
+        return newQuestion
     }
 }

@@ -3,7 +3,6 @@ package com.mongle.android.data.mock
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.Member
 import com.mongle.android.domain.model.MongleGroup
-import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.MongleRepository
 import kotlinx.coroutines.delay
@@ -19,10 +18,10 @@ class MockMongleRepository @Inject constructor() : MongleRepository {
     private val treeProgressId = UUID.fromString("00000000-0000-0000-0000-000000000020")
 
     private val mockMembers = listOf(
-        User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "dad@mongle.com", "아빠", null, FamilyRole.FATHER, Date()),
-        User(UUID.fromString("00000000-0000-0000-0000-000000000002"), "mom@mongle.com", "엄마", null, FamilyRole.MOTHER, Date()),
-        User(UUID.fromString("00000000-0000-0000-0000-000000000003"), "son@mongle.com", "아들", null, FamilyRole.SON, Date()),
-        User(UUID.fromString("00000000-0000-0000-0000-000000000004"), "daughter@mongle.com", "딸", null, FamilyRole.DAUGHTER, Date())
+        User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "dad@mongle.com", "아빠", null, FamilyRole.FATHER, 10, null, Date()),
+        User(UUID.fromString("00000000-0000-0000-0000-000000000002"), "mom@mongle.com", "엄마", null, FamilyRole.MOTHER, 5, null, Date()),
+        User(UUID.fromString("00000000-0000-0000-0000-000000000003"), "son@mongle.com", "아들", null, FamilyRole.SON, 3, null, Date()),
+        User(UUID.fromString("00000000-0000-0000-0000-000000000004"), "daughter@mongle.com", "딸", null, FamilyRole.DAUGHTER, 8, null, Date())
     )
 
     private val mockFamily = MongleGroup(
@@ -74,7 +73,7 @@ class MockMongleRepository @Inject constructor() : MongleRepository {
 
     override suspend fun getMembers(familyId: UUID): List<Member> {
         delay(300)
-        return mockMembers.mapIndexed { index, user ->
+        return mockMembers.map { user ->
             Member(
                 id = UUID.randomUUID(),
                 userId = user.id,
@@ -94,6 +93,16 @@ class MockMongleRepository @Inject constructor() : MongleRepository {
     override suspend fun getMyFamily(): Pair<MongleGroup, List<User>> {
         delay(500)
         return Pair(mockFamily, mockMembers)
+    }
+
+    override suspend fun getMyFamilies(): List<MongleGroup> {
+        delay(300)
+        return listOf(mockFamily)
+    }
+
+    override suspend fun selectFamily(familyId: UUID): MongleGroup {
+        delay(300)
+        return mockFamily
     }
 
     override suspend fun kickMember(memberId: UUID) {
