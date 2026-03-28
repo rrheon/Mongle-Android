@@ -5,7 +5,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,25 +15,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,18 +40,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
-import com.mongle.android.ui.common.MongleCharacter
+import com.mongle.android.ui.common.MongleSceneView
+import com.mongle.android.ui.common.SceneMemberInfo
 import com.mongle.android.ui.theme.MongleHeartRed
+import com.mongle.android.ui.theme.MongleHeartRedLight
+import com.mongle.android.ui.theme.MongleMonggleBlue
+import com.mongle.android.ui.theme.MongleMonggleGreenLight
+import com.mongle.android.ui.theme.MongleMonggleOrange
+import com.mongle.android.ui.theme.MongleMongglePink
+import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
+import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextHint
+import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+
+private val sceneCharacterColors = listOf(
+    MongleMonggleGreenLight,
+    MongleMonggleYellow,
+    MongleMonggleBlue,
+    MongleMongglePink,
+    MongleMonggleOrange
+)
 
 @Composable
 fun HomeScreen(
@@ -66,55 +78,80 @@ fun HomeScreen(
     onNavigateToNotifications: () -> Unit,
     onNavigateToNudge: (User) -> Unit,
     onNavigateToWriteQuestion: () -> Unit,
-    onSettingsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // PeerAnswerSheet 상태
+    var peerAnswerData by remember { mutableStateOf<Triple<User, Int, Answer>?>(null) }
+
+    // ViewModel 이벤트 처리
     LaunchedEffect(Unit) {
-        viewModel.refresh()
-    }
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(MongleSpacing.lg)
-        ) {
-            item {
-                HomeTopBar(
-                    hearts = uiState.currentUser?.hearts ?: 0,
-                    notificationCount = 0, // 알림 수는 나중에 구현
-                    onNotificationsClick = onNavigateToNotifications,
-                    onSettingsClick = onSettingsClick
-                )
-            }
-
-            item {
-                DailyQuestionCard(
-                    question = uiState.todayQuestion,
-                    onCardClick = { uiState.todayQuestion?.let { onNavigateToQuestionDetail(it) } }
-                )
-            }
-
-            item {
-                FamilySection(
-                    members = uiState.familyMembers,
-                    onNudgeClick = onNavigateToNudge
-                )
-            }
-
-            item {
-                CustomQuestionSection(
-                    onWriteClick = onNavigateToWriteQuestion
-                )
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(MongleSpacing.xl))
+        viewModel.events.collect { event ->
+            when (event) {
+                is HomeEvent.NavigateToQuestionDetail -> onNavigateToQuestionDetail(event.question)
+                is HomeEvent.NavigateToNudge -> onNavigateToNudge(event.targetUser)
+                is HomeEvent.ShowPeerAnswer ->
+                    peerAnswerData = Triple(event.member, event.memberIndex, event.answer)
             }
         }
+    }
 
-        if (uiState.isLoading) {
+    // 씬 멤버 목록
+    val sceneMembers = uiState.familyMembers.mapIndexed { index, user ->
+        SceneMemberInfo(
+            id = user.id,
+            name = user.name,
+            color = sceneCharacterColors[index % sceneCharacterColors.size],
+            hasAnswered = uiState.memberAnswerStatus[user.id] == true
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFEDF7F0),
+                        Color(0xFFF5FAF0),
+                        Color(0xFFFFF8F2)
+                    )
+                )
+            )
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // ── TopBar (그룹명 + 하트 + 알림 + 오늘의 질문 카드) ──
+            HomeTopBar(
+                groupName = uiState.family?.name ?: "몽글",
+                hearts = uiState.currentUser?.hearts ?: 0,
+                hasNotification = false,
+                todayQuestion = uiState.todayQuestion,
+                hasAnsweredToday = uiState.hasAnsweredToday,
+                onQuestionTap = { uiState.todayQuestion?.let { onNavigateToQuestionDetail(it) } },
+                onNotificationTap = onNavigateToNotifications,
+                onWriteQuestionTap = onNavigateToWriteQuestion
+            )
+
+            // ── MongleScene (나머지 공간 전체) ──
+            MongleSceneView(
+                members = sceneMembers,
+                currentUserId = uiState.currentUser?.id,
+                hasCurrentUserAnswered = uiState.hasAnsweredToday,
+                onMemberTapped = { info ->
+                    val user = uiState.familyMembers.find { it.id == info.id }
+                    user?.let { viewModel.onMemberTapped(it) }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // 로딩
+        AnimatedVisibility(
+            visible = uiState.isLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -125,254 +162,230 @@ fun HomeScreen(
             }
         }
     }
+
+    // PeerAnswerSheet
+    peerAnswerData?.let { (member, index, answer) ->
+        PeerAnswerSheet(
+            member = member,
+            memberIndex = index,
+            questionText = uiState.todayQuestion?.content ?: "",
+            answer = answer,
+            onDismiss = { peerAnswerData = null }
+        )
+    }
 }
+
+// ─── HomeTopBar ──────────────────────────────────────────────────────────────
 
 @Composable
 private fun HomeTopBar(
+    groupName: String,
     hearts: Int,
-    notificationCount: Int,
-    onNotificationsClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    hasNotification: Boolean,
+    todayQuestion: Question?,
+    hasAnsweredToday: Boolean,
+    onQuestionTap: () -> Unit,
+    onNotificationTap: () -> Unit,
+    onWriteQuestionTap: () -> Unit
 ) {
     var showHeartMenu by remember { mutableStateOf(false) }
+    var showGroupDropdown by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "몽글",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontWeight = FontWeight.Bold,
-                color = MonglePrimary
-            )
-        )
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box {
-                Row(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MongleHeartRed.copy(alpha = 0.1f))
-                        .clickable { showHeartMenu = true }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = null,
-                        tint = MongleHeartRed,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = hearts.toString(),
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MongleHeartRed
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = showHeartMenu,
-                    onDismissRequest = { showHeartMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Column {
-                                Text(
-                                    text = "현재 보유 ${hearts}개 ❤️",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MongleHeartRed
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                HorizontalDivider()
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("✏️ 나만의 질문 작성  하트 3개", style = MaterialTheme.typography.bodySmall)
-                                Text("📣 재촉하기  하트 1개", style = MaterialTheme.typography.bodySmall)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                HorizontalDivider()
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("🌅 매일 오전 +1 · 답변 완료 +3", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        },
-                        onClick = { showHeartMenu = false }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(MongleSpacing.sm))
-
-            IconButton(onClick = onNotificationsClick) {
-                BadgedBox(
-                    badge = {
-                        if (notificationCount > 0) {
-                            Badge { Text(notificationCount.toString()) }
-                        }
-                    }
-                ) {
-                    Icon(Icons.Default.Notifications, contentDescription = "알림")
-                }
-            }
-
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "설정"
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DailyQuestionCard(
-    question: Question?,
-    onCardClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = MongleSpacing.md)
-            .clickable(enabled = question != null) { onCardClick() },
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF9F0))
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "오늘의 질문 💌",
-                style = MaterialTheme.typography.labelLarge,
-                color = Color(0xFFE6A23C)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = question?.content ?: "로딩 중...",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 32.sp
-                ),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = onCardClick,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MonglePrimary)
-            ) {
-                Text("답변하러 가기")
-            }
-        }
-    }
-}
-
-@Composable
-private fun FamilySection(
-    members: List<User>,
-    onNudgeClick: (User) -> Unit
-) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = MongleSpacing.md)
+            .background(Color.White)
     ) {
-        Text(
-            text = "우리 가족 🏠",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-        )
-        Spacer(modifier = Modifier.height(MongleSpacing.md))
-
-        members.forEach { member ->
-            FamilyMemberItem(
-                member = member,
-                onNudgeClick = { onNudgeClick(member) }
-            )
-            Spacer(modifier = Modifier.height(MongleSpacing.sm))
-        }
-    }
-}
-
-@Composable
-private fun FamilyMemberItem(
-    member: User,
-    onNudgeClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-    ) {
+        // 1단: 그룹명 + 하트 + 알림
         Row(
             modifier = Modifier
-                .padding(MongleSpacing.md)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                MongleCharacter(user = member, index = 0, size = 48.dp, showName = false)
-                Spacer(modifier = Modifier.width(MongleSpacing.md))
-                Column {
+            // 그룹명 드롭다운
+            Box {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showGroupDropdown = true }
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = member.name,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        text = groupName,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MongleTextPrimary
                     )
-                    Text(
-                        text = member.role.displayName,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MongleTextSecondary
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = MongleTextSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showGroupDropdown,
+                    onDismissRequest = { showGroupDropdown = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(groupName, style = MaterialTheme.typography.bodyMedium) },
+                        onClick = { showGroupDropdown = false }
                     )
                 }
             }
 
-            Button(
-                onClick = onNudgeClick,
-                modifier = Modifier.height(36.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = MonglePrimary
-                ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MonglePrimary)
-            ) {
-                Text("재촉 📣", style = MaterialTheme.typography.labelMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // 하트 버튼
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MongleHeartRedLight)
+                            .clickable { showHeartMenu = true }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = MongleHeartRed,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = hearts.toString(),
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = MongleTextPrimary
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showHeartMenu,
+                        onDismissRequest = { showHeartMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(
+                                        text = "현재 보유 ${hearts}개 ❤️",
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                        color = MongleHeartRed
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    HorizontalDivider()
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text("🔄 질문 다시받기  하트 1개", style = MaterialTheme.typography.bodySmall)
+                                    Text("✏️ 나만의 질문 작성  하트 3개", style = MaterialTheme.typography.bodySmall)
+                                    Text("📣 재촉하기  하트 1개", style = MaterialTheme.typography.bodySmall)
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    HorizontalDivider()
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        "☀️ 매일 오전 +1 · 답변 완료 +3",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MongleTextHint
+                                    )
+                                }
+                            },
+                            onClick = { showHeartMenu = false }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(MongleSpacing.sm))
+
+                // 알림 버튼
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color(0xFFF2F2F2))
+                        .clickable { onNotificationTap() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "알림",
+                        tint = MonglePrimary,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    if (hasNotification) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(Color.Red, CircleShape)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
+                }
             }
+        }
+
+        // 2단: 오늘의 질문 카드
+        if (todayQuestion != null) {
+            TodayQuestionCard(
+                question = todayQuestion,
+                hasAnswered = hasAnsweredToday,
+                onTap = onQuestionTap,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MongleSpacing.md)
+                    .padding(bottom = MongleSpacing.sm)
+            )
         }
     }
 }
 
+// ─── 오늘의 질문 카드 ─────────────────────────────────────────────────────────
+
 @Composable
-private fun CustomQuestionSection(
-    onWriteClick: () -> Unit
+private fun TodayQuestionCard(
+    question: Question,
+    hasAnswered: Boolean,
+    onTap: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = MongleSpacing.md)
-            .clickable { onWriteClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MonglePrimary.copy(alpha = 0.05f))
+        modifier = modifier.clickable { onTap() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "✨ 궁금한 질문이 있나요? 직접 물어보세요!",
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                color = MonglePrimary,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "오늘의 질문",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MonglePrimary
+                    )
+                    if (hasAnswered) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = MonglePrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = question.content,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    color = MongleTextPrimary,
+                    maxLines = 2
+                )
+            }
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = MonglePrimary,
-                modifier = Modifier.size(20.dp)
+                tint = MongleTextHint,
+                modifier = Modifier.size(18.dp)
             )
         }
     }

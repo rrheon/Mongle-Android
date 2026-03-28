@@ -99,7 +99,6 @@ fun MainTabScreen(
                     onNavigateToNotifications = onNavigateToNotifications,
                     onNavigateToNudge = onNavigateToNudge,
                     onNavigateToWriteQuestion = onNavigateToWriteQuestion,
-                    onSettingsClick = { selectedTab = MainTab.SETTINGS },
                     viewModel = homeViewModel
                 )
                 MainTab.HISTORY -> HistoryScreen(
