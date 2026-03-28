@@ -17,3 +17,9 @@ local.properties
 
 # JVM Heap Dumps
 *.hprof
+
+# Credentials / Secrets
+credentials.plist
+google-services.json
+*.p8
+*.p12
