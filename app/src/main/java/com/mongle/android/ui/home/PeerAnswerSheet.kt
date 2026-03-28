@@ -1,6 +1,7 @@
 package com.mongle.android.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -91,6 +92,7 @@ fun PeerAnswerSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .border(1.5.dp, MonglePrimary, RoundedCornerShape(16.dp))
                         .background(Color.White, RoundedCornerShape(16.dp))
                         .padding(MongleSpacing.md)
                 ) {
