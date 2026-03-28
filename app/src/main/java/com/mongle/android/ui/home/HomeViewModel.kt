@@ -33,6 +33,7 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val hasAnsweredToday: Boolean = false,
+    val hasSkippedToday: Boolean = false,
     val errorMessage: String? = null,
     /** 각 멤버 ID별 답변 여부 (userId → hasAnswered) */
     val memberAnswerStatus: Map<UUID, Boolean> = emptyMap(),
@@ -46,6 +47,8 @@ sealed class HomeEvent {
     data class NavigateToQuestionDetail(val question: Question) : HomeEvent()
     data class NavigateToNudge(val targetUser: User) : HomeEvent()
     data class ShowPeerAnswer(val member: User, val memberIndex: Int, val answer: Answer) : HomeEvent()
+    data class ShowAnswerFirstToView(val memberName: String) : HomeEvent()
+    data class ShowNudgeUnavailable(val memberName: String) : HomeEvent()
 }
 
 @HiltViewModel
@@ -162,6 +165,23 @@ class HomeViewModel @Inject constructor(
             } else {
                 _events.emit(HomeEvent.NavigateToNudge(member))
             }
+        }
+    }
+
+    fun onViewAnswerTapped(member: User) {
+        val state = _uiState.value
+        viewModelScope.launch {
+            val answer = state.memberAnswers[member.id]
+            val memberIndex = state.familyMembers.indexOfFirst { it.id == member.id }
+            if (answer != null) {
+                _events.emit(HomeEvent.ShowPeerAnswer(member, memberIndex.coerceAtLeast(0), answer))
+            }
+        }
+    }
+
+    fun onNudgeTapped(member: User) {
+        viewModelScope.launch {
+            _events.emit(HomeEvent.NavigateToNudge(member))
         }
     }
 

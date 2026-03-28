@@ -1,10 +1,14 @@
 package com.mongle.android.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,35 +19,45 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -89,6 +103,14 @@ fun HomeScreen(
     var showQuestionSheet by remember { mutableStateOf(false) }
     var peerAnswerData by remember { mutableStateOf<Triple<User, Int, Answer>?>(null) }
 
+    // 그룹 드롭다운 상태 (호이스팅)
+    var showGroupDropdown by remember { mutableStateOf(false) }
+    var topBarHeightPx by remember { mutableIntStateOf(0) }
+
+    // 다이얼로그 상태
+    var showAnswerFirstDialog by remember { mutableStateOf<String?>(null) }
+    var showNudgeUnavailableDialog by remember { mutableStateOf<String?>(null) }
+
     // ViewModel 이벤트 처리
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -97,6 +119,8 @@ fun HomeScreen(
                 is HomeEvent.NavigateToNudge -> onNavigateToNudge(event.targetUser)
                 is HomeEvent.ShowPeerAnswer ->
                     peerAnswerData = Triple(event.member, event.memberIndex, event.answer)
+                is HomeEvent.ShowAnswerFirstToView -> showAnswerFirstDialog = event.memberName
+                is HomeEvent.ShowNudgeUnavailable -> showNudgeUnavailableDialog = event.memberName
             }
         }
     }
@@ -146,6 +170,9 @@ fun HomeScreen(
                 hasNotification = false,
                 todayQuestion = uiState.todayQuestion,
                 hasAnsweredToday = uiState.hasAnsweredToday,
+                showGroupDropdown = showGroupDropdown,
+                onGroupDropdownToggle = { showGroupDropdown = !showGroupDropdown },
+                onTopBarMeasured = { topBarHeightPx = it },
                 onQuestionTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
                 onNotificationTap = onNavigateToNotifications,
                 onWriteQuestionTap = onNavigateToWriteQuestion,
@@ -157,10 +184,18 @@ fun HomeScreen(
                 members = sceneMembers,
                 currentUserId = uiState.currentUser?.id,
                 hasCurrentUserAnswered = uiState.hasAnsweredToday,
-                onMemberTapped = { info ->
+                hasCurrentUserSkipped = uiState.hasSkippedToday,
+                onViewAnswer = { info ->
                     val user = uiState.familyMembers.find { it.id == info.id }
-                    user?.let { viewModel.onMemberTapped(it) }
+                    user?.let { viewModel.onViewAnswerTapped(it) }
                 },
+                onNudge = { info ->
+                    val user = uiState.familyMembers.find { it.id == info.id }
+                    user?.let { viewModel.onNudgeTapped(it) }
+                },
+                onSelfTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
+                onAnswerFirstToView = { name -> showAnswerFirstDialog = name },
+                onAnswerFirstToNudge = { name -> showNudgeUnavailableDialog = name },
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -177,7 +212,40 @@ fun HomeScreen(
                     .background(Color.Black.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                androidx.compose.material3.CircularProgressIndicator(color = MonglePrimary)
+                CircularProgressIndicator(color = MonglePrimary)
+            }
+        }
+
+        // 그룹 드롭다운 오버레이
+        if (showGroupDropdown) {
+            val density = LocalDensity.current
+            val topBarHeightDp = with(density) { topBarHeightPx.toDp() }
+            val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+
+            // 반투명 배경 (탭하면 닫힘)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { showGroupDropdown = false }
+            )
+
+            // 드롭다운 패널 (좌상단, 화면 절반 너비)
+            Box(
+                modifier = Modifier
+                    .padding(top = topBarHeightDp, start = 16.dp)
+                    .width(screenWidthDp / 2)
+                    .wrapContentHeight()
+            ) {
+                HomeGroupDropdownPanel(
+                    allFamilies = uiState.allFamilies,
+                    currentFamilyId = uiState.family?.id,
+                    onGroupSelected = { showGroupDropdown = false },
+                    onGroupManage = { showGroupDropdown = false; onNavigateToGroupSelect() }
+                )
             }
         }
     }
@@ -209,6 +277,66 @@ fun HomeScreen(
             onDismiss = { peerAnswerData = null }
         )
     }
+
+    // AlertDialog: 먼저 답변 완료 (답변 보기 시도)
+    showAnswerFirstDialog?.let { name ->
+        AlertDialog(
+            onDismissRequest = { showAnswerFirstDialog = null },
+            title = {
+                Text(
+                    "먼저 답변을 완료해 주세요",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
+            text = {
+                Text(
+                    "${name}의 답변을 보려면\n먼저 오늘의 질문에 답변해야 해요",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showAnswerFirstDialog = null
+                    if (uiState.todayQuestion != null) showQuestionSheet = true
+                }) {
+                    Text("답변하기", color = MonglePrimary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAnswerFirstDialog = null }) { Text("취소") }
+            }
+        )
+    }
+
+    // AlertDialog: 먼저 답변 완료 (재촉하기 시도)
+    showNudgeUnavailableDialog?.let { name ->
+        AlertDialog(
+            onDismissRequest = { showNudgeUnavailableDialog = null },
+            title = {
+                Text(
+                    "먼저 답변을 완료해 주세요",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
+            text = {
+                Text(
+                    "${name}에게 재촉하려면\n먼저 오늘의 질문에 답변해야 해요",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showNudgeUnavailableDialog = null
+                    if (uiState.todayQuestion != null) showQuestionSheet = true
+                }) {
+                    Text("답변하기", color = MonglePrimary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNudgeUnavailableDialog = null }) { Text("취소") }
+            }
+        )
+    }
 }
 
 // ─── HomeTopBar ──────────────────────────────────────────────────────────────
@@ -222,116 +350,60 @@ private fun HomeTopBar(
     hasNotification: Boolean,
     todayQuestion: Question?,
     hasAnsweredToday: Boolean,
+    showGroupDropdown: Boolean,
+    onGroupDropdownToggle: () -> Unit,
+    onTopBarMeasured: (Int) -> Unit = {},
     onQuestionTap: () -> Unit,
     onNotificationTap: () -> Unit,
     onWriteQuestionTap: () -> Unit,
     onGroupManage: () -> Unit = {}
 ) {
     var showHeartMenu by remember { mutableStateOf(false) }
-    var showGroupDropdown by remember { mutableStateOf(false) }
+
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (showGroupDropdown) 180f else 0f,
+        animationSpec = tween(200),
+        label = "chevron"
+    )
+
+    val isBeforeNoon = remember { java.time.LocalTime.now().isBefore(java.time.LocalTime.NOON) }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
+            .onGloballyPositioned { coordinates -> onTopBarMeasured(coordinates.size.height) }
     ) {
         // 1단: 그룹명 + 하트 + 알림
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 그룹명 드롭다운
-            Box {
-                Row(
+            // 그룹명 드롭다운 토글
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onGroupDropdownToggle() }
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = groupName,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MongleTextPrimary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MongleTextSecondary,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { showGroupDropdown = true }
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = groupName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MongleTextPrimary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = MongleTextSecondary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                DropdownMenu(
-                    expanded = showGroupDropdown,
-                    onDismissRequest = { showGroupDropdown = false }
-                ) {
-                    // 그룹 목록: 현재 그룹에 체크마크
-                    if (allFamilies.isNotEmpty()) {
-                        allFamilies.forEach { family ->
-                            val isSelected = family.id == currentFamilyId
-                            DropdownMenuItem(
-                                text = {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Text(
-                                            text = family.name,
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                                            ),
-                                            color = if (isSelected) MonglePrimary else MongleTextPrimary
-                                        )
-                                        if (isSelected) {
-                                            Icon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = null,
-                                                tint = MonglePrimary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    }
-                                },
-                                onClick = { showGroupDropdown = false }
-                            )
-                        }
-                    } else {
-                        DropdownMenuItem(
-                            text = { Text(groupName, style = MaterialTheme.typography.bodyMedium) },
-                            onClick = { showGroupDropdown = false }
-                        )
-                    }
-                    HorizontalDivider()
-                    // 그룹 관리 버튼
-                    DropdownMenuItem(
-                        text = {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Group,
-                                    contentDescription = null,
-                                    tint = MongleTextSecondary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "그룹 관리",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MongleTextSecondary
-                                )
-                            }
-                        },
-                        onClick = {
-                            showGroupDropdown = false
-                            onGroupManage()
-                        }
-                    )
-                }
+                        .size(18.dp)
+                        .rotate(chevronRotation)
+                )
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -344,7 +416,7 @@ private fun HomeTopBar(
                             .clickable { showHeartMenu = true }
                             .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Favorite,
@@ -419,12 +491,19 @@ private fun HomeTopBar(
             }
         }
 
-        // 2단: 오늘의 질문 카드
+        // 2단: 오늘의 질문 카드 또는 플레이스홀더
         if (todayQuestion != null) {
             TodayQuestionCard(
                 question = todayQuestion,
                 hasAnswered = hasAnsweredToday,
                 onTap = onQuestionTap,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = MongleSpacing.md)
+                    .padding(bottom = MongleSpacing.sm)
+            )
+        } else if (isBeforeNoon) {
+            TodayQuestionPlaceholderCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = MongleSpacing.md)
@@ -463,7 +542,7 @@ private fun TodayQuestionCard(
                     if (hasAnswered) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = Icons.Default.Favorite,
+                            imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
                             tint = MonglePrimary,
                             modifier = Modifier.size(12.dp)
@@ -484,6 +563,117 @@ private fun TodayQuestionCard(
                 tint = MongleTextHint,
                 modifier = Modifier.size(18.dp)
             )
+        }
+    }
+}
+
+// ─── 오전 12시 전 플레이스홀더 카드 ──────────────────────────────────────────
+
+@Composable
+private fun TodayQuestionPlaceholderCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "오늘의 질문",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MonglePrimary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    "오후 12시에 다시 질문을 받을 수 있어요",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MongleTextSecondary,
+                    maxLines = 2
+                )
+            }
+        }
+    }
+}
+
+// ─── 그룹 드롭다운 패널 ───────────────────────────────────────────────────────
+
+@Composable
+private fun HomeGroupDropdownPanel(
+    allFamilies: List<MongleGroup>,
+    currentFamilyId: java.util.UUID?,
+    onGroupSelected: (MongleGroup) -> Unit,
+    onGroupManage: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Column {
+            allFamilies.forEachIndexed { index, family ->
+                val isSelected = family.id == currentFamilyId
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onGroupSelected(family) }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = family.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isSelected) MonglePrimary else MongleTextPrimary,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = MonglePrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                if (index < allFamilies.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                }
+            }
+            if (allFamilies.isNotEmpty()) {
+                HorizontalDivider()
+            }
+            // 그룹 관리 버튼
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onGroupManage() }
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Group,
+                    contentDescription = null,
+                    tint = MongleTextSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    "그룹 관리",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MongleTextSecondary,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MongleTextSecondary,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
         }
     }
 }

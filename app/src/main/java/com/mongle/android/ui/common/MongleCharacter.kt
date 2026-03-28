@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -11,6 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +38,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mongle.android.domain.model.User
+import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleMonggleBlue
 import com.mongle.android.ui.theme.MongleMonggleGreenLight
 import com.mongle.android.ui.theme.MongleMonggleOrange
@@ -41,8 +49,11 @@ import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleTextPrimary
 import kotlinx.coroutines.delay
 import java.util.UUID
+import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlin.random.Random
 
 private val characterColors = listOf(
@@ -263,7 +274,12 @@ fun MongleSceneView(
     members: List<SceneMemberInfo>,
     currentUserId: UUID?,
     hasCurrentUserAnswered: Boolean,
-    onMemberTapped: (SceneMemberInfo) -> Unit,
+    hasCurrentUserSkipped: Boolean = false,
+    onViewAnswer: (SceneMemberInfo) -> Unit = {},
+    onNudge: (SceneMemberInfo) -> Unit = {},
+    onSelfTap: () -> Unit = {},
+    onAnswerFirstToView: (String) -> Unit = {},
+    onAnswerFirstToNudge: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val stepSize = 2f
@@ -379,17 +395,36 @@ fun MongleSceneView(
         sceneMembers.forEach { member ->
             val info = members.find { it.id == member.id } ?: return@forEach
             val half = (charSizePx / 2).roundToInt()
+            val hopY = (-abs(sin(member.stepCount * PI / 5.0)) * 12).toFloat()
             Box(
                 modifier = Modifier
-                    .offset { IntOffset((member.x.roundToInt() - half), (member.y.roundToInt() - half)) }
-                    .clickable { onMemberTapped(info) }
+                    .offset {
+                        IntOffset(
+                            (member.x - half).roundToInt(),
+                            (member.y + hopY - half).roundToInt()
+                        )
+                    }
+                    .clickable {
+                        val id = member.id
+                        val memberInfo = members.find { it.id == id } ?: return@clickable
+                        val isCurrentUser = id == currentUserId
+                        if (isCurrentUser) { onSelfTap(); return@clickable }
+                        val canView = hasCurrentUserAnswered || hasCurrentUserSkipped
+                        when {
+                            memberInfo.hasAnswered && canView -> onViewAnswer(memberInfo)
+                            memberInfo.hasAnswered && !canView -> onAnswerFirstToView(member.name)
+                            !memberInfo.hasAnswered && canView -> onNudge(memberInfo)
+                            else -> onAnswerFirstToNudge(member.name)
+                        }
+                    }
             ) {
                 SceneMongleItem(
                     name = member.name,
                     color = member.color,
                     hasAnswered = member.hasAnswered,
                     isCurrentUser = member.id == currentUserId,
-                    hasCurrentUserAnswered = hasCurrentUserAnswered
+                    hasCurrentUserAnswered = hasCurrentUserAnswered,
+                    hasCurrentUserSkipped = hasCurrentUserSkipped
                 )
             }
         }
@@ -402,25 +437,120 @@ private fun SceneMongleItem(
     color: Color,
     hasAnswered: Boolean,
     isCurrentUser: Boolean,
-    hasCurrentUserAnswered: Boolean
+    hasCurrentUserAnswered: Boolean,
+    hasCurrentUserSkipped: Boolean = false
 ) {
     val size = 76.dp
     val eyeSize = size * 0.18f
     val eyeOffset = size * 0.14f
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // 답변 완료 뱃지
-        if (hasAnswered) {
-            Text(
-                text = "✓ 답변하기",
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                color = MonglePrimary,
-                modifier = Modifier
-                    .background(MonglePrimaryLight, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
+        // 상태 배지
+        if (isCurrentUser) {
+            when {
+                hasAnswered -> {
+                    Row(
+                        modifier = Modifier
+                            .background(MonglePrimary.copy(alpha = 0.85f), RoundedCornerShape(50.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = " 답변완료",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
+                }
+                hasCurrentUserSkipped -> {
+                    Row(
+                        modifier = Modifier
+                            .background(Color(0xFF9C27B0).copy(alpha = 0.7f), RoundedCornerShape(50.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = " 질문 넘김",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
+                }
+                else -> {
+                    Row(
+                        modifier = Modifier
+                            .background(MongleAccentOrange.copy(alpha = 0.85f), RoundedCornerShape(50.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = " 답변하기",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+        } else {
+            if (hasAnswered) {
+                Row(
+                    modifier = Modifier
+                        .background(Color(0xFF4CAF50).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(10.dp)
+                    )
+                    Text(
+                        text = " 답변완료",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White
+                    )
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .background(Color.Gray.copy(alpha = 0.4f), RoundedCornerShape(50.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(10.dp)
+                    )
+                    Text(
+                        text = " 미답변",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White
+                    )
+                }
+            }
         }
+        Spacer(modifier = Modifier.height(2.dp))
 
         Box(
             modifier = Modifier
