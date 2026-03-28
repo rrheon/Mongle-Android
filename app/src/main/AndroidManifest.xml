@@ -53,9 +53,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- 카카오 앱 키를 여기에 설정 (kakao{NATIVE_APP_KEY}) -->
                 <data android:host="oauth"
-                    android:scheme="kakao00000000000000000000000000000000" />
+                    android:scheme="kakao73b4d3e9a62701280ec877fe441949b3" />
             </intent-filter>
         </activity>
 

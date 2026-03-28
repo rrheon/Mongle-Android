@@ -99,7 +99,10 @@ class LoginViewModel @Inject constructor(
                 _events.emit(LoginEvent.LoggedIn(user, credential.providerType))
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = "${credential.providerType.value} 로그인에 실패했습니다.")
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "${credential.providerType.value} 로그인에 실패했습니다."
+                    )
                 }
             }
         }

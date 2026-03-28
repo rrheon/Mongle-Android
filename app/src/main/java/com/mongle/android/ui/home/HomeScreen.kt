@@ -101,14 +101,26 @@ fun HomeScreen(
         }
     }
 
-    // 씬 멤버 목록
-    val sceneMembers = uiState.familyMembers.mapIndexed { index, user ->
-        SceneMemberInfo(
-            id = user.id,
-            name = user.name,
-            color = sceneCharacterColors[index % sceneCharacterColors.size],
-            hasAnswered = uiState.memberAnswerStatus[user.id] == true
-        )
+    // 씬 멤버 목록 (둘러보기 모드에서는 데모 캐릭터 표시)
+    val sceneMembers = if (uiState.familyMembers.isNotEmpty()) {
+        uiState.familyMembers.mapIndexed { index, user ->
+            SceneMemberInfo(
+                id = user.id,
+                name = user.name,
+                color = sceneCharacterColors[index % sceneCharacterColors.size],
+                hasAnswered = uiState.memberAnswerStatus[user.id] == true
+            )
+        }
+    } else {
+        // 둘러보기 모드: 5명의 데모 캐릭터로 애니메이션 씬 표시
+        listOf("몽글이", "다정이", "포근이", "따뜻이", "느낌이").mapIndexed { index, demoName ->
+            SceneMemberInfo(
+                id = java.util.UUID.nameUUIDFromBytes("demo_$index".toByteArray()),
+                name = demoName,
+                color = sceneCharacterColors[index % sceneCharacterColors.size],
+                hasAnswered = index % 2 == 0
+            )
+        }
     }
 
     Box(
