@@ -77,6 +77,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
+import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.theme.MongleMoodCalm
 import com.mongle.android.ui.theme.MongleMoodHappy
 import com.mongle.android.ui.theme.MongleMoodLoved
