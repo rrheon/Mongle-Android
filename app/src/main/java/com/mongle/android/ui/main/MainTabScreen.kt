@@ -1,5 +1,6 @@
 package com.mongle.android.ui.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -91,25 +92,28 @@ fun MainTabScreen(
             }
         }
     ) { paddingValues ->
-        when (selectedTab) {
-            MainTab.HOME -> HomeScreen(
-                onNavigateToQuestionDetail = onNavigateToQuestionDetail,
-                onNavigateToNotifications = onNavigateToNotifications,
-                onNavigateToNudge = onNavigateToNudge,
-                onNavigateToWriteQuestion = onNavigateToWriteQuestion,
-                viewModel = homeViewModel
-            )
-            MainTab.HISTORY -> HistoryScreen(
-                onNavigateToQuestionDetail = onNavigateToQuestionDetail
-            )
-            MainTab.SEARCH -> SearchScreen()
-            MainTab.SETTINGS -> SettingsScreen(
-                currentUser = rootUiState.currentUser,
-                loginProviderType = null,
-                onLogout = onLogout,
-                onAccountDeleted = onLogout,
-                onGroupLeft = onGroupLeft
-            )
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when (selectedTab) {
+                MainTab.HOME -> HomeScreen(
+                    onNavigateToQuestionDetail = onNavigateToQuestionDetail,
+                    onNavigateToNotifications = onNavigateToNotifications,
+                    onNavigateToNudge = onNavigateToNudge,
+                    onNavigateToWriteQuestion = onNavigateToWriteQuestion,
+                    onSettingsClick = { selectedTab = MainTab.SETTINGS },
+                    viewModel = homeViewModel
+                )
+                MainTab.HISTORY -> HistoryScreen(
+                    onNavigateToQuestionDetail = onNavigateToQuestionDetail
+                )
+                MainTab.SEARCH -> SearchScreen()
+                MainTab.SETTINGS -> SettingsScreen(
+                    currentUser = rootUiState.currentUser,
+                    loginProviderType = null,
+                    onLogout = onLogout,
+                    onAccountDeleted = onLogout,
+                    onGroupLeft = onGroupLeft
+                )
+            }
         }
     }
 }
