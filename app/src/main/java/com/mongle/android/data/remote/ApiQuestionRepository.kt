@@ -112,7 +112,8 @@ class ApiQuestionRepository @Inject constructor(
                         userId = a.userId,
                         userName = a.userName,
                         content = a.content,
-                        imageUrl = a.imageUrl
+                        imageUrl = a.imageUrl,
+                        moodId = a.moodId
                     )
                 }
             )

@@ -2,6 +2,7 @@ package com.mongle.android.ui.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
@@ -26,7 +27,8 @@ data class HistoryItem(
     val answerCount: Int,
     val totalMembers: Int,
     val isCompleted: Boolean,
-    val userAnswered: Boolean
+    val userAnswered: Boolean,
+    val memberAnswers: List<HistoryAnswerSummary> = emptyList()
 )
 
 data class HistoryUiState(
@@ -34,6 +36,7 @@ data class HistoryUiState(
     val currentMonth: Date = Date(),
     val historyItems: Map<Long, HistoryItem> = emptyMap(),
     val selectedItem: HistoryItem? = null,
+    val moodCounts: Map<String, Int> = emptyMap(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 ) {
@@ -89,12 +92,25 @@ class HistoryViewModel @Inject constructor(
                         answerCount = item.familyAnswerCount,
                         totalMembers = totalMembers,
                         isCompleted = item.familyAnswerCount >= totalMembers,
-                        userAnswered = item.hasMyAnswer
+                        userAnswered = item.hasMyAnswer,
+                        memberAnswers = item.answers
                     )
                 }
 
+                val cutoff = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -14) }.time
+                val moodCounts = mutableMapOf<String, Int>()
+                historyMap.values.forEach { item ->
+                    if (item.date >= cutoff) {
+                        item.memberAnswers.forEach { answer ->
+                            answer.moodId?.let { mood ->
+                                moodCounts[mood] = (moodCounts[mood] ?: 0) + 1
+                            }
+                        }
+                    }
+                }
+
                 _uiState.update {
-                    it.copy(isLoading = false, historyItems = historyMap)
+                    it.copy(isLoading = false, historyItems = historyMap, moodCounts = moodCounts)
                 }
             } catch (e: Exception) {
                 _uiState.update {

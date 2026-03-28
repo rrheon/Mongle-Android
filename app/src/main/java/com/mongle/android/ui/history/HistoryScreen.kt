@@ -40,7 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
+import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.ui.common.MongleCharacterAvatar
+import com.mongle.android.ui.theme.MongleBorder
+import com.mongle.android.ui.theme.MongleMoodCalm
+import com.mongle.android.ui.theme.MongleMoodHappy
+import com.mongle.android.ui.theme.MongleMoodLoved
+import com.mongle.android.ui.theme.MongleMoodSad
+import com.mongle.android.ui.theme.MongleMoodTired
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
@@ -55,6 +62,8 @@ import java.util.Locale
 private val DAY_NAMES = listOf("일", "월", "화", "수", "목", "금", "토")
 
 private val moodLabels = listOf("평온", "행복", "사랑", "우울", "지침")
+private val moodIds = listOf("calm", "happy", "loved", "sad", "tired")
+private val moodColors = listOf(MongleMoodCalm, MongleMoodHappy, MongleMoodLoved, MongleMoodSad, MongleMoodTired)
 
 private val selectedDateFormatter = SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN)
 
@@ -183,6 +192,7 @@ fun HistoryScreen(
 
                 // ── 최근 14일 기분 ──
                 MoodTimelineSection(
+                    moodCounts = uiState.moodCounts,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
 
@@ -200,6 +210,9 @@ fun HistoryScreen(
                             selectedDate = uiState.selectedDate,
                             onClick = { viewModel.onItemTapped(selectedItem) }
                         )
+                        selectedItem.memberAnswers.forEach { answer ->
+                            FamilyAnswerCard(answer = answer)
+                        }
                     }
                 } else {
                     EmptyDateCard(
@@ -302,7 +315,10 @@ private fun CalendarDayCell(
 // ── 최근 14일 기분 섹션 ──
 
 @Composable
-private fun MoodTimelineSection(modifier: Modifier = Modifier) {
+private fun MoodTimelineSection(
+    moodCounts: Map<String, Int>,
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -332,8 +348,77 @@ private fun MoodTimelineSection(modifier: Modifier = Modifier) {
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                         color = MongleTextSecondary
                     )
+                    Text(
+                        text = "${moodCounts[moodIds[index]] ?: 0}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = color
+                    )
                 }
             }
+        }
+    }
+}
+
+// ── 가족 답변 카드 ──
+
+@Composable
+private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
+    val moodColor = answer.moodId?.let { id ->
+        val idx = moodIds.indexOf(id)
+        if (idx >= 0) moodColors[idx] else null
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .border(1.dp, MongleBorder, RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(
+                    moodColor?.copy(alpha = 0.2f) ?: MonglePrimaryLight,
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = answer.userName.take(1),
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                color = moodColor ?: MonglePrimary
+            )
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = answer.userName,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MongleTextPrimary
+                )
+                if (answer.moodId != null) {
+                    val moodIdx = moodIds.indexOf(answer.moodId)
+                    if (moodIdx >= 0) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = moodLabels[moodIdx],
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = moodColors[moodIdx]
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = answer.content,
+                style = MaterialTheme.typography.bodySmall,
+                color = MongleTextSecondary
+            )
         }
     }
 }
