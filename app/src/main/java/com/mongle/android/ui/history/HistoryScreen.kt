@@ -8,50 +8,56 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
-import com.mongle.android.ui.common.MongleCard
+import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.theme.MonglePrimary
+import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextHint
+import com.mongle.android.ui.theme.MongleTextPrimary
+import com.mongle.android.ui.theme.MongleTextSecondary
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 private val DAY_NAMES = listOf("일", "월", "화", "수", "목", "금", "토")
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val moodLabels = listOf("평온", "행복", "사랑", "우울", "지침")
+
+private val selectedDateFormatter = SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN)
+
 @Composable
 fun HistoryScreen(
     onNavigateToQuestionDetail: (Question) -> Unit,
@@ -68,145 +74,155 @@ fun HistoryScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "히스토리",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF8FAF8))
+    ) {
+        // ── 헤더: "기록" + 월 네비게이션 ──
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(Color.White)
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "기록",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = MongleTextPrimary
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = viewModel::previousMonth, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronLeft,
+                        contentDescription = "이전 달",
+                        tint = MongleTextPrimary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
-            )
+                Text(
+                    text = uiState.monthTitle,
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = MongleTextPrimary
+                )
+                IconButton(onClick = viewModel::nextMonth, modifier = Modifier.size(28.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = "다음 달",
+                        tint = MongleTextPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
-    ) { paddingValues ->
+
         if (uiState.isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                CircularProgressIndicator(color = MonglePrimary)
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
-                    .padding(MongleSpacing.md)
             ) {
-                // 달력 헤더
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = viewModel::previousMonth) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "이전 달")
+                // ── 달력 ──
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    // 요일 헤더
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        DAY_NAMES.forEachIndexed { idx, day ->
+                            Text(
+                                text = day,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(36.dp),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = when (idx) {
+                                    0 -> MaterialTheme.colorScheme.error
+                                    6 -> Color(0xFF1565C0)
+                                    else -> MongleTextPrimary
+                                }
+                            )
+                        }
                     }
-                    Text(
-                        text = uiState.monthTitle,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
-                    )
-                    IconButton(onClick = viewModel::nextMonth) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = "다음 달")
+
+                    // 달력 그리드
+                    val calendarDays = generateCalendarDays(uiState.currentMonth)
+                    val weeks = calendarDays.chunked(7)
+                    weeks.forEach { week ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            week.forEach { date ->
+                                CalendarDayCell(
+                                    date = date,
+                                    currentMonth = uiState.currentMonth,
+                                    selectedDate = uiState.selectedDate,
+                                    hasRecord = date?.let {
+                                        val cal = Calendar.getInstance().apply {
+                                            time = it
+                                            set(Calendar.HOUR_OF_DAY, 0)
+                                            set(Calendar.MINUTE, 0)
+                                            set(Calendar.SECOND, 0)
+                                            set(Calendar.MILLISECOND, 0)
+                                        }
+                                        uiState.historyItems[cal.timeInMillis] != null
+                                    } ?: false,
+                                    onDateSelected = { d -> d?.let { viewModel.onDateSelected(it) } },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                // ── 최근 14일 기분 ──
+                MoodTimelineSection(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
 
-                // 요일 헤더
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    DAY_NAMES.forEach { day ->
-                        Text(
-                            text = day,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = when (day) {
-                                "일" -> MaterialTheme.colorScheme.error
-                                "토" -> Color(0xFF1565C0)
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                // ── 선택된 날짜의 질문 카드 또는 빈 카드 ──
+                val selectedItem = uiState.selectedItem
+                if (selectedItem != null) {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 4.dp, bottom = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        HistoryQuestionCard(
+                            item = selectedItem,
+                            selectedDate = uiState.selectedDate,
+                            onClick = { viewModel.onItemTapped(selectedItem) }
                         )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(MongleSpacing.xs))
-
-                // 달력 그리드
-                val calendarDays = generateCalendarDays(uiState.currentMonth)
-                val weeks = calendarDays.chunked(7)
-                weeks.forEach { week ->
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        week.forEach { date ->
-                            CalendarDayCell(
-                                date = date,
-                                currentMonth = uiState.currentMonth,
-                                selectedDate = uiState.selectedDate,
-                                historyItem = date?.let {
-                                    val cal = Calendar.getInstance().apply {
-                                        time = it
-                                        set(Calendar.HOUR_OF_DAY, 0)
-                                        set(Calendar.MINUTE, 0)
-                                        set(Calendar.SECOND, 0)
-                                        set(Calendar.MILLISECOND, 0)
-                                    }
-                                    uiState.historyItems[cal.timeInMillis]
-                                },
-                                onDateSelected = { d -> d?.let { viewModel.onDateSelected(it) } },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                // 선택된 날짜의 히스토리 아이템
-                uiState.selectedItem?.let { item ->
-                    Spacer(modifier = Modifier.height(MongleSpacing.lg))
-                    MongleCard(
+                } else {
+                    EmptyDateCard(
+                        selectedDate = uiState.selectedDate,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(1.5.dp, MonglePrimary.copy(alpha = 0.4f), RoundedCornerShape(20.dp)),
-                        onClick = { viewModel.onItemTapped(item) }
-                    ) {
-                        Column(modifier = Modifier.padding(MongleSpacing.md)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(MongleSpacing.xs)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.DateRange,
-                                    contentDescription = null,
-                                    tint = MonglePrimary,
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Text(
-                                    text = "# ${item.question.category.displayName}  ·  ${item.answerCount}/${item.totalMembers}명 답변",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MonglePrimary
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(MongleSpacing.xs))
-                            Text(
-                                text = item.question.content,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
+                            .padding(horizontal = 16.dp)
+                            .padding(top = 4.dp, bottom = 24.dp)
+                    )
                 }
             }
         }
     }
 }
 
+// ── 달력 날짜 셀 ──
+
 @Composable
 private fun CalendarDayCell(
     date: Date?,
     currentMonth: Date,
     selectedDate: Date,
-    historyItem: HistoryItem?,
+    hasRecord: Boolean,
     onDateSelected: (Date?) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -231,45 +247,180 @@ private fun CalendarDayCell(
             dateCal.get(Calendar.YEAR) == todayCal.get(Calendar.YEAR)
     } ?: false
 
-    Box(
+    val dayOfWeek = date?.let { Calendar.getInstance().apply { time = it }.get(Calendar.DAY_OF_WEEK) }
+
+    val numColor: Color = when {
+        isToday -> Color.White
+        !isCurrentMonth -> MongleTextHint.copy(alpha = 0.4f)
+        dayOfWeek == Calendar.SUNDAY -> MaterialTheme.colorScheme.error
+        dayOfWeek == Calendar.SATURDAY -> Color(0xFF1565C0)
+        else -> MongleTextPrimary
+    }
+
+    Column(
         modifier = modifier
-            .aspectRatio(1f)
-            .padding(2.dp)
-            .clip(CircleShape)
-            .background(
-                when {
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    isToday -> MaterialTheme.colorScheme.primaryContainer
-                    else -> Color.Transparent
-                }
-            )
-            .clickable(enabled = date != null) { onDateSelected(date) },
-        contentAlignment = Alignment.Center
+            .height(54.dp)
+            .clickable(enabled = date != null && isCurrentMonth) { onDateSelected(date) },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(
+                    when {
+                        isToday -> MonglePrimary
+                        isSelected -> MonglePrimaryLight
+                        else -> Color.Transparent
+                    },
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 text = date?.let {
                     Calendar.getInstance().apply { time = it }.get(Calendar.DAY_OF_MONTH).toString()
                 } ?: "",
-                style = MaterialTheme.typography.bodySmall,
-                color = when {
-                    isSelected -> MaterialTheme.colorScheme.onPrimary
-                    !isCurrentMonth -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    else -> MaterialTheme.colorScheme.onSurface
-                }
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = if (hasRecord) FontWeight.Medium else FontWeight.Normal
+                ),
+                color = numColor
             )
-            if (historyItem != null) {
+        }
+        Box(modifier = Modifier.height(8.dp), contentAlignment = Alignment.Center) {
+            if (hasRecord && isCurrentMonth) {
                 Box(
                     modifier = Modifier
-                        .size(4.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isSelected) MaterialTheme.colorScheme.onPrimary
-                            else MonglePrimary
-                        )
+                        .size(6.dp)
+                        .background(MonglePrimary, CircleShape)
                 )
             }
         }
+    }
+}
+
+// ── 최근 14일 기분 섹션 ──
+
+@Composable
+private fun MoodTimelineSection(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "최근 14일 기분",
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+            color = MongleTextPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            moodColors.forEachIndexed { index, color ->
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    MongleCharacterAvatar(
+                        name = moodLabels[index],
+                        index = index,
+                        size = 44.dp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = moodLabels[index],
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = MongleTextSecondary
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ── 질문 카드 ──
+
+@Composable
+private fun HistoryQuestionCard(
+    item: HistoryItem,
+    selectedDate: Date,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .border(1.5.dp, MonglePrimary.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+            .clickable { onClick() }
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.CalendarToday,
+                contentDescription = null,
+                tint = MonglePrimary,
+                modifier = Modifier.size(13.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = selectedDateFormatter.format(selectedDate),
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MonglePrimary
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "${item.answerCount}/${item.totalMembers}명 답변",
+                style = MaterialTheme.typography.labelSmall,
+                color = MongleTextHint
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = item.question.content,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MongleTextPrimary
+        )
+    }
+}
+
+// ── 빈 날짜 카드 ──
+
+@Composable
+private fun EmptyDateCard(selectedDate: Date, modifier: Modifier = Modifier) {
+    val cal = Calendar.getInstance()
+    val isToday = run {
+        val dateCal = Calendar.getInstance().apply { time = selectedDate }
+        dateCal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR) &&
+            dateCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
+    }
+    val noon = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 12)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+    }.time
+    val isBeforeNoon = Date() < noon
+    val message = if (isToday && isBeforeNoon) "아직 질문을 받아오지 않았어요" else "이 날의 기록이 없어요"
+
+    Column(
+        modifier = modifier
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .padding(vertical = 36.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = MongleTextHint
+        )
+        Text(
+            text = selectedDateFormatter.format(selectedDate),
+            style = MaterialTheme.typography.labelSmall,
+            color = MongleTextHint.copy(alpha = 0.7f)
+        )
     }
 }
 
@@ -282,10 +433,8 @@ private fun generateCalendarDays(month: Date): List<Date?> {
     val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
     val days = mutableListOf<Date?>()
 
-    // 이전 달 빈 칸
     repeat(firstDayOfWeek) { days.add(null) }
 
-    // 이번 달 날짜
     repeat(daysInMonth) { i ->
         days.add(Calendar.getInstance().apply {
             time = month
@@ -293,7 +442,6 @@ private fun generateCalendarDays(month: Date): List<Date?> {
         }.time)
     }
 
-    // 다음 달 빈 칸으로 6주 채우기
     while (days.size < 42) days.add(null)
     return days
 }
