@@ -10,11 +10,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -33,44 +39,25 @@ import androidx.compose.ui.unit.sp
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
+import com.mongle.android.ui.theme.MongleMonggleBlue
+import com.mongle.android.ui.theme.MongleMonggleGreenLight
+import com.mongle.android.ui.theme.MongleMonggleOrange
+import com.mongle.android.ui.theme.MongleMongglePink
+import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import kotlinx.coroutines.launch
 
-private data class OnboardingPage(
-    val eyebrow: String,
-    val title: String,
-    val description: String
-)
-
-private val onboardingPages = listOf(
-    OnboardingPage(
-        eyebrow = "환영해요 🌿",
-        title = "몽글에 오신 걸\n환영해요",
-        description = "가족, 친구와 매일 마음을 나누는\n따뜻한 소통 공간"
-    ),
-    OnboardingPage(
-        eyebrow = "함께 만들기",
-        title = "나만의 공간을\n만들어보세요",
-        description = "가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요"
-    ),
-    OnboardingPage(
-        eyebrow = "매일 함께",
-        title = "매일 함께\n마음을 나눠요",
-        description = "매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요"
-    )
-)
-
 @Composable
 fun OnboardingScreen(
     onGetStarted: () -> Unit,
     onNeverShowAgain: () -> Unit
 ) {
-    val pagerState = rememberPagerState(pageCount = { onboardingPages.size })
+    val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
-    val isLastPage = pagerState.currentPage == onboardingPages.size - 1
+    val isLastPage = pagerState.currentPage == 2
 
     Box(
         modifier = Modifier
@@ -86,7 +73,11 @@ fun OnboardingScreen(
                 state = pagerState,
                 modifier = Modifier.weight(1f)
             ) { page ->
-                OnboardingPageContent(page = onboardingPages[page])
+                when (page) {
+                    0 -> OnboardingPage1()
+                    1 -> OnboardingPage2()
+                    2 -> OnboardingPage3()
+                }
             }
 
             // 하단 바
@@ -103,7 +94,7 @@ fun OnboardingScreen(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    onboardingPages.forEachIndexed { index, _ ->
+                    repeat(3) { index ->
                         val isSelected = index == pagerState.currentPage
                         val width by animateDpAsState(
                             targetValue = if (isSelected) 28.dp else 8.dp,
@@ -150,8 +141,10 @@ fun OnboardingScreen(
     }
 }
 
+// ── 페이지 1: 환영 ──────────────────────────────────────────
+
 @Composable
-private fun OnboardingPageContent(page: OnboardingPage) {
+private fun OnboardingPage1() {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -164,15 +157,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         Spacer(modifier = Modifier.height(44.dp))
 
         Text(
-            text = page.eyebrow,
-            style = MaterialTheme.typography.labelLarge,
-            color = MonglePrimary
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = page.title,
+            text = "몽글에 오신 걸\n환영해요",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MongleTextPrimary,
             textAlign = TextAlign.Center
@@ -181,11 +166,193 @@ private fun OnboardingPageContent(page: OnboardingPage) {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = page.description,
+            text = "가족, 친구와 매일 마음을 나누는\n따뜻한 소통 공간",
             style = MaterialTheme.typography.bodyMedium,
             color = MongleTextSecondary,
             textAlign = TextAlign.Center,
             lineHeight = 24.sp
+        )
+    }
+}
+
+// ── 페이지 2: 그룹 ──────────────────────────────────────────
+
+@Composable
+private fun OnboardingPage2() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // 그룹 카드 미리보기
+        MongleGroupCard(
+            groupName = "우리 가족 🩷",
+            memberColors = listOf(
+                MongleMonggleOrange,
+                MongleMonggleYellow,
+                MongleMonggleGreenLight,
+                MongleMongglePink
+            )
+        )
+
+        Spacer(modifier = Modifier.height(44.dp))
+
+        Text(
+            text = "나만의 공간을\n만들어보세요",
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = MongleTextPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MongleTextSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+    }
+}
+
+// ── 페이지 3: 질문 ──────────────────────────────────────────
+
+@Composable
+private fun OnboardingPage3() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        // 오늘의 질문 카드
+        MongleQuestionCard(question = "오늘 당신을 웃게 한 건 무엇인가요?")
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // 몽글 캐릭터 5개
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            listOf(
+                MongleMonggleYellow,
+                MongleMonggleGreenLight,
+                MongleMongglePink,
+                MongleMonggleBlue,
+                MongleMonggleOrange
+            ).forEach { color ->
+                MiniMonggle(color = color, size = 52)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(44.dp))
+
+        Text(
+            text = "매일 함께\n마음을 나눠요",
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = MongleTextPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MongleTextSecondary,
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        )
+    }
+}
+
+// ── 공통 컴포넌트 ──────────────────────────────────────────
+
+@Composable
+private fun MongleGroupCard(
+    groupName: String,
+    memberColors: List<Color>
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = groupName,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MongleTextPrimary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                memberColors.forEach { color ->
+                    MiniMonggle(color = color, size = 44)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MongleQuestionCard(question: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = "오늘의 질문",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MonglePrimary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = question,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = MongleTextPrimary
+            )
+        }
+    }
+}
+
+@Composable
+private fun MiniMonggle(color: Color, size: Int) {
+    val sizeDp = size.dp
+    val eyeSize = sizeDp * 0.18f
+    val eyeOffset = sizeDp * 0.14f
+
+    Box(
+        modifier = Modifier
+            .size(sizeDp)
+            .shadow(
+                elevation = 4.dp,
+                shape = CircleShape,
+                ambientColor = color.copy(alpha = 0.3f),
+                spotColor = color.copy(alpha = 0.3f)
+            )
+            .background(color, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(eyeSize)
+                .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                .background(Color.Black, CircleShape)
+        )
+        Box(
+            modifier = Modifier
+                .size(eyeSize)
+                .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                .background(Color.Black, CircleShape)
         )
     }
 }

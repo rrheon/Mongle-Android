@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,33 +28,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.User
-import com.mongle.android.ui.common.MongleButton
-import com.mongle.android.ui.common.MongleButtonStyle
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
-import com.mongle.android.ui.common.MongleTextField
+import com.mongle.android.ui.theme.MongleAppleLight
+import com.mongle.android.ui.theme.MongleAppleTextLight
 import com.mongle.android.ui.theme.MongleKakao
 import com.mongle.android.ui.theme.MongleKakaoText
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextHint
+import com.mongle.android.ui.theme.MongleTextPrimary
+import com.mongle.android.ui.theme.MongleTextSecondary
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.text.KeyboardOptions as KeyboardOptionsCompose
 
-// Google Web Client ID (Firebase Console → OAuth 2.0 클라이언트 ID)
+// Google Web Client ID: Google Cloud Console → APIs & Services → Credentials
+// → OAuth 2.0 클라이언트 ID 중 "웹 애플리케이션" 타입의 ID 사용
 private const val GOOGLE_WEB_CLIENT_ID = "YOUR_GOOGLE_WEB_CLIENT_ID"
 
 @Composable
 fun LoginScreen(
     onLoggedIn: (User) -> Unit,
+    onBrowse: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -97,155 +97,133 @@ fun LoginScreen(
             )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(MongleSpacing.lg),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(60.dp))
+            // ── 상단 로고 영역 (화면 약 55%) ──
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.55f),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    MongleLogo(size = MongleLogoSize.LARGE)
 
-            MongleLogo(size = MongleLogoSize.LARGE)
+                    Spacer(modifier = Modifier.height(MongleSpacing.md))
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "가족과 함께 매일 나누는 이야기",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-            )
+                    Text(
+                        text = "몽글",
+                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MongleTextPrimary
+                    )
 
-            Spacer(modifier = Modifier.height(MongleSpacing.xxl))
+                    Spacer(modifier = Modifier.height(MongleSpacing.xs))
 
-            // 이메일/비밀번호 입력 영역
+                    Text(
+                        text = "오늘의 마음은 어떤 색인가요?",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MongleTextSecondary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(0.05f))
+
+            // ── 소셜 로그인 버튼 영역 ──
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-                    .padding(MongleSpacing.lg)
+                    .padding(horizontal = MongleSpacing.xl)
+                    .padding(bottom = 40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (uiState.isSignUp) {
-                    MongleTextField(
-                        value = uiState.name,
-                        onValueChange = viewModel::onNameChange,
-                        placeholder = "이름",
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(MongleSpacing.sm))
-                }
-
-                MongleTextField(
-                    value = uiState.email,
-                    onValueChange = viewModel::onEmailChange,
-                    placeholder = "이메일",
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptionsCompose(keyboardType = KeyboardType.Email)
-                )
-
-                Spacer(modifier = Modifier.height(MongleSpacing.sm))
-
-                MongleTextField(
-                    value = uiState.password,
-                    onValueChange = viewModel::onPasswordChange,
-                    placeholder = "비밀번호",
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptionsCompose(keyboardType = KeyboardType.Password)
-                )
-
+                // 에러 메시지
                 if (uiState.errorMessage != null) {
-                    Spacer(modifier = Modifier.height(MongleSpacing.xs))
                     Text(
                         text = uiState.errorMessage!!,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
+                    Spacer(modifier = Modifier.height(MongleSpacing.sm))
                 }
 
-                Spacer(modifier = Modifier.height(MongleSpacing.md))
-
-                MongleButton(
-                    text = if (uiState.isSignUp) "회원가입" else "로그인",
+                // 카카오 로그인
+                SocialLoginButton(
+                    text = "카카오로 계속하기",
+                    backgroundColor = MongleKakao,
+                    contentColor = MongleKakaoText,
+                    emoji = "💬",
+                    enabled = !uiState.isLoading,
                     onClick = {
-                        if (uiState.isSignUp) viewModel.signupWithEmail()
-                        else viewModel.loginWithEmail()
-                    },
-                    isLoading = uiState.isLoading
+                        scope.launch {
+                            try {
+                                val credential = loginWithKakao(context)
+                                viewModel.loginWithSocial(credential)
+                            } catch (e: Exception) {
+                                viewModel.setError("카카오 로그인에 실패했습니다: ${e.message}")
+                            }
+                        }
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(MongleSpacing.sm))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                // Google 로그인
+                SocialLoginButton(
+                    text = "Google로 계속하기",
+                    backgroundColor = Color.White,
+                    contentColor = Color(0xFF1A1A1A),
+                    emoji = "G",
+                    enabled = !uiState.isLoading,
+                    onClick = {
+                        val intent = getGoogleSignInIntent(context, GOOGLE_WEB_CLIENT_ID)
+                        googleLauncher.launch(intent)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(MongleSpacing.sm))
+
+                // Apple 로그인
+                SocialLoginButton(
+                    text = "Apple로 계속하기",
+                    backgroundColor = MongleAppleLight,
+                    contentColor = MongleAppleTextLight,
+                    emoji = "",
+                    enabled = !uiState.isLoading,
+                    onClick = {
+                        viewModel.setError("Apple 로그인은 준비 중입니다.")
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(MongleSpacing.md))
+
+                // 둘러보기
+                TextButton(
+                    onClick = onBrowse,
+                    enabled = !uiState.isLoading
                 ) {
                     Text(
-                        text = if (uiState.isSignUp) "이미 계정이 있으신가요?" else "계정이 없으신가요?",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "둘러보기",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MongleTextHint
                     )
-                    TextButton(onClick = viewModel::toggleSignUp) {
-                        Text(
-                            text = if (uiState.isSignUp) "로그인" else "회원가입",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(MongleSpacing.lg))
-
-            // 소셜 로그인 구분선
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        // 로딩 오버레이
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.4f))
-                Text(
-                    text = "  소셜 로그인  ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.7f)
-                )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.4f))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
-
-            Spacer(modifier = Modifier.height(MongleSpacing.md))
-
-            // 카카오 로그인
-            SocialLoginButton(
-                text = "카카오로 계속하기",
-                backgroundColor = MongleKakao,
-                contentColor = MongleKakaoText,
-                emoji = "💬",
-                onClick = {
-                    scope.launch {
-                        try {
-                            val credential = loginWithKakao(context)
-                            viewModel.loginWithSocial(credential)
-                        } catch (e: Exception) {
-                            viewModel.setError("카카오 로그인에 실패했습니다: ${e.message}")
-                        }
-                    }
-                }
-            )
-
-            Spacer(modifier = Modifier.height(MongleSpacing.sm))
-
-            // Google 로그인
-            SocialLoginButton(
-                text = "Google로 계속하기",
-                backgroundColor = Color.White,
-                contentColor = Color(0xFF1A1A1A),
-                emoji = "G",
-                onClick = {
-                    val intent = getGoogleSignInIntent(context, GOOGLE_WEB_CLIENT_ID)
-                    googleLauncher.launch(intent)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(MongleSpacing.xxl))
         }
     }
 }
@@ -256,25 +234,31 @@ private fun SocialLoginButton(
     backgroundColor: Color,
     contentColor: Color,
     emoji: String,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    androidx.compose.material3.Button(
+    Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+        colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
-            contentColor = contentColor
+            contentColor = contentColor,
+            disabledContainerColor = backgroundColor.copy(alpha = 0.5f),
+            disabledContentColor = contentColor.copy(alpha = 0.5f)
         )
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = emoji, style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.width(MongleSpacing.sm))
+            if (emoji.isNotEmpty()) {
+                Text(text = emoji, style = MaterialTheme.typography.bodyLarge)
+                Spacer(modifier = Modifier.width(MongleSpacing.sm))
+            }
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelLarge,
