@@ -65,9 +65,10 @@ import java.util.UUID
 fun GroupSelectScreen(
     pendingInviteCode: String? = null,
     showGroupLeftToast: Boolean = false,
+    onBack: (() -> Unit)? = null,
     onGroupSelected: (UUID) -> Unit,
     onCreatedOrJoined: () -> Unit,
-    onPendingCodeConsumed: () -> Unit,
+    onPendingCodeConsumed: () -> Unit = {},
     viewModel: GroupSelectViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -119,6 +120,7 @@ fun GroupSelectScreen(
             GroupSelectStep.SELECT -> SelectStep(
                 groups = uiState.groups,
                 isLoading = uiState.isLoading,
+                onBack = onBack,
                 onGroupSelected = onGroupSelected,
                 onCreateClick = { viewModel.goToCreate() },
                 onJoinClick = { viewModel.goToJoin() }
@@ -174,6 +176,7 @@ fun GroupSelectScreen(
 private fun SelectStep(
     groups: List<MongleGroup>,
     isLoading: Boolean,
+    onBack: (() -> Unit)? = null,
     onGroupSelected: (UUID) -> Unit,
     onCreateClick: () -> Unit,
     onJoinClick: () -> Unit
@@ -183,7 +186,7 @@ private fun SelectStep(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // ── iOS 스타일 헤더: "몽글" + 알림 벨 ──
+        // ── 헤더 ──
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -193,11 +196,21 @@ private fun SelectStep(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "몽글",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MonglePrimary
-            )
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "뒤로",
+                        tint = MongleTextPrimary
+                    )
+                }
+            } else {
+                Text(
+                    text = "몽글",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MonglePrimary
+                )
+            }
             IconButton(onClick = { /* TODO: 알림 */ }) {
                 Icon(
                     imageVector = Icons.Default.Notifications,

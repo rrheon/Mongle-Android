@@ -42,6 +42,7 @@ fun MongleNavHost(
     var showNotifications by remember { mutableStateOf(false) }
     var showNudgeTarget by remember { mutableStateOf<User?>(null) }
     var showWriteQuestion by remember { mutableStateOf(false) }
+    var showGroupSelect by remember { mutableStateOf(false) }
     var groupLeftToast by remember { mutableStateOf(false) }
 
     when (uiState.appState) {
@@ -126,6 +127,19 @@ fun MongleNavHost(
                         }
                     )
                 }
+                showGroupSelect -> {
+                    GroupSelectScreen(
+                        onBack = { showGroupSelect = false },
+                        onGroupSelected = { familyId ->
+                            showGroupSelect = false
+                            rootViewModel.onGroupSelected(familyId)
+                        },
+                        onCreatedOrJoined = {
+                            showGroupSelect = false
+                            rootViewModel.onGroupCreatedOrJoined()
+                        }
+                    )
+                }
                 else -> {
                     MainTabScreen(
                         rootUiState = uiState,
@@ -133,6 +147,7 @@ fun MongleNavHost(
                         onNavigateToNotifications = { showNotifications = true },
                         onNavigateToNudge = { user -> showNudgeTarget = user },
                         onNavigateToWriteQuestion = { showWriteQuestion = true },
+                        onNavigateToGroupSelect = { showGroupSelect = true },
                         onLogout = { rootViewModel.logout() },
                         onGroupLeft = {
                             groupLeftToast = true

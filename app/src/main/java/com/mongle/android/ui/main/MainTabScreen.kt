@@ -44,6 +44,7 @@ fun MainTabScreen(
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToNudge: (User) -> Unit = {},
     onNavigateToWriteQuestion: () -> Unit = {},
+    onNavigateToGroupSelect: () -> Unit = {},
     onLogout: () -> Unit,
     onGroupLeft: () -> Unit = {}
 ) {
@@ -100,6 +101,7 @@ fun MainTabScreen(
                     onNavigateToNotifications = onNavigateToNotifications,
                     onNavigateToNudge = onNavigateToNudge,
                     onNavigateToWriteQuestion = onNavigateToWriteQuestion,
+                    onNavigateToGroupSelect = onNavigateToGroupSelect,
                     viewModel = homeViewModel
                 )
                 MainTab.HISTORY -> HistoryScreen(
