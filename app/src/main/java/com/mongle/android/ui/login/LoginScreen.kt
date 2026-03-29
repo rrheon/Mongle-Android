@@ -48,7 +48,7 @@ import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import kotlinx.coroutines.launch
 
-private const val GOOGLE_WEB_CLIENT_ID = "43055125841-2n1m3ib5g3tfp17r4v22qlpgurtdo381.apps.googleusercontent.com"
+private const val GOOGLE_WEB_CLIENT_ID = "43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com"
 
 @Composable
 fun LoginScreen(
