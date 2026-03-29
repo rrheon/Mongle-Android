@@ -1,6 +1,7 @@
 package com.mongle.android.ui.login
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -62,13 +63,15 @@ fun LoginScreen(
     val googleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            try {
-                val credential = handleGoogleSignInResult(result.data)
-                viewModel.loginWithSocial(credential)
-            } catch (e: Exception) {
-                viewModel.setError("Google 로그인에 실패했습니다: ${e.message}")
-            }
+        // DEVELOPER_ERROR(10) 등 실패 시 RESULT_CANCELED로 돌아오므로 항상 파싱해서 에러 확인
+        Log.d("LoginScreen", "Google 결과 수신 | resultCode=${result.resultCode} (OK=${Activity.RESULT_OK})")
+        try {
+            val credential = handleGoogleSignInResult(result.data)
+            Log.d("LoginScreen", "Google 토큰 파싱 성공 → 서버 로그인 요청")
+            viewModel.loginWithSocial(credential)
+        } catch (e: Exception) {
+            Log.e("LoginScreen", "Google 로그인 실패: ${e.message}")
+            viewModel.setError(e.message ?: "Google 로그인에 실패했습니다.")
         }
     }
 
@@ -155,12 +158,15 @@ fun LoginScreen(
                     emoji = "💬",
                     enabled = !uiState.isLoading,
                     onClick = {
+                        Log.d("LoginScreen", "카카오 로그인 버튼 클릭")
                         scope.launch {
                             try {
                                 val credential = loginWithKakao(context)
+                                Log.d("LoginScreen", "카카오 credential 획득 → 서버 로그인 요청")
                                 viewModel.loginWithSocial(credential)
                             } catch (e: Exception) {
-                                viewModel.setError("카카오 로그인에 실패했습니다: ${e.message}")
+                                Log.e("LoginScreen", "카카오 로그인 실패: ${e.message}")
+                                viewModel.setError(e.message ?: "카카오 로그인에 실패했습니다.")
                             }
                         }
                     }
@@ -176,6 +182,7 @@ fun LoginScreen(
                     emoji = "G",
                     enabled = !uiState.isLoading,
                     onClick = {
+                        Log.d("LoginScreen", "Google 로그인 버튼 클릭 | clientId=$GOOGLE_WEB_CLIENT_ID")
                         val intent = getGoogleSignInIntent(context, GOOGLE_WEB_CLIENT_ID)
                         googleLauncher.launch(intent)
                     }

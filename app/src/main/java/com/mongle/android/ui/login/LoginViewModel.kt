@@ -1,5 +1,6 @@
 package com.mongle.android.ui.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.SocialLoginCredential
@@ -92,12 +93,15 @@ class LoginViewModel @Inject constructor(
     }
 
     fun loginWithSocial(credential: SocialLoginCredential) {
+        Log.d("LoginViewModel", "소셜 로그인 시작 | provider=${credential.providerType.value} | fields=${credential.fields.keys}")
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 val user = authRepository.socialLogin(credential)
+                Log.d("LoginViewModel", "소셜 로그인 성공 | userId=${user.id} | name=${user.name}")
                 _events.emit(LoginEvent.LoggedIn(user, credential.providerType))
             } catch (e: Exception) {
+                Log.e("LoginViewModel", "소셜 로그인 실패 | provider=${credential.providerType.value} | error=${e.message}")
                 _uiState.update {
                     it.copy(
                         isLoading = false,
