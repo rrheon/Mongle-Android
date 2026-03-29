@@ -47,6 +47,11 @@ import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleTextPrimary
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.key
+import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.delay
 import java.util.UUID
 import kotlin.math.PI
@@ -251,8 +256,10 @@ private fun initSceneMembers(
 }
 
 /**
- * iOS MongleSceneView와 동일한 로직:
- * 각 몽글 캐릭터가 화면 위를 자유롭게 floating하며 이동.
+ * iOS MongleSceneView와 동일한 로직.
+ * - animateFloatAsState로 부드러운 120ms 보간 이동 (iOS .animation(.linear, value: stepCount) 대응)
+ * - 벽 충돌: 클램핑 + 새 목표 즉시 설정 (멈추지 않음)
+ * - 캐릭터 충돌: overlapCounter >= 10 도달 시 새 방향 설정 (iOS 동일)
  */
 @Composable
 fun MongleSceneView(
@@ -267,11 +274,14 @@ fun MongleSceneView(
     onAnswerFirstToNudge: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val stepSize = 2f
-    val collisionRadius = 60f
-    val targetThreshold = 10f
-    val wallPadding = 36f
-    val charSizePx = 52f // 캐릭터 크기 (dp→px 근사, offset 계산용)
+    val density = LocalDensity.current
+    // 화면 밀도에 맞는 실제 픽셀 크기 사용 (화면 밖 이탈 방지)
+    val charSizePx = with(density) { 52.dp.toPx() }
+    val collisionRadius = charSizePx * 1.5f
+    val wallPadding = charSizePx * 0.9f
+    val stepSize = with(density) { 1.8.dp.toPx() }
+    val targetThreshold = charSizePx * 0.25f
+    val overlapLimit = 10
 
     var sceneMembers by remember { mutableStateOf<List<SceneMember>>(emptyList()) }
     var sceneSize by remember { mutableStateOf(IntSize.Zero) }
@@ -294,18 +304,18 @@ fun MongleSceneView(
         }
     }
 
-    // 애니메이션 루프 (iOS interval=0.12s)
-    LaunchedEffect(sceneMembers.isNotEmpty()) {
-        if (sceneMembers.isEmpty()) return@LaunchedEffect
+    // 물리 루프 - iOS와 동일하게 120ms 간격
+    LaunchedEffect(Unit) {
         while (true) {
             delay(120)
+            if (sceneMembers.isEmpty()) continue
             val s = sceneSize
             if (s.width <= 0 || s.height <= 0) continue
             val w = s.width.toFloat()
             val h = s.height.toFloat()
             val current = sceneMembers.toList()
-            sceneMembers = current.mapIndexed { i, m ->
-                var member = m
+            sceneMembers = current.mapIndexed { i, member ->
+                // 휴식 중
                 if (member.restFramesLeft > 0) {
                     val newRest = member.restFramesLeft - 1
                     return@mapIndexed if (newRest == 0) {
@@ -321,6 +331,7 @@ fun MongleSceneView(
                 val dy = member.targetY - member.y
                 val dist = hypot(dx, dy)
 
+                // 목표 도달: 휴식 또는 새 목표
                 if (dist < targetThreshold) {
                     return@mapIndexed if (Random.nextBoolean()) {
                         member.copy(restFramesLeft = (10..50).random())
@@ -334,32 +345,42 @@ fun MongleSceneView(
 
                 var newX = member.x + (dx / dist) * stepSize
                 var newY = member.y + (dy / dist) * stepSize
+                var newTargetX = member.targetX
+                var newTargetY = member.targetY
 
-                // 벽 충돌: 현재 위치 고정 + 잠시 멈춤 → 새 방향 선택
+                // iOS 벽 충돌: 클램핑 + 새 목표 (멈추지 않음, stepCount 증가)
                 if (newX < wallPadding || newX > w - wallPadding ||
                     newY < wallPadding || newY > h - wallPadding
                 ) {
-                    return@mapIndexed member.copy(
-                        x = member.x.coerceIn(wallPadding, w - wallPadding),
-                        y = member.y.coerceIn(wallPadding, h - wallPadding),
-                        restFramesLeft = (3..6).random(),
-                        overlapCounter = 0
-                    )
+                    newX = newX.coerceIn(wallPadding, w - wallPadding)
+                    newY = newY.coerceIn(wallPadding, h - wallPadding)
+                    newTargetX = randomInRange(wallPadding, w - wallPadding)
+                    newTargetY = randomInRange(wallPadding, h - wallPadding)
                 }
 
-                // 캐릭터 충돌: 즉시 멈추고 잠시 휴식 → 새 방향 선택
+                // iOS 캐릭터 충돌: 위치 갱신 안 함, overlapCounter 증가
                 val collides = current.indices.any { j ->
                     if (j == i) false
                     else hypot(newX - current[j].x, newY - current[j].y) < collisionRadius
                 }
                 if (collides) {
-                    return@mapIndexed member.copy(
-                        restFramesLeft = (3..7).random(),
-                        overlapCounter = 0
-                    )
+                    val newOverlap = member.overlapCounter + 1
+                    return@mapIndexed if (newOverlap >= overlapLimit) {
+                        member.copy(
+                            overlapCounter = 0,
+                            targetX = randomInRange(wallPadding, w - wallPadding),
+                            targetY = randomInRange(wallPadding, h - wallPadding)
+                        )
+                    } else member.copy(overlapCounter = newOverlap)
                 }
 
-                member.copy(x = newX, y = newY, stepCount = member.stepCount + 1, overlapCounter = 0)
+                member.copy(
+                    x = newX, y = newY,
+                    stepCount = member.stepCount + 1,
+                    overlapCounter = 0,
+                    targetX = newTargetX,
+                    targetY = newTargetY
+                )
             }
         }
     }
@@ -376,40 +397,75 @@ fun MongleSceneView(
     ) {
         sceneMembers.forEach { member ->
             val info = members.find { it.id == member.id } ?: return@forEach
-            val half = (charSizePx / 2).roundToInt()
-            val hopY = (-abs(sin(member.stepCount * PI / 5.0)) * 8).toFloat()
-            Box(
-                modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            (member.x - half).roundToInt(),
-                            (member.y + hopY - half).roundToInt()
-                        )
-                    }
-                    .clickable {
-                        val id = member.id
-                        val memberInfo = members.find { it.id == id } ?: return@clickable
-                        val isCurrentUser = id == currentUserId
-                        if (isCurrentUser) { onSelfTap(); return@clickable }
-                        val canView = hasCurrentUserAnswered || hasCurrentUserSkipped
-                        when {
-                            memberInfo.hasAnswered && canView -> onViewAnswer(memberInfo)
-                            memberInfo.hasAnswered && !canView -> onAnswerFirstToView(member.name)
-                            !memberInfo.hasAnswered && canView -> onNudge(memberInfo)
-                            else -> onAnswerFirstToNudge(member.name)
-                        }
-                    }
-            ) {
-                SceneMongleItem(
-                    name = member.name,
-                    color = member.color,
-                    hasAnswered = member.hasAnswered,
-                    isCurrentUser = member.id == currentUserId,
+            key(member.id) {
+                AnimatedSceneMemberBox(
+                    member = member,
+                    info = info,
+                    charSizePx = charSizePx,
+                    currentUserId = currentUserId,
                     hasCurrentUserAnswered = hasCurrentUserAnswered,
-                    hasCurrentUserSkipped = hasCurrentUserSkipped
+                    hasCurrentUserSkipped = hasCurrentUserSkipped,
+                    onViewAnswer = onViewAnswer,
+                    onNudge = onNudge,
+                    onSelfTap = onSelfTap,
+                    onAnswerFirstToView = onAnswerFirstToView,
+                    onAnswerFirstToNudge = onAnswerFirstToNudge
                 )
             }
         }
+    }
+}
+
+/** 각 캐릭터를 부드럽게 보간 이동 - iOS .animation(.linear(duration: 0.12), value: stepCount) 대응 */
+@Composable
+private fun AnimatedSceneMemberBox(
+    member: SceneMember,
+    info: SceneMemberInfo,
+    charSizePx: Float,
+    currentUserId: UUID?,
+    hasCurrentUserAnswered: Boolean,
+    hasCurrentUserSkipped: Boolean,
+    onViewAnswer: (SceneMemberInfo) -> Unit,
+    onNudge: (SceneMemberInfo) -> Unit,
+    onSelfTap: () -> Unit,
+    onAnswerFirstToView: (String) -> Unit,
+    onAnswerFirstToNudge: (String) -> Unit,
+) {
+    val animSpec = tween<Float>(durationMillis = 110, easing = LinearEasing)
+    val animX by animateFloatAsState(targetValue = member.x, animationSpec = animSpec, label = "x")
+    val animY by animateFloatAsState(targetValue = member.y, animationSpec = animSpec, label = "y")
+    val hopTarget = (-abs(sin(member.stepCount * PI / 5.0)) * 8).toFloat()
+    val animHop by animateFloatAsState(targetValue = hopTarget, animationSpec = animSpec, label = "hop")
+    val half = (charSizePx / 2).roundToInt()
+
+    Box(
+        modifier = Modifier
+            .offset {
+                IntOffset(
+                    (animX - half).roundToInt(),
+                    (animY + animHop - half).roundToInt()
+                )
+            }
+            .clickable {
+                val isCurrentUser = member.id == currentUserId
+                if (isCurrentUser) { onSelfTap(); return@clickable }
+                val canView = hasCurrentUserAnswered || hasCurrentUserSkipped
+                when {
+                    info.hasAnswered && canView -> onViewAnswer(info)
+                    info.hasAnswered && !canView -> onAnswerFirstToView(member.name)
+                    !info.hasAnswered && canView -> onNudge(info)
+                    else -> onAnswerFirstToNudge(member.name)
+                }
+            }
+    ) {
+        SceneMongleItem(
+            name = member.name,
+            color = member.color,
+            hasAnswered = member.hasAnswered,
+            isCurrentUser = member.id == currentUserId,
+            hasCurrentUserAnswered = hasCurrentUserAnswered,
+            hasCurrentUserSkipped = hasCurrentUserSkipped
+        )
     }
 }
 
