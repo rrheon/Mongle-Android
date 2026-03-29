@@ -131,12 +131,14 @@ fun QuestionDetailScreen(
                 CircularProgressIndicator(color = MonglePrimary)
             }
         } else {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+            ) {
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .verticalScroll(rememberScrollState())
-                        .padding(paddingValues)
                         .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md),
                     verticalArrangement = Arrangement.spacedBy(MongleSpacing.md)
                 ) {
