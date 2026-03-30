@@ -300,7 +300,7 @@ private fun HomeTopBar(
                             Column {
                                 Text(
                                     text = "현재 보유 ${hearts}개 ❤️",
-                                    style = MaterialTheme.typography.labelMedium.copy(FontWeight.SemiBold),
+                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                                     color = MongleHeartRed
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))

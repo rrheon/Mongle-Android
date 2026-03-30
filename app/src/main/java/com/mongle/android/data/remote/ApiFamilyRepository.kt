@@ -83,10 +83,6 @@ class ApiFamilyRepository @Inject constructor(
         response.toGroup()
     }
 
-    suspend fun leaveFamily() = safeCall {
-        api.leaveFamily()
-    }
-
     suspend fun kickMember(memberId: String) = safeCall {
         api.kickMember(memberId)
     }

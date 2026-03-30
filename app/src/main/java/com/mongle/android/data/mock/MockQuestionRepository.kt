@@ -71,4 +71,10 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
         delay(400)
         return emptyList()
     }
+
+    override suspend fun createCustomQuestion(content: String): Question {
+        delay(400)
+        val question = Question(UUID.randomUUID(), content, QuestionCategory.DAILY, mockQuestions.size + 1)
+        return question
+    }
 }

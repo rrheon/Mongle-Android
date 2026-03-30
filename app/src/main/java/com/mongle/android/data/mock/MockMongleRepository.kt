@@ -19,10 +19,10 @@ class MockMongleRepository @Inject constructor() : MongleRepository {
     private val treeProgressId = UUID.fromString("00000000-0000-0000-0000-000000000020")
 
     private val mockMembers = listOf(
-        User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "dad@mongle.com", "아빠", null, FamilyRole.FATHER, Date()),
-        User(UUID.fromString("00000000-0000-0000-0000-000000000002"), "mom@mongle.com", "엄마", null, FamilyRole.MOTHER, Date()),
-        User(UUID.fromString("00000000-0000-0000-0000-000000000003"), "son@mongle.com", "아들", null, FamilyRole.SON, Date()),
-        User(UUID.fromString("00000000-0000-0000-0000-000000000004"), "daughter@mongle.com", "딸", null, FamilyRole.DAUGHTER, Date())
+        User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "dad@mongle.com", "아빠", null, FamilyRole.FATHER, createdAt = Date()),
+        User(UUID.fromString("00000000-0000-0000-0000-000000000002"), "mom@mongle.com", "엄마", null, FamilyRole.MOTHER, createdAt = Date()),
+        User(UUID.fromString("00000000-0000-0000-0000-000000000003"), "son@mongle.com", "아들", null, FamilyRole.SON, createdAt = Date()),
+        User(UUID.fromString("00000000-0000-0000-0000-000000000004"), "daughter@mongle.com", "딸", null, FamilyRole.DAUGHTER, createdAt = Date())
     )
 
     private val mockFamily = MongleGroup(
@@ -94,6 +94,16 @@ class MockMongleRepository @Inject constructor() : MongleRepository {
     override suspend fun getMyFamily(): Pair<MongleGroup, List<User>> {
         delay(500)
         return Pair(mockFamily, mockMembers)
+    }
+
+    override suspend fun getMyFamilies(): List<MongleGroup> {
+        delay(300)
+        return listOf(mockFamily)
+    }
+
+    override suspend fun selectFamily(familyId: UUID): MongleGroup {
+        delay(300)
+        return mockFamily
     }
 
     override suspend fun kickMember(memberId: UUID) {
