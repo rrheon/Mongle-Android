@@ -79,6 +79,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showQuestionSheet by remember { mutableStateOf(false) }
     var peerAnswerTarget by remember {
         mutableStateOf<Triple<User, Int, com.mongle.android.domain.model.Answer>?>(null)
     }
@@ -127,7 +128,7 @@ fun HomeScreen(
                 TodayQuestionCard(
                     question = uiState.todayQuestion,
                     hasAnsweredToday = uiState.hasAnsweredToday,
-                    onTap = { viewModel.onQuestionTapped() },
+                    onTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
                     modifier = Modifier
                         .padding(horizontal = MongleSpacing.md)
                         .fillMaxWidth()
@@ -174,6 +175,18 @@ fun HomeScreen(
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+
+    // 오늘의 질문 시트 (답변/넘기기 선택)
+    if (showQuestionSheet && uiState.todayQuestion != null) {
+        QuestionSheetBottomSheet(
+            question = uiState.todayQuestion!!,
+            hasAnsweredToday = uiState.hasAnsweredToday,
+            onDismiss = { showQuestionSheet = false },
+            onAnswerTapped = { onNavigateToQuestionDetail(uiState.todayQuestion!!) },
+            onWriteQuestionTapped = onNavigateToWriteQuestion,
+            onSkipTapped = { viewModel.skipQuestion() }
         )
     }
 

@@ -77,4 +77,10 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
         val question = Question(UUID.randomUUID(), content, QuestionCategory.DAILY, mockQuestions.size + 1)
         return question
     }
+
+    override suspend fun skipQuestion(): Question {
+        delay(400)
+        val dayOfYear = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR)
+        return mockQuestions[(dayOfYear + 1) % mockQuestions.size]
+    }
 }

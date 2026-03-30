@@ -21,6 +21,9 @@ interface QuestionRepository {
 
     /** 나만의 질문 작성 (하트 3개 차감). */
     suspend fun createCustomQuestion(content: String): Question
+
+    /** 오늘의 질문 넘기기 (하트 3개 차감). 새로운 질문을 반환. */
+    suspend fun skipQuestion(): Question
 }
 
 sealed class QuestionError(message: String) : Exception(message) {
