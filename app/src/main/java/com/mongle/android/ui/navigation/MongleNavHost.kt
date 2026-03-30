@@ -4,8 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -90,6 +93,24 @@ fun MongleNavHost(
         }
 
         AppState.Authenticated -> {
+            // 일일 접속 하트 팝업
+            if (uiState.dailyHeartGranted > 0) {
+                AlertDialog(
+                    onDismissRequest = { rootViewModel.dismissDailyHeartPopup() },
+                    title = { Text("하트 획득 🎉") },
+                    text = {
+                        Text(
+                            "매일 첫 접속 보너스!\n하트 ${uiState.dailyHeartGranted}개를 받았어요.\n현재 ${uiState.currentUser?.hearts ?: 0}개 보유 중이에요."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { rootViewModel.dismissDailyHeartPopup() }) {
+                            Text("확인")
+                        }
+                    }
+                )
+            }
+
             when {
                 showQuestionDetail != null -> {
                     QuestionDetailScreen(

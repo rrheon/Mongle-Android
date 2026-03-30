@@ -2,6 +2,7 @@ package com.mongle.android.data.remote
 
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.User
+import com.mongle.android.domain.repository.DailyHeartResult
 import com.mongle.android.domain.repository.UserRepository
 import retrofit2.HttpException
 import java.util.Date
@@ -58,5 +59,16 @@ class ApiUserRepository @Inject constructor(
 
     suspend fun grantAdHearts(amount: Int): Int = safeCall {
         api.grantAdHearts(AdHeartRewardRequest(amount)).heartsRemaining
+    }
+
+    override suspend fun claimDailyHeart(): DailyHeartResult? = try {
+        val resp = api.claimDailyHeart()
+        if (resp.alreadyClaimed || resp.heartsGranted <= 0) null
+        else DailyHeartResult(resp.heartsGranted, resp.heartsRemaining)
+    } catch (e: HttpException) {
+        // 409 Conflict = 이미 오늘 수령함
+        if (e.code() == 409 || e.code() == 400) null else null
+    } catch (e: Exception) {
+        null
     }
 }

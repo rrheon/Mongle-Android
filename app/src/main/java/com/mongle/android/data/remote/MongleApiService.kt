@@ -267,6 +267,15 @@ data class AdHeartRewardResponse(
     val heartsRemaining: Int
 )
 
+// ── 일일 접속 하트 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class DailyHeartResponse(
+    val heartsGranted: Int,
+    val heartsRemaining: Int,
+    val alreadyClaimed: Boolean = false
+)
+
 // ── 질문 패스 응답 ──────────────────────────────────────────
 
 @JsonClass(generateAdapter = true)
@@ -306,6 +315,9 @@ interface MongleApiService {
 
     @POST("users/me/hearts/ad-reward")
     suspend fun grantAdHearts(@Body body: AdHeartRewardRequest): AdHeartRewardResponse
+
+    @POST("users/me/hearts/daily")
+    suspend fun claimDailyHeart(): DailyHeartResponse
 
     // Questions
     @GET("questions/today")

@@ -11,6 +11,7 @@ import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
+import com.mongle.android.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +41,8 @@ data class RootUiState(
     val familyMembers: List<User> = emptyList(),
     val hasAnsweredToday: Boolean = false,
     val errorMessage: String? = null,
-    val pendingInviteCode: String? = null
+    val pendingInviteCode: String? = null,
+    val dailyHeartGranted: Int = 0
 )
 
 @HiltViewModel
@@ -49,6 +51,7 @@ class RootViewModel @Inject constructor(
     private val mongleRepository: MongleRepository,
     private val questionRepository: QuestionRepository,
     private val treeRepository: TreeRepository,
+    private val userRepository: UserRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -102,6 +105,9 @@ class RootViewModel @Inject constructor(
                     // No active family → go to GroupSelection
                     _uiState.update { it.copy(appState = AppState.GroupSelection) }
                 } else {
+                    // 일일 접속 하트 획득 시도
+                    val dailyHeart = runCatching { userRepository.claimDailyHeart() }.getOrNull()
+
                     _uiState.update {
                         it.copy(
                             appState = AppState.Authenticated,
@@ -109,7 +115,13 @@ class RootViewModel @Inject constructor(
                             familyTree = tree ?: TreeProgress(),
                             family = family,
                             familyMembers = members,
-                            hasAnsweredToday = question?.hasMyAnswer ?: false
+                            hasAnsweredToday = question?.hasMyAnswer ?: false,
+                            dailyHeartGranted = dailyHeart?.heartsGranted ?: 0,
+                            currentUser = if (dailyHeart != null) {
+                                it.currentUser?.copy(hearts = dailyHeart.heartsRemaining)
+                            } else {
+                                it.currentUser
+                            }
                         )
                     }
                 }
@@ -167,6 +179,10 @@ class RootViewModel @Inject constructor(
 
     fun onAnswerSubmitted() {
         _uiState.update { it.copy(hasAnsweredToday = true) }
+    }
+
+    fun dismissDailyHeartPopup() {
+        _uiState.update { it.copy(dailyHeartGranted = 0) }
     }
 
     fun refreshData() {
