@@ -115,8 +115,14 @@ class QuestionDetailViewModel @Inject constructor(
             _uiState.update { it.copy(errorMessage = "답변을 입력해주세요.") }
             return
         }
-        val question = state.question ?: return
-        val userId = state.currentUser?.id ?: return
+        val question = state.question ?: run {
+            _uiState.update { it.copy(errorMessage = "질문 정보를 불러올 수 없습니다.") }
+            return
+        }
+        val userId = state.currentUser?.id ?: run {
+            _uiState.update { it.copy(errorMessage = "로그인 정보를 확인해주세요.") }
+            return
+        }
         val dailyQId = question.dailyQuestionId
             ?.let { runCatching { UUID.fromString(it) }.getOrNull() }
             ?: run {
