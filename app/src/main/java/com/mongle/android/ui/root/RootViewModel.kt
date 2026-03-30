@@ -7,6 +7,7 @@ import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
+import com.mongle.android.data.remote.SessionExpiredNotifier
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
@@ -52,6 +53,7 @@ class RootViewModel @Inject constructor(
     private val questionRepository: QuestionRepository,
     private val treeRepository: TreeRepository,
     private val userRepository: UserRepository,
+    private val sessionExpiredNotifier: SessionExpiredNotifier,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -76,6 +78,12 @@ class RootViewModel @Inject constructor(
 
     init {
         checkAuthStatus()
+        // 토큰 만료(401 + 갱신 실패) 이벤트 구독 → 로그인 화면으로 이동
+        viewModelScope.launch {
+            sessionExpiredNotifier.events.collect {
+                _uiState.update { RootUiState(appState = AppState.Unauthenticated) }
+            }
+        }
     }
 
     private fun checkAuthStatus() {
