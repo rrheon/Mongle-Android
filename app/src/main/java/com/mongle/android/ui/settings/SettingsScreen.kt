@@ -16,14 +16,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonRemove
-import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -275,7 +276,7 @@ fun SettingsScreen(
                 ListItem(
                     headlineContent = { Text("초대 코드") },
                     supportingContent = { Text(family.inviteCode, style = MaterialTheme.typography.bodyMedium) },
-                    leadingContent = { Icon(Icons.Default.Group, contentDescription = null) },
+                    leadingContent = { Icon(Icons.Default.ContentCopy, contentDescription = null) },
                     trailingContent = {
                         IconButton(onClick = viewModel::onCopyInviteCode) {
                             Icon(Icons.Default.ContentCopy, contentDescription = "복사")
@@ -339,7 +340,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(MongleSpacing.md))
             SectionHeader(title = "계정")
             SettingsItem(
-                icon = Icons.Default.PowerSettingsNew,
+                icon = Icons.Default.Logout,
                 title = "로그아웃",
                 onClick = viewModel::onLogoutTapped
             )
