@@ -1,6 +1,7 @@
 package com.mongle.android.ui.question
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,6 +58,7 @@ fun WriteQuestionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -79,6 +83,7 @@ fun WriteQuestionScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(Color(0xFFF8F8F8))
+                .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
         ) {
             // 네비게이션 헤더
             Box(
