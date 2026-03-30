@@ -106,11 +106,11 @@ fun MongleNavHost(
                 showNotifications -> {
                     NotificationScreen(onBack = { showNotifications = false })
                 }
-                showNudgeTarget != null -> {
+                showNudgeTarget != null && adManager != null -> {
                     PeerNudgeScreen(
                         targetUser = showNudgeTarget!!,
                         currentUserHearts = uiState.currentUser?.hearts ?: 0,
-                        adManager = adManager ?: return@when,
+                        adManager = adManager,
                         onBack = { showNudgeTarget = null }
                     )
                 }
