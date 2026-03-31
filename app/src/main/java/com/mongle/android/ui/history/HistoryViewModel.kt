@@ -77,6 +77,12 @@ class HistoryViewModel @Inject constructor(
                 val history = questionRepository.getDailyHistory(page = 1, limit = 50)
 
                 val historyMap = mutableMapOf<Long, HistoryItem>()
+                val todayCal = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
                 history.forEach { item ->
                     val cal = Calendar.getInstance().apply {
                         time = item.date
@@ -84,6 +90,11 @@ class HistoryViewModel @Inject constructor(
                         set(Calendar.MINUTE, 0)
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
+                    }
+                    // 오늘 날짜는 내가 답변한 경우에만 노출
+                    val isToday = cal.timeInMillis == todayCal.timeInMillis
+                    if (isToday && !item.hasMyAnswer) {
+                        return@forEach
                     }
                     historyMap[cal.timeInMillis] = HistoryItem(
                         id = runCatching { UUID.fromString(item.id) }.getOrElse { UUID.randomUUID() },
