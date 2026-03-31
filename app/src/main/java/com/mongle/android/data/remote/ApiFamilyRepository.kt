@@ -20,8 +20,8 @@ class ApiFamilyRepository @Inject constructor(
         return try {
             block()
         } catch (e: HttpException) {
-            val msg = e.response()?.errorBody()?.string() ?: e.message()
-            throw Exception(msg)
+            val raw = e.response()?.errorBody()?.string() ?: e.message()
+            throw Exception(parseServerMessage(raw))
         }
     }
 

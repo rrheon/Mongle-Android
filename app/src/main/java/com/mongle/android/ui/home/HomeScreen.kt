@@ -226,6 +226,8 @@ fun HomeScreen(
                 onGroupManage = onNavigateToGroupSelect
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             // 오늘의 질문 카드 (씬 안쪽 오버레이)
             if (uiState.todayQuestion != null) {
                 TodayQuestionCard(
@@ -512,13 +514,10 @@ private fun TodayQuestionCard(
     modifier: Modifier = Modifier
 ) {
     val isTappable = onTap != null
-    Card(
-        modifier = modifier.then(
-            if (isTappable) Modifier.clickable { onTap?.invoke() } else Modifier
-        ),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    Box(
+        modifier = modifier
+            .then(if (isTappable) Modifier.clickable { onTap?.invoke() } else Modifier)
+            .background(Color.White.copy(alpha = 0.85f), RoundedCornerShape(14.dp))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -568,11 +567,9 @@ private fun TodayQuestionCard(
 
 @Composable
 private fun TodayQuestionPlaceholderCard(modifier: Modifier = Modifier) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    Box(
+        modifier = modifier
+            .background(Color.White.copy(alpha = 0.85f), RoundedCornerShape(14.dp))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),

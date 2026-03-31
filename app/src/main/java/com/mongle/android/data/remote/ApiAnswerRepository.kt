@@ -60,8 +60,14 @@ class ApiAnswerRepository @Inject constructor(
         return try {
             block()
         } catch (e: HttpException) {
-            val msg = e.response()?.errorBody()?.string() ?: e.message()
-            throw Exception(msg)
+            val raw = e.response()?.errorBody()?.string() ?: e.message()
+            throw Exception(parseServerMessage(raw))
         }
     }
+}
+
+private val messageRegex = """"message"\s*:\s*"([^"]+)"""".toRegex()
+internal fun parseServerMessage(raw: String?): String {
+    if (raw == null) return "알 수 없는 오류가 발생했습니다."
+    return messageRegex.find(raw)?.groupValues?.get(1) ?: raw
 }
