@@ -81,8 +81,7 @@ fun MainTabScreen(
 
     Scaffold(
         bottomBar = {
-            // 탭바 아이콘 색상은 기존 그린(4CAF50) 유지
-            val tabSelectedColor = Color(0xFF4CAF50)
+            val tabSelectedColor = Color(0xFF7CC8A0)
             val tabColors = NavigationBarItemDefaults.colors(
                 selectedIconColor = tabSelectedColor,
                 selectedTextColor = tabSelectedColor,

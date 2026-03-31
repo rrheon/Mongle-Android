@@ -242,7 +242,7 @@ private fun NotificationCard(
 
 private fun notificationIconBg(type: String): Color = when (type) {
     "member_answered" -> MonglePrimaryLight
-    "all_answered" -> Color(0xFFE8F5E9)
+    "all_answered" -> Color(0xFFEDF7F0)
     "answer_request" -> Color(0xFFFFF3E0)
     "new_question" -> Color(0xFFE3F2FD)
     else -> Color(0xFFF5F5F5)
@@ -250,7 +250,7 @@ private fun notificationIconBg(type: String): Color = when (type) {
 
 private fun notificationIconTint(type: String): Color = when (type) {
     "member_answered" -> MonglePrimary
-    "all_answered" -> Color(0xFF388E3C)
+    "all_answered" -> Color(0xFF6BBF93)
     "answer_request" -> Color(0xFFFF6D00)
     "new_question" -> Color(0xFF1976D2)
     else -> Color(0xFF9E9E9E)

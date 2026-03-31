@@ -311,7 +311,7 @@ private fun AnswerRow(
 @Composable
 private fun MiniMongleAvatar(colorIndex: Int) {
     val colors = listOf(
-        Color(0xFF66BB6A),   // green
+        Color(0xFF8FD5A6),   // green (pastel)
         Color(0xFFFFD54F),   // yellow
         Color(0xFFF06292),   // pink
         Color(0xFF42A5F5),   // blue

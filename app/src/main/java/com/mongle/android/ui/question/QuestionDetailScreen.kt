@@ -488,9 +488,9 @@ private fun AnswerCtaButton(
                 .clip(CircleShape)
                 .background(
                     if (enabled) Brush.linearGradient(
-                        colors = listOf(Color(0xFF6BBF93), Color(0xFF4CAF50))
+                        colors = listOf(Color(0xFF8FD5A6), Color(0xFF7CC8A0))
                     ) else Brush.linearGradient(
-                        colors = listOf(Color(0xFFB0C4B1), Color(0xFFA5C4A6))
+                        colors = listOf(Color(0xFFC5DFC8), Color(0xFFB8D8BB))
                     )
                 )
                 .clickable(enabled = enabled && !isSubmitting) { onClick() },

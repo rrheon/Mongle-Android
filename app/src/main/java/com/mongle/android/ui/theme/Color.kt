@@ -2,17 +2,17 @@ package com.mongle.android.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// MARK: - Primary (green) — monggleGreen: light 0xFF66BB6A / dark 0xFF8DD4AE
-val MonglePrimary = Color(0xFF66BB6A)
-val MonglePrimaryDark = Color(0xFF8DD4AE)
-val MonglePrimaryLight = Color(0xFFE8F5E1)
+// MARK: - Primary (green, pastel) — monggleGreen: light 0xFF8FD5A6 / dark 0xFFA5E0C0
+val MonglePrimary = Color(0xFF8FD5A6)
+val MonglePrimaryDark = Color(0xFFA5E0C0)
+val MonglePrimaryLight = Color(0xFFEDF7F0)
 val MonglePrimaryLightDark = Color(0xFF1E3A2A)
-val MonglePrimaryDarker = Color(0xFF4CAF50)
-val MonglePrimaryDarkerDark = Color(0xFF5BAF85)
-val MonglePrimarySoft = Color(0xFFA5D6A7)
-val MonglePrimarySoftDark = Color(0xFFC2E8D4)
-val MongleXpGreen = Color(0xFF66BB6A)
-val MongleXpGreenDark = Color(0xFF8DD4AE)
+val MonglePrimaryDarker = Color(0xFF7CC8A0)
+val MonglePrimaryDarkerDark = Color(0xFF7CC8A0)
+val MonglePrimarySoft = Color(0xFFBDE5C0)
+val MonglePrimarySoftDark = Color(0xFFD2F0DC)
+val MongleXpGreen = Color(0xFF8FD5A6)
+val MongleXpGreenDark = Color(0xFFA5E0C0)
 
 // MARK: - Social Login
 val MongleKakao = Color(0xFFFEE500)
@@ -35,7 +35,7 @@ val MongleSurfaceWarmDark = Color(0xFF221A10)
 // MARK: - Card
 val MongleCardBackgroundLight = Color(0xFFFFFFFF)
 val MongleCardBackgroundDark = Color(0xFF1E1E1E)
-val MongleCardHighlightLight = Color(0xFFE8F5E1)
+val MongleCardHighlightLight = Color(0xFFEDF7F0)
 val MongleCardHighlightDark = Color(0xFF1E3A2A)
 
 // MARK: - Border
@@ -52,8 +52,8 @@ val MongleTextOnPrimary = Color(0xFFFFFFFF)
 // MARK: - Status
 val MongleError = Color(0xFFF44336)
 val MongleWarning = Color(0xFFFF9800)
-val MongleSuccessLight = Color(0xFF4CAF50)
-val MongleSuccessDark = Color(0xFF66BB6A)
+val MongleSuccessLight = Color(0xFF7CC8A0)
+val MongleSuccessDark = Color(0xFF8FD5A6)
 val MongleInfo = Color(0xFF42A5F5)
 
 // MARK: - Gradient
@@ -61,8 +61,8 @@ val MongleGradientStart = Color(0xFFF5A8A0)
 val MongleGradientEnd = Color(0xFFA8DFBC)
 
 // MARK: - Monggle characters
-val MongleMonggleGreenLight = Color(0xFF66BB6A)
-val MongleMonggleGreenDark = Color(0xFF8DD4AE)
+val MongleMonggleGreenLight = Color(0xFF8FD5A6)
+val MongleMonggleGreenDark = Color(0xFFA5E0C0)
 val MongleMonggleYellow = Color(0xFFFFD54F)
 val MongleMonggleBlue = Color(0xFF42A5F5)
 val MongleMongglePink = Color(0xFFF06292)
