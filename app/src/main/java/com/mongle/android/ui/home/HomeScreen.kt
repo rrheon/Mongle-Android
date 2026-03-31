@@ -118,6 +118,7 @@ fun HomeScreen(
     // 그룹 드롭다운 상태 (호이스팅)
     var showGroupDropdown by remember { mutableStateOf(false) }
     var topBarHeightPx by remember { mutableIntStateOf(0) }
+    var overlayHeightPx by remember { mutableIntStateOf(0) }
 
     // 다이얼로그 상태
     var showAnswerFirstDialog by remember { mutableStateOf<String?>(null) }
@@ -187,6 +188,7 @@ fun HomeScreen(
             currentUserId = uiState.currentUser?.id,
             hasCurrentUserAnswered = uiState.hasAnsweredToday,
             hasCurrentUserSkipped = uiState.hasSkippedToday,
+            topInsetPx = overlayHeightPx,
             onViewAnswer = { info ->
                 val user = uiState.familyMembers.find { it.id == info.id }
                 user?.let { viewModel.onViewAnswerTapped(it) }
@@ -202,7 +204,11 @@ fun HomeScreen(
         )
 
         // ── 상단 오버레이 (TopBar + 오늘의 질문 카드) ──
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { overlayHeightPx = it.size.height }
+        ) {
             HomeTopBar(
                 groupName = uiState.family?.name ?: "몽글",
                 currentFamilyId = uiState.family?.id,
@@ -389,6 +395,7 @@ private fun HomeTopBar(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .background(Color.White)
     ) {
         // 그룹명 + 하트 + 알림
         Row(
