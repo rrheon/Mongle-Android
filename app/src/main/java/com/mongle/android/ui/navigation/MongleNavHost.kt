@@ -15,14 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -130,20 +131,18 @@ fun MongleNavHost(
         AppState.Authenticated -> {
             // 일일 접속 하트 팝업
             if (uiState.dailyHeartGranted > 0) {
-                AlertDialog(
+                Dialog(
                     onDismissRequest = { rootViewModel.dismissDailyHeartPopup() },
-                    title = { Text("하트 획득 🎉") },
-                    text = {
-                        Text(
-                            "매일 첫 접속 보너스!\n하트 ${uiState.dailyHeartGranted}개를 받았어요.\n현재 ${uiState.currentUser?.hearts ?: 0}개 보유 중이에요."
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { rootViewModel.dismissDailyHeartPopup() }) {
-                            Text("확인")
-                        }
-                    }
-                )
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
+                    MonglePopup(
+                        title = "하트 획득",
+                        description = "매일 첫 접속 보너스!\n하트 ${uiState.dailyHeartGranted}개를 받았어요.",
+                        note = "현재 ${uiState.currentUser?.hearts ?: 0}개 보유 중이에요.",
+                        primaryLabel = "확인",
+                        onPrimary = { rootViewModel.dismissDailyHeartPopup() }
+                    )
+                }
             }
 
             // 답변 완료 하트 적립 팝업
@@ -212,6 +211,7 @@ fun MongleNavHost(
                             onNavigateToNudge = { user -> showNudgeTarget = user },
                             onNavigateToWriteQuestion = { showWriteQuestion = true },
                             onNavigateToGroupSelect = { showGroupSelect = true },
+                            onGroupSelected = { familyId -> rootViewModel.onGroupSelected(familyId) },
                             onLogout = { rootViewModel.logout() },
                             onGroupLeft = {
                                 groupLeftToast = true
@@ -267,30 +267,23 @@ private fun AnswerSubmittedToast() {
 
 @Composable
 private fun HeartEarnedPopup(hearts: Int, onDismiss: () -> Unit) {
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text("하트 1개를 받았어요! ❤️") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("마음을 남겨서 하트 1개를 받았어요.")
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        MonglePopup(
+            title = "하트 1개를 받았어요!",
+            description = "마음을 남겨서 하트 1개를 받았어요.",
+            note = "현재 보유: $hearts 개",
+            primaryLabel = "확인",
+            onPrimary = onDismiss,
+            extraContent = {
                 Text(
-                    text = "현재 보유: $hearts 개",
-                    fontWeight = FontWeight.SemiBold,
-                    color = MonglePrimary
-                )
-                Text(
-                    text = "\n하트 사용처\n" +
-                        "• 질문 다시받기 (1개)\n" +
-                        "• 나만의 질문 작성 (1개)\n" +
-                        "• 재촉하기 (1개)\n\n" +
-                        "매일 오전 6시에 하트 1개가 충전돼요.",
+                    text = "하트 사용처\n• 질문 다시받기 (1개)\n• 나만의 질문 작성 (1개)\n• 재촉하기 (1개)\n\n매일 오전 6시에 하트 1개가 충전돼요.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MongleTextSecondary
                 )
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("확인") }
-        }
-    )
+        )
+    }
 }

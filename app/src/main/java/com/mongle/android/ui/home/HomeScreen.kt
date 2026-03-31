@@ -30,7 +30,9 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,7 +42,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -104,6 +105,7 @@ fun HomeScreen(
     onNavigateToNudge: (User) -> Unit,
     onNavigateToWriteQuestion: () -> Unit,
     onNavigateToGroupSelect: () -> Unit = {},
+    onGroupSelected: (java.util.UUID) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -139,7 +141,8 @@ fun HomeScreen(
         uiState.familyMembers.mapIndexed { index, user ->
             val fallbackColor = sceneCharacterColors[index % sceneCharacterColors.size]
             val answer = uiState.memberAnswers[user.id]
-            val hasAnswered = uiState.memberAnswerStatus[user.id] == true
+            val isCurrentUser = user.id == uiState.currentUser?.id
+            val hasAnswered = if (isCurrentUser) uiState.hasAnsweredToday else uiState.memberAnswerStatus[user.id] == true
             SceneMemberInfo(
                 id = user.id,
                 name = user.name,
@@ -255,7 +258,10 @@ fun HomeScreen(
                 HomeGroupDropdownPanel(
                     allFamilies = uiState.allFamilies,
                     currentFamilyId = uiState.family?.id,
-                    onGroupSelected = { showGroupDropdown = false },
+                    onGroupSelected = { group ->
+                        showGroupDropdown = false
+                        onGroupSelected(group.id)
+                    },
                     onGroupManage = { showGroupDropdown = false; onNavigateToGroupSelect() }
                 )
             }
@@ -294,64 +300,44 @@ fun HomeScreen(
         )
     }
 
-    // AlertDialog: 먼저 답변 완료 (답변 보기 시도)
+    // 먼저 답변 완료 팝업 (답변 보기 시도)
     showAnswerFirstDialog?.let { name ->
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showAnswerFirstDialog = null },
-            title = {
-                Text(
-                    "먼저 답변을 완료해 주세요",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            },
-            text = {
-                Text(
-                    "${name}의 답변을 보려면\n먼저 오늘의 질문에 답변해야 해요",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "먼저 답변을 완료해 주세요",
+                description = "${name}의 답변을 보려면\n먼저 오늘의 질문에 답변해야 해요",
+                primaryLabel = "답변하기",
+                onPrimary = {
                     showAnswerFirstDialog = null
                     if (uiState.todayQuestion != null) showQuestionSheet = true
-                }) {
-                    Text("답변하기", color = MonglePrimary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAnswerFirstDialog = null }) { Text("취소") }
-            }
-        )
+                },
+                secondaryLabel = "취소",
+                onSecondary = { showAnswerFirstDialog = null }
+            )
+        }
     }
 
-    // AlertDialog: 먼저 답변 완료 (재촉하기 시도)
+    // 먼저 답변 완료 팝업 (재촉하기 시도)
     showNudgeUnavailableDialog?.let { name ->
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showNudgeUnavailableDialog = null },
-            title = {
-                Text(
-                    "먼저 답변을 완료해 주세요",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            },
-            text = {
-                Text(
-                    "${name}에게 재촉하려면\n먼저 오늘의 질문에 답변해야 해요",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "먼저 답변을 완료해 주세요",
+                description = "${name}에게 재촉하려면\n먼저 오늘의 질문에 답변해야 해요",
+                primaryLabel = "답변하기",
+                onPrimary = {
                     showNudgeUnavailableDialog = null
                     if (uiState.todayQuestion != null) showQuestionSheet = true
-                }) {
-                    Text("답변하기", color = MonglePrimary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showNudgeUnavailableDialog = null }) { Text("취소") }
-            }
-        )
+                },
+                secondaryLabel = "취소",
+                onSecondary = { showNudgeUnavailableDialog = null }
+            )
+        }
     }
 }
 
