@@ -103,3 +103,10 @@ val MongleHeartRedLight = Color(0xFFFFE5E5)
 // MARK: - Streak
 val MongleStreakFireLight = Color(0xFFFF6D00)
 val MongleStreakFireDark = Color(0xFFF5978E)
+
+// MARK: - Google Brand Colors
+val MongleGoogleRed = Color(0xFFEA4335)
+val MongleGoogleBlue = Color(0xFF4285F4)
+val MongleGoogleYellow = Color(0xFFFBBC05)
+val MongleGoogleGreen = Color(0xFF34A853)
+val MongleGoogleBorder = Color(0xFFDEDEDE)

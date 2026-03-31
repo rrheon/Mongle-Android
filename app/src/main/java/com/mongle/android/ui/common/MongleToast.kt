@@ -13,7 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,10 +32,90 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mongle.android.ui.theme.MongleAccentOrange
+import com.mongle.android.ui.theme.MongleError
+import com.mongle.android.ui.theme.MongleHeartRed
 import com.mongle.android.ui.theme.MonglePrimary
+import com.mongle.android.ui.theme.MongleTextPrimary
 
-enum class MongleToastType { SUCCESS, ERROR, INFO }
+// MARK: - Toast Types (iOS ToastType 기준)
+
+enum class MongleToastType {
+    // Success
+    REFRESH_QUESTION,    // 질문 다시받기
+    WRITE_QUESTION,      // 나만의 질문 작성
+    NUDGE,               // 재촉하기
+    EDIT_ANSWER,         // 답변 수정
+    ANSWER_SUBMITTED,    // 답변 작성
+    GROUP_LEFT,          // 그룹 나가기
+    INVITE_CODE_COPIED,  // 초대 코드 복사
+    // Error
+    MAX_GROUPS_REACHED,  // 그룹 3개 한도 초과
+    ALREADY_MEMBER,      // 이미 속해있는 그룹
+    INVALID_INVITE_CODE, // 유효하지 않은 초대코드
+    // Generic
+    SUCCESS,
+    ERROR,
+    INFO
+}
+
+private val MongleToastType.icon: ImageVector
+    get() = when (this) {
+        MongleToastType.REFRESH_QUESTION -> Icons.Default.Refresh
+        MongleToastType.WRITE_QUESTION -> Icons.Default.CheckCircle
+        MongleToastType.NUDGE -> Icons.Default.Favorite
+        MongleToastType.EDIT_ANSWER -> Icons.Default.Check
+        MongleToastType.ANSWER_SUBMITTED -> Icons.Default.Send
+        MongleToastType.GROUP_LEFT -> Icons.Default.CheckCircle
+        MongleToastType.INVITE_CODE_COPIED -> Icons.Default.ContentCopy
+        MongleToastType.MAX_GROUPS_REACHED -> Icons.Default.Warning
+        MongleToastType.ALREADY_MEMBER -> Icons.Default.Warning
+        MongleToastType.INVALID_INVITE_CODE -> Icons.Default.Error
+        MongleToastType.SUCCESS -> Icons.Default.CheckCircle
+        MongleToastType.ERROR -> Icons.Default.Warning
+        MongleToastType.INFO -> Icons.Default.Info
+    }
+
+private val MongleToastType.iconColor: Color
+    get() = when (this) {
+        MongleToastType.REFRESH_QUESTION -> MonglePrimary
+        MongleToastType.WRITE_QUESTION -> MongleAccentOrange
+        MongleToastType.NUDGE -> MongleHeartRed
+        MongleToastType.EDIT_ANSWER -> MonglePrimary
+        MongleToastType.ANSWER_SUBMITTED -> MonglePrimary
+        MongleToastType.GROUP_LEFT -> MonglePrimary
+        MongleToastType.INVITE_CODE_COPIED -> MonglePrimary
+        MongleToastType.MAX_GROUPS_REACHED -> MongleError
+        MongleToastType.ALREADY_MEMBER -> MongleError
+        MongleToastType.INVALID_INVITE_CODE -> MongleError
+        MongleToastType.SUCCESS -> MonglePrimary
+        MongleToastType.ERROR -> MongleError
+        MongleToastType.INFO -> Color(0xFF42A5F5)
+    }
+
+// MARK: - Default messages (iOS ToastType.message 기준)
+
+val MongleToastType.defaultMessage: String
+    get() = when (this) {
+        MongleToastType.REFRESH_QUESTION -> "질문을 넘겼어요. 다른 가족 답변을 확인해보세요!"
+        MongleToastType.WRITE_QUESTION -> "나만의 질문을 등록했어요!"
+        MongleToastType.NUDGE -> "재촉 메시지를 보냈어요!"
+        MongleToastType.EDIT_ANSWER -> "답변을 수정했어요!"
+        MongleToastType.ANSWER_SUBMITTED -> "마음을 남겼어요!"
+        MongleToastType.GROUP_LEFT -> "그룹에서 나왔어요"
+        MongleToastType.INVITE_CODE_COPIED -> "초대 코드가 복사되었습니다"
+        MongleToastType.MAX_GROUPS_REACHED -> "그룹은 최대 3개까지 만들 수 있어요"
+        MongleToastType.ALREADY_MEMBER -> "이미 속해있는 그룹이에요"
+        MongleToastType.INVALID_INVITE_CODE -> "초대코드를 다시 확인해주세요"
+        MongleToastType.SUCCESS -> ""
+        MongleToastType.ERROR -> ""
+        MongleToastType.INFO -> ""
+    }
+
+// MARK: - MongleToast Component
+// iOS MongleToastView와 동일: 흰 배경 캡슐, 컬러 아이콘 + 어두운 텍스트
 
 @Composable
 fun MongleToast(
@@ -36,39 +123,28 @@ fun MongleToast(
     type: MongleToastType = MongleToastType.ERROR,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when (type) {
-        MongleToastType.SUCCESS -> MonglePrimary
-        MongleToastType.ERROR -> Color(0xFFFF6B6B)
-        MongleToastType.INFO -> Color(0xFF5C8FBE)
-    }
-    val icon: ImageVector = when (type) {
-        MongleToastType.SUCCESS -> Icons.Default.Info
-        MongleToastType.ERROR -> Icons.Default.Warning
-        MongleToastType.INFO -> Icons.Default.Info
-    }
-
     Card(
-        shape = RoundedCornerShape(50),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(50.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         modifier = modifier
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = type.icon,
                 contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
+                tint = type.iconColor,
+                modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MongleTextPrimary
             )
         }
     }
