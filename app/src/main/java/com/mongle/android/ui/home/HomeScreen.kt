@@ -166,6 +166,8 @@ fun HomeScreen(
         }
     }
 
+    val isBeforeNoon = remember { java.time.LocalTime.now().isBefore(java.time.LocalTime.NOON) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -179,44 +181,60 @@ fun HomeScreen(
                 )
             )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // ── TopBar (그룹명 + 하트 + 알림 + 오늘의 질문 카드) ──
+        // ── MongleScene (전체 화면) ──
+        MongleSceneView(
+            members = sceneMembers,
+            currentUserId = uiState.currentUser?.id,
+            hasCurrentUserAnswered = uiState.hasAnsweredToday,
+            hasCurrentUserSkipped = uiState.hasSkippedToday,
+            onViewAnswer = { info ->
+                val user = uiState.familyMembers.find { it.id == info.id }
+                user?.let { viewModel.onViewAnswerTapped(it) }
+            },
+            onNudge = { info ->
+                val user = uiState.familyMembers.find { it.id == info.id }
+                user?.let { viewModel.onNudgeTapped(it) }
+            },
+            onSelfTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
+            onAnswerFirstToView = { name -> showAnswerFirstDialog = name },
+            onAnswerFirstToNudge = { name -> showNudgeUnavailableDialog = name },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // ── 상단 오버레이 (TopBar + 오늘의 질문 카드) ──
+        Column(modifier = Modifier.fillMaxWidth()) {
             HomeTopBar(
                 groupName = uiState.family?.name ?: "몽글",
                 currentFamilyId = uiState.family?.id,
                 allFamilies = uiState.allFamilies,
                 hearts = uiState.currentUser?.hearts ?: 0,
                 hasNotification = false,
-                todayQuestion = uiState.todayQuestion,
-                hasAnsweredToday = uiState.hasAnsweredToday,
                 showGroupDropdown = showGroupDropdown,
                 onGroupDropdownToggle = { showGroupDropdown = !showGroupDropdown },
                 onTopBarMeasured = { topBarHeightPx = it },
-                onQuestionTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
                 onNotificationTap = onNavigateToNotifications,
-                onWriteQuestionTap = onNavigateToWriteQuestion,
                 onGroupManage = onNavigateToGroupSelect
             )
 
-            // ── MongleScene (나머지 공간 전체) ──
-            MongleSceneView(
-                members = sceneMembers,
-                currentUserId = uiState.currentUser?.id,
-                hasCurrentUserAnswered = uiState.hasAnsweredToday,
-                hasCurrentUserSkipped = uiState.hasSkippedToday,
-                onViewAnswer = { info ->
-                    val user = uiState.familyMembers.find { it.id == info.id }
-                    user?.let { viewModel.onViewAnswerTapped(it) }
-                },
-                onNudge = { info ->
-                    val user = uiState.familyMembers.find { it.id == info.id }
-                    user?.let { viewModel.onNudgeTapped(it) }
-                },
-                onSelfTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
-                onAnswerFirstToView = { name -> showAnswerFirstDialog = name },
-                onAnswerFirstToNudge = { name -> showNudgeUnavailableDialog = name },
-                modifier = Modifier.fillMaxSize()
-            )
+            // 오늘의 질문 카드 (씬 안쪽 오버레이)
+            if (uiState.todayQuestion != null) {
+                TodayQuestionCard(
+                    question = uiState.todayQuestion!!,
+                    hasAnswered = uiState.hasAnsweredToday,
+                    onTap = { showQuestionSheet = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MongleSpacing.md)
+                        .padding(bottom = MongleSpacing.sm)
+                )
+            } else if (isBeforeNoon) {
+                TodayQuestionPlaceholderCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MongleSpacing.md)
+                        .padding(bottom = MongleSpacing.sm)
+                )
+            }
         }
 
         // 로딩
@@ -354,14 +372,10 @@ private fun HomeTopBar(
     allFamilies: List<MongleGroup>,
     hearts: Int,
     hasNotification: Boolean,
-    todayQuestion: Question?,
-    hasAnsweredToday: Boolean,
     showGroupDropdown: Boolean,
     onGroupDropdownToggle: () -> Unit,
     onTopBarMeasured: (Int) -> Unit = {},
-    onQuestionTap: () -> Unit,
     onNotificationTap: () -> Unit,
-    onWriteQuestionTap: () -> Unit,
     onGroupManage: () -> Unit = {}
 ) {
     var showHeartMenu by remember { mutableStateOf(false) }
@@ -372,14 +386,11 @@ private fun HomeTopBar(
         label = "chevron"
     )
 
-    val isBeforeNoon = remember { java.time.LocalTime.now().isBefore(java.time.LocalTime.NOON) }
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
     ) {
-        // 1단: 그룹명 + 하트 + 알림
+        // 그룹명 + 하트 + 알림
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -497,25 +508,6 @@ private fun HomeTopBar(
             }
         }
 
-        // 2단: 오늘의 질문 카드 또는 플레이스홀더
-        if (todayQuestion != null) {
-            TodayQuestionCard(
-                question = todayQuestion,
-                hasAnswered = hasAnsweredToday,
-                onTap = onQuestionTap,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = MongleSpacing.md)
-                    .padding(bottom = MongleSpacing.sm)
-            )
-        } else if (isBeforeNoon) {
-            TodayQuestionPlaceholderCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = MongleSpacing.md)
-                    .padding(bottom = MongleSpacing.sm)
-            )
-        }
     }
 }
 
