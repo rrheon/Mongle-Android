@@ -92,7 +92,7 @@ fun MongleCharacter(
             modifier = Modifier
                 .size(size)
                 .shadow(
-                    elevation = 6.dp,
+                    elevation = size * 0.2f,
                     shape = CircleShape,
                     ambientColor = bodyColor.copy(alpha = 0.3f),
                     spotColor = bodyColor.copy(alpha = 0.3f)
@@ -162,10 +162,10 @@ fun MongleCharacterAvatar(
         modifier = modifier
             .size(size)
             .shadow(
-                elevation = 4.dp,
+                elevation = size * 0.2f,
                 shape = CircleShape,
-                ambientColor = bodyColor.copy(alpha = 0.2f),
-                spotColor = bodyColor.copy(alpha = 0.2f)
+                ambientColor = bodyColor.copy(alpha = 0.3f),
+                spotColor = bodyColor.copy(alpha = 0.3f)
             )
             .background(bodyColor, CircleShape),
         contentAlignment = Alignment.Center
@@ -605,7 +605,7 @@ private fun SceneMongleItem(
         Box(
             modifier = Modifier
                 .size(size)
-                .shadow(8.dp, CircleShape, ambientColor = color.copy(alpha = 0.3f), spotColor = color.copy(alpha = 0.3f))
+                .shadow(size * 0.2f, CircleShape, ambientColor = color.copy(alpha = 0.3f), spotColor = color.copy(alpha = 0.3f))
                 .background(color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
