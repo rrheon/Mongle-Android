@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.history.HistoryScreen
@@ -46,7 +48,8 @@ fun MainTabScreen(
     onNavigateToNudge: (User) -> Unit = {},
     onNavigateToWriteQuestion: () -> Unit = {},
     onNavigateToGroupSelect: () -> Unit = {},
-    onLogout: () -> Unit,
+    onGroupSelected: (java.util.UUID) -> Unit = {},
+    onLogout: () -> Unit = {},
     onGroupLeft: () -> Unit = {},
     answerSubmittedCount: Int = 0
 ) {
@@ -74,30 +77,41 @@ fun MainTabScreen(
 
     Scaffold(
         bottomBar = {
+            val tabColors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MonglePrimary,
+                selectedTextColor = MonglePrimary,
+                indicatorColor = MonglePrimary.copy(alpha = 0.12f),
+                unselectedIconColor = Color(0xFF9E9E9E),
+                unselectedTextColor = Color(0xFF9E9E9E)
+            )
             NavigationBar(containerColor = Color.White) {
                 NavigationBarItem(
                     selected = selectedTab == MainTab.HOME,
                     onClick = { selectedTab = MainTab.HOME },
                     icon = { Icon(Icons.Default.Home, contentDescription = "HOME") },
-                    label = { Text("HOME") }
+                    label = { Text("HOME") },
+                    colors = tabColors
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.HISTORY,
                     onClick = { selectedTab = MainTab.HISTORY },
                     icon = { Icon(Icons.Default.DateRange, contentDescription = "HISTORY") },
-                    label = { Text("HISTORY") }
+                    label = { Text("HISTORY") },
+                    colors = tabColors
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SEARCH,
                     onClick = { selectedTab = MainTab.SEARCH },
                     icon = { Icon(Icons.Default.Search, contentDescription = "SEARCH") },
-                    label = { Text("SEARCH") }
+                    label = { Text("SEARCH") },
+                    colors = tabColors
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { selectedTab = MainTab.SETTINGS },
                     icon = { Icon(Icons.Default.Person, contentDescription = "MY") },
-                    label = { Text("MY") }
+                    label = { Text("MY") },
+                    colors = tabColors
                 )
             }
         }
@@ -110,6 +124,7 @@ fun MainTabScreen(
                     onNavigateToNudge = onNavigateToNudge,
                     onNavigateToWriteQuestion = onNavigateToWriteQuestion,
                     onNavigateToGroupSelect = onNavigateToGroupSelect,
+                    onGroupSelected = onGroupSelected,
                     viewModel = homeViewModel
                 )
                 MainTab.HISTORY -> HistoryScreen(
