@@ -61,7 +61,7 @@ class ApiQuestionRepository @Inject constructor(
     override suspend fun create(question: Question): Question =
         throw UnsupportedOperationException("서버에서 질문 생성을 지원하지 않습니다.")
 
-    suspend fun skipTodayQuestion(): Question = safeCall {
+    override suspend fun skipQuestion(): Question = safeCall {
         val response = api.skipQuestion()
         response.question.toDomain(
             dailyQuestionId = response.id,

@@ -130,6 +130,29 @@ class ApiAuthRepository @Inject constructor(
     }
 
     override suspend fun getCurrentUser(): User? {
+        // 저장된 토큰이 없으면 미로그인 상태
+        val token = prefs.getString(KEY_TOKEN, null) ?: return null
+
+        return try {
+            // 서버에서 최신 사용자 정보를 가져와 토큰 유효성 검증
+            val apiUser = api.getMe()
+            saveSession(apiUser, token, prefs.getString(KEY_REFRESH_TOKEN, null))
+            apiUser.toDomain()
+        } catch (e: HttpException) {
+            if (e.code() == 401) {
+                // 토큰 만료 + 갱신 실패 → TokenAuthenticator가 이미 세션을 삭제함
+                null
+            } else {
+                // 서버 오류 등 → 캐시된 사용자 정보로 오프라인 진행
+                buildUserFromCache()
+            }
+        } catch (e: Exception) {
+            // 네트워크 없음 → 캐시된 사용자 정보로 오프라인 진행
+            buildUserFromCache()
+        }
+    }
+
+    private fun buildUserFromCache(): User? {
         val id = prefs.getString(KEY_USER_ID, null) ?: return null
         val email = prefs.getString(KEY_USER_EMAIL, null) ?: return null
         val name = prefs.getString(KEY_USER_NAME, null) ?: return null

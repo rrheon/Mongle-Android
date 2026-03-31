@@ -185,6 +185,28 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun skipQuestion() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching { questionRepository.skipQuestion() }
+                .onSuccess { newQuestion ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            todayQuestion = newQuestion,
+                            hasAnsweredToday = false,
+                            memberAnswerStatus = emptyMap(),
+                            memberAnswers = emptyMap()
+                        )
+                    }
+                    newQuestion.dailyQuestionId?.let { loadFamilyAnswers(it) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "질문 넘기기에 실패했습니다.") }
+                }
+        }
+    }
+
     fun updateHearts(hearts: Int) {
         _uiState.update { state ->
             state.copy(currentUser = state.currentUser?.copy(hearts = hearts))

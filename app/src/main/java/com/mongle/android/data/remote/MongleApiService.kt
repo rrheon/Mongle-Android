@@ -255,6 +255,11 @@ data class MarkAllReadResponse(
 // ── 재촉하기 ──────────────────────────────────────────
 
 @JsonClass(generateAdapter = true)
+data class NudgeRequest(
+    val targetUserId: String
+)
+
+@JsonClass(generateAdapter = true)
 data class NudgeResponse(
     val heartsRemaining: Int
 )
@@ -269,6 +274,15 @@ data class AdHeartRewardRequest(
 @JsonClass(generateAdapter = true)
 data class AdHeartRewardResponse(
     val heartsRemaining: Int
+)
+
+// ── 일일 접속 하트 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class DailyHeartResponse(
+    val heartsGranted: Int,
+    val heartsRemaining: Int,
+    val alreadyClaimed: Boolean = false
 )
 
 // ── 질문 패스 응답 ──────────────────────────────────────────
@@ -286,10 +300,10 @@ interface MongleApiService {
     @POST("auth/social")
     suspend fun socialLogin(@Body body: SocialLoginRequest): AuthResponse
 
-    @POST("auth/email/login")
+    @POST("auth/login")
     suspend fun emailLogin(@Body body: EmailLoginRequest): AuthResponse
 
-    @POST("auth/email/signup")
+    @POST("auth/signup")
     suspend fun emailSignup(@Body body: EmailSignupRequest): AuthResponse
 
     @POST("auth/refresh")
@@ -310,6 +324,9 @@ interface MongleApiService {
 
     @POST("users/me/hearts/ad-reward")
     suspend fun grantAdHearts(@Body body: AdHeartRewardRequest): AdHeartRewardResponse
+
+    @POST("users/me/hearts/daily")
+    suspend fun claimDailyHeart(): DailyHeartResponse
 
     // Questions
     @GET("questions/today")
@@ -373,8 +390,8 @@ interface MongleApiService {
     ): AnswerResponse
 
     // Nudge
-    @POST("nudge/{targetUserId}")
-    suspend fun sendNudge(@Path("targetUserId") targetUserId: String): NudgeResponse
+    @POST("nudge")
+    suspend fun sendNudge(@Body body: NudgeRequest): NudgeResponse
 
     // Notifications
     @GET("notifications")

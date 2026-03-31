@@ -263,6 +263,10 @@ fun HomeScreen(
             onWriteQuestionTap = {
                 showQuestionSheet = false
                 onNavigateToWriteQuestion()
+            },
+            onSkipTapped = {
+                showQuestionSheet = false
+                viewModel.skipQuestion()
             }
         )
     }

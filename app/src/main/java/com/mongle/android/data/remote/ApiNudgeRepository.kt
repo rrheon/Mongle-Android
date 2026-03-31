@@ -20,6 +20,6 @@ class ApiNudgeRepository @Inject constructor(
     }
 
     override suspend fun sendNudge(targetUserId: String): Int = safeCall {
-        api.sendNudge(targetUserId).heartsRemaining
+        api.sendNudge(NudgeRequest(targetUserId)).heartsRemaining
     }
 }

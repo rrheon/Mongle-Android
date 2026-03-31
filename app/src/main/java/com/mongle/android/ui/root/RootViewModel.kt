@@ -7,10 +7,12 @@ import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
+import com.mongle.android.data.remote.SessionExpiredNotifier
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
+import com.mongle.android.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +43,8 @@ data class RootUiState(
     val allFamilies: List<MongleGroup> = emptyList(),
     val hasAnsweredToday: Boolean = false,
     val errorMessage: String? = null,
-    val pendingInviteCode: String? = null
+    val pendingInviteCode: String? = null,
+    val dailyHeartGranted: Int = 0
 )
 
 @HiltViewModel
@@ -50,6 +53,8 @@ class RootViewModel @Inject constructor(
     private val mongleRepository: MongleRepository,
     private val questionRepository: QuestionRepository,
     private val treeRepository: TreeRepository,
+    private val userRepository: UserRepository,
+    private val sessionExpiredNotifier: SessionExpiredNotifier,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -74,6 +79,12 @@ class RootViewModel @Inject constructor(
 
     init {
         checkAuthStatus()
+        // 토큰 만료(401 + 갱신 실패) 이벤트 구독 → 로그인 화면으로 이동
+        viewModelScope.launch {
+            sessionExpiredNotifier.events.collect {
+                _uiState.update { RootUiState(appState = AppState.Unauthenticated) }
+            }
+        }
     }
 
     private fun checkAuthStatus() {
@@ -123,6 +134,9 @@ class RootViewModel @Inject constructor(
                     // No active family → go to GroupSelection
                     _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
                 } else {
+                    // 일일 접속 하트 획득 시도
+                    val dailyHeart = runCatching { userRepository.claimDailyHeart() }.getOrNull()
+
                     _uiState.update {
                         it.copy(
                             appState = AppState.Authenticated,
@@ -131,7 +145,13 @@ class RootViewModel @Inject constructor(
                             family = family,
                             familyMembers = members,
                             allFamilies = allFamilies,
-                            hasAnsweredToday = question?.hasMyAnswer ?: false
+                            hasAnsweredToday = question?.hasMyAnswer ?: false,
+                            dailyHeartGranted = dailyHeart?.heartsGranted ?: 0,
+                            currentUser = if (dailyHeart != null) {
+                                it.currentUser?.copy(hearts = dailyHeart.heartsRemaining)
+                            } else {
+                                it.currentUser
+                            }
                         )
                     }
                 }
@@ -203,6 +223,10 @@ class RootViewModel @Inject constructor(
 
     fun onAnswerSubmitted() {
         _uiState.update { it.copy(hasAnsweredToday = true) }
+    }
+
+    fun dismissDailyHeartPopup() {
+        _uiState.update { it.copy(dailyHeartGranted = 0) }
     }
 
     fun refreshData() {

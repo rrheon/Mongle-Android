@@ -3,7 +3,6 @@ package com.mongle.android.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,7 +51,8 @@ fun QuestionSheetBottomSheet(
     hasAnswered: Boolean,
     onDismiss: () -> Unit,
     onAnswerTap: () -> Unit,
-    onWriteQuestionTap: () -> Unit
+    onWriteQuestionTap: () -> Unit,
+    onSkipTapped: () -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -180,13 +180,13 @@ fun QuestionSheetBottomSheet(
                 color = Color(0xFFEEEEEE)
             )
 
-            // ── 질문 넘기기 (비활성) ──
+            // ── 질문 넘기기 ──
             QuestionSheetActionRow(
                 icon = Icons.Default.Forward,
                 title = "질문 넘기기",
                 subtitle = "하트 3개 소모 · 다른 가족 답변 열람 가능",
-                enabled = false,
-                onClick = {}
+                enabled = true,
+                onClick = onSkipTapped
             )
         }
     }
