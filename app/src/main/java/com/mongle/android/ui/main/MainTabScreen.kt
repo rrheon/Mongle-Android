@@ -24,6 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.history.HistoryScreen
+import com.mongle.android.ui.history.HistoryViewModel
 import com.mongle.android.ui.home.HomeScreen
 import com.mongle.android.ui.home.HomeViewModel
 import com.mongle.android.ui.root.RootUiState
@@ -46,10 +47,17 @@ fun MainTabScreen(
     onNavigateToWriteQuestion: () -> Unit = {},
     onNavigateToGroupSelect: () -> Unit = {},
     onLogout: () -> Unit,
-    onGroupLeft: () -> Unit = {}
+    onGroupLeft: () -> Unit = {},
+    answerSubmittedCount: Int = 0
 ) {
     var selectedTab by remember { mutableStateOf(MainTab.HOME) }
     val homeViewModel: HomeViewModel = hiltViewModel()
+    val historyViewModel: HistoryViewModel = hiltViewModel()
+
+    // 답변 제출 시 History 강제 새로고침
+    LaunchedEffect(answerSubmittedCount) {
+        if (answerSubmittedCount > 0) historyViewModel.refresh()
+    }
 
     // RootViewModel 데이터를 HomeViewModel에 주입
     LaunchedEffect(rootUiState) {
@@ -105,7 +113,8 @@ fun MainTabScreen(
                     viewModel = homeViewModel
                 )
                 MainTab.HISTORY -> HistoryScreen(
-                    onNavigateToQuestionDetail = onNavigateToQuestionDetail
+                    onNavigateToQuestionDetail = onNavigateToQuestionDetail,
+                    viewModel = historyViewModel
                 )
                 MainTab.SEARCH -> SearchScreen()
                 MainTab.SETTINGS -> SettingsScreen(
