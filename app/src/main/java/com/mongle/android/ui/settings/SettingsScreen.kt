@@ -133,6 +133,13 @@ fun SettingsScreen(
         }
     }
 
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.dismissError()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = "my") {
             composable("my") {
@@ -153,8 +160,13 @@ fun SettingsScreen(
                     onBack = { navController.popBackStack() },
                     onNameChanged = viewModel::onEditNameChanged,
                     onConfirm = {
-                        viewModel.onEditProfileConfirmed()
-                        navController.popBackStack()
+                        val nameChanged = uiState.editName.trim() != uiState.currentUser?.name
+                        if (!nameChanged || uiState.canChangeName) {
+                            viewModel.onEditProfileConfirmed()
+                            navController.popBackStack()
+                        } else {
+                            viewModel.onEditProfileConfirmed() // ViewModel에서 에러 메시지 설정
+                        }
                     }
                 )
             }
@@ -372,14 +384,16 @@ private fun ProfileEditScreen(
                 )
                 MongleTextField(
                     value = uiState.editName,
-                    onValueChange = onNameChanged,
+                    onValueChange = if (uiState.canChangeName) onNameChanged else { _ -> },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = "이름 입력"
+                    placeholder = "이름 입력",
+                    enabled = uiState.canChangeName
                 )
                 Text(
-                    text = "다른 멤버에게 보여지는 이름이에요",
+                    text = if (uiState.canChangeName) "다른 멤버에게 보여지는 이름이에요"
+                           else "이름은 일주일에 한 번만 변경 가능해요 (${uiState.daysUntilNameChange}일 후 변경 가능)",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MongleTextHint
+                    color = if (uiState.canChangeName) MongleTextHint else Color(0xFFFF6B6B)
                 )
             }
         }

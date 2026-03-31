@@ -46,6 +46,20 @@ data class SettingsUiState(
 ) {
     val isOwner: Boolean get() = family?.createdBy == currentUser?.id
     val transferCandidates: List<User> get() = familyMembers.filter { it.id != currentUser?.id }
+
+    /** 이름 변경 가능 여부: 마지막 변경으로부터 7일 경과 시 true */
+    val canChangeName: Boolean get() {
+        val lastChanged = currentUser?.lastNameChangedAt ?: return true
+        val daysSinceChange = (System.currentTimeMillis() - lastChanged) / (24L * 60 * 60 * 1000)
+        return daysSinceChange >= 7
+    }
+
+    /** 다음 이름 변경 가능일까지 남은 일수 */
+    val daysUntilNameChange: Int get() {
+        val lastChanged = currentUser?.lastNameChangedAt ?: return 0
+        val daysSinceChange = (System.currentTimeMillis() - lastChanged) / (24L * 60 * 60 * 1000)
+        return (7 - daysSinceChange).coerceAtLeast(0).toInt()
+    }
 }
 
 sealed class SettingsEvent {
@@ -115,17 +129,36 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onEditProfileConfirmed() {
-        val user = _uiState.value.currentUser ?: return
-        val name = _uiState.value.editName.trim()
+        val state = _uiState.value
+        val user = state.currentUser ?: return
+        val name = state.editName.trim()
         if (name.isBlank()) return
+
+        val nameChanged = name != user.name
+        if (nameChanged && !state.canChangeName) {
+            _uiState.update {
+                it.copy(errorMessage = "이름은 일주일에 한 번만 변경할 수 있어요. ${state.daysUntilNameChange}일 후에 다시 시도해 주세요.")
+            }
+            return
+        }
 
         _uiState.update { it.copy(isLoading = true, showEditProfile = false) }
         viewModelScope.launch {
             try {
+                val nameChangedAt = if (nameChanged) System.currentTimeMillis() else user.lastNameChangedAt
                 val updated = userRepository.update(
-                    user.copy(name = name, role = _uiState.value.editRole)
+                    user.copy(name = name, role = state.editRole, lastNameChangedAt = nameChangedAt)
                 )
-                _uiState.update { it.copy(currentUser = updated, isLoading = false) }
+                // moodId(캐릭터 색상)는 이름 변경 시 유지 - 서버 응답에 없을 경우 기존 값 보존
+                _uiState.update {
+                    it.copy(
+                        currentUser = updated.copy(
+                            moodId = updated.moodId ?: user.moodId,
+                            lastNameChangedAt = nameChangedAt
+                        ),
+                        isLoading = false
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = e.message ?: "프로필 업데이트에 실패했습니다.")

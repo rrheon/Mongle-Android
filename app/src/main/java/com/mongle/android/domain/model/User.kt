@@ -11,7 +11,8 @@ data class User(
     val role: FamilyRole,
     val hearts: Int = 0,
     val moodId: String? = null,
-    val createdAt: Date
+    val createdAt: Date,
+    val lastNameChangedAt: Long? = null
 )
 
 enum class FamilyRole(val displayName: String) {
