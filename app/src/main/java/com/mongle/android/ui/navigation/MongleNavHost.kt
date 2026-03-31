@@ -1,25 +1,14 @@
 package com.mongle.android.ui.navigation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mongle.android.ui.common.MonglePopup
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +32,9 @@ import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
+import com.mongle.android.ui.common.MongleToastOverlay
+import com.mongle.android.ui.common.MongleToastType
+import com.mongle.android.ui.common.defaultMessage
 import com.mongle.android.ui.groupselect.GroupSelectScreen
 import com.mongle.android.ui.login.LoginScreen
 import com.mongle.android.ui.main.MainTabScreen
@@ -222,45 +214,16 @@ fun MongleNavHost(
                     }
                 }
 
-                // 답변 완료 토스트 (화면 하단)
-                AnimatedVisibility(
-                    visible = showAnswerSubmittedToast && showQuestionDetail == null,
-                    enter = fadeIn() + slideInVertically { it },
-                    exit = fadeOut() + slideOutVertically { it },
+                // 답변 완료 토스트 (화면 하단) — iOS MongleToastView 스타일
+                MongleToastOverlay(
+                    message = if (showAnswerSubmittedToast && showQuestionDetail == null)
+                        MongleToastType.ANSWER_SUBMITTED.defaultMessage else null,
+                    type = MongleToastType.ANSWER_SUBMITTED,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 96.dp, start = 16.dp, end = 16.dp)
-                ) {
-                    AnswerSubmittedToast()
-                }
+                )
             }
-        }
-    }
-}
-
-@Composable
-private fun AnswerSubmittedToast() {
-    Card(
-        shape = RoundedCornerShape(50),
-        colors = CardDefaults.cardColors(containerColor = MonglePrimary),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Send,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = "마음을 남겼어요!",
-                color = Color.White,
-                fontWeight = FontWeight.SemiBold
-            )
         }
     }
 }

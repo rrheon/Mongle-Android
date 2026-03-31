@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,11 +44,11 @@ import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.theme.MongleBorder
-import com.mongle.android.ui.theme.MongleMoodCalm
-import com.mongle.android.ui.theme.MongleMoodHappy
-import com.mongle.android.ui.theme.MongleMoodLoved
-import com.mongle.android.ui.theme.MongleMoodSad
-import com.mongle.android.ui.theme.MongleMoodTired
+import com.mongle.android.ui.theme.MongleMonggleBlue
+import com.mongle.android.ui.theme.MongleMonggleGreenLight
+import com.mongle.android.ui.theme.MongleMonggleOrange
+import com.mongle.android.ui.theme.MongleMongglePink
+import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
@@ -63,7 +64,10 @@ private val DAY_NAMES = listOf("일", "월", "화", "수", "목", "금", "토")
 
 private val moodLabels = listOf("평온", "행복", "사랑", "우울", "지침")
 private val moodIds = listOf("calm", "happy", "loved", "sad", "tired")
-private val moodColors = listOf(MongleMoodCalm, MongleMoodHappy, MongleMoodLoved, MongleMoodSad, MongleMoodTired)
+// iOS monggleColor(for:) 순서: [Green, Yellow, Pink, Blue, Orange]
+private val moodCharacterColors = listOf(
+    MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
+)
 
 private val selectedDateFormatter = SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN)
 
@@ -210,8 +214,11 @@ fun HistoryScreen(
                             selectedDate = uiState.selectedDate,
                             onClick = { viewModel.onItemTapped(selectedItem) }
                         )
-                        selectedItem.memberAnswers.forEach { answer ->
-                            FamilyAnswerCard(answer = answer)
+                        // 내가 답변한 경우에만 다른 멤버 답변 표시
+                        if (selectedItem.userAnswered) {
+                            selectedItem.memberAnswers.forEach { answer ->
+                                FamilyAnswerCard(answer = answer)
+                            }
                         }
                     }
                 } else {
@@ -332,29 +339,45 @@ private fun MoodTimelineSection(
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            moodColors.forEachIndexed { index, color ->
+            moodCharacterColors.forEachIndexed { index, color ->
+                val count = moodCounts[moodIds[index]] ?: 0
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    MongleCharacterAvatar(
-                        name = moodLabels[index],
-                        index = index,
-                        size = 44.dp
-                    )
+                    // iOS: ZStack(alignment: .topTrailing) + badge offset(x: 6, y: -6)
+                    Box {
+                        MongleCharacterAvatar(
+                            name = moodLabels[index],
+                            index = index,
+                            size = 44.dp,
+                            color = color
+                        )
+                        if (count > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 6.dp, y = (-6).dp)
+                                    .background(MonglePrimary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$count",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = moodLabels[index],
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                         color = MongleTextSecondary
-                    )
-                    Text(
-                        text = "${moodCounts[moodIds[index]] ?: 0}",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = color
                     )
                 }
             }
@@ -367,7 +390,7 @@ private fun MoodTimelineSection(
 @Composable
 private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
     val moodIdx = answer.moodId?.let { moodIds.indexOf(it).takeIf { i -> i >= 0 } }
-    val moodColor = moodIdx?.let { moodColors[it] }
+    val moodColor = moodIdx?.let { moodCharacterColors[it] }
     Row(
         modifier = Modifier
             .fillMaxWidth()

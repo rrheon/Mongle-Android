@@ -61,11 +61,12 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.random.Random
 
+// iOS monggleColor(for:) 순서와 동일: [Green, Yellow, Pink, Blue, Orange]
 private val characterColors = listOf(
     MongleMonggleGreenLight,
     MongleMonggleYellow,
-    MongleMonggleBlue,
     MongleMongglePink,
+    MongleMonggleBlue,
     MongleMonggleOrange
 )
 

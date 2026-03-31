@@ -120,8 +120,17 @@ class HistoryViewModel @Inject constructor(
                     }
                 }
 
+                // 오늘 날짜에 해당하는 아이템 자동 선택
+                val todayItem = historyMap[todayCal.timeInMillis]
+
                 _uiState.update {
-                    it.copy(isLoading = false, historyItems = historyMap, moodCounts = moodCounts)
+                    it.copy(
+                        isLoading = false,
+                        historyItems = historyMap,
+                        moodCounts = moodCounts,
+                        selectedDate = Date(),
+                        selectedItem = todayItem
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update {
