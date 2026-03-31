@@ -96,6 +96,13 @@ class SearchViewModel @Inject constructor(
         val lowerQuery = trimmed.lowercase()
 
         for (history in allHistory) {
+            // 오늘 날짜의 질문은 검색 결과에서 제외
+            val historyCal = Calendar.getInstance().apply { time = history.date }
+            val todayCal = Calendar.getInstance()
+            val isToday = historyCal.get(Calendar.YEAR) == todayCal.get(Calendar.YEAR) &&
+                historyCal.get(Calendar.DAY_OF_YEAR) == todayCal.get(Calendar.DAY_OF_YEAR)
+            if (isToday) continue
+
             val questionMatches = history.question.content.lowercase().contains(lowerQuery)
             val matchedAnswers = history.answers.filter { answer ->
                 answer.content.lowercase().contains(lowerQuery) ||
