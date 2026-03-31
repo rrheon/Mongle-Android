@@ -40,6 +40,7 @@ class ApiFamilyRepository @Inject constructor(
         id = runCatching { UUID.fromString(id) }.getOrElse { UUID.randomUUID() },
         name = name,
         memberIds = members.map { runCatching { UUID.fromString(it.id) }.getOrElse { UUID.randomUUID() } },
+        memberMoodIds = members.map { it.moodId },
         createdBy = runCatching { UUID.fromString(createdById) }.getOrElse { UUID.randomUUID() },
         createdAt = Date(),
         inviteCode = inviteCode,
