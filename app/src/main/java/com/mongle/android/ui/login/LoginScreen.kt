@@ -49,10 +49,6 @@ import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.theme.MongleAppleLight
 import com.mongle.android.ui.theme.MongleAppleTextLight
 import com.mongle.android.ui.theme.MongleGoogleBorder
-import com.mongle.android.ui.theme.MongleGoogleBlue
-import com.mongle.android.ui.theme.MongleGoogleGreen
-import com.mongle.android.ui.theme.MongleGoogleRed
-import com.mongle.android.ui.theme.MongleGoogleYellow
 import com.mongle.android.ui.theme.MongleKakao
 import com.mongle.android.ui.theme.MongleKakaoText
 import com.mongle.android.ui.theme.MongleNaver
@@ -326,7 +322,12 @@ private fun SocialLoginButton(
             Box(modifier = Modifier.size(20.dp)) {
                 when (provider) {
                     SocialProvider.KAKAO -> KakaoLogoIcon(size = 20.dp)
-                    SocialProvider.GOOGLE -> GoogleLogoIcon(size = 20.dp)
+                    SocialProvider.GOOGLE -> Icon(
+                        painter = painterResource(id = R.drawable.ic_google_logo),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(20.dp)
+                    )
                     SocialProvider.APPLE -> Icon(
                         painter = painterResource(id = R.drawable.ic_apple_logo),
                         contentDescription = null,
@@ -372,61 +373,4 @@ private fun KakaoLogoIcon(size: Dp = 20.dp) {
     }
 }
 
-// MARK: - Google 로고 아이콘 (공식 SVG 기반, viewBox 0 0 48 48)
-
-@Composable
-private fun GoogleLogoIcon(size: Dp = 20.dp) {
-    androidx.compose.foundation.Canvas(modifier = Modifier.size(size)) {
-        val s = this.size.width / 48f
-
-        // Red — top arc (#EA4335)
-        val redPath = Path()
-        redPath.moveTo(24f * s, 9.5f * s)
-        redPath.cubicTo(27.54f * s, 9.5f * s, 30.71f * s, 10.72f * s, 33.21f * s, 13.1f * s)
-        redPath.lineTo(40.06f * s, 6.25f * s)
-        redPath.cubicTo(35.9f * s, 2.38f * s, 30.47f * s, 0f, 24f * s, 0f)
-        redPath.cubicTo(14.62f * s, 0f, 6.51f * s, 5.38f * s, 2.56f * s, 13.22f * s)
-        redPath.lineTo(10.54f * s, 19.41f * s)
-        redPath.cubicTo(12.43f * s, 13.72f * s, 17.74f * s, 9.5f * s, 24f * s, 9.5f * s)
-        redPath.close()
-        drawPath(redPath, color = MongleGoogleRed)
-
-        // Blue — right arc (#4285F4)
-        val bluePath = Path()
-        bluePath.moveTo(46.98f * s, 24.55f * s)
-        bluePath.cubicTo(46.98f * s, 22.98f * s, 46.83f * s, 21.46f * s, 46.6f * s, 20f * s)
-        bluePath.lineTo(24f * s, 20f * s)
-        bluePath.lineTo(24f * s, 29.02f * s)
-        bluePath.lineTo(36.94f * s, 29.02f * s)
-        bluePath.cubicTo(36.36f * s, 31.98f * s, 34.68f * s, 34.5f * s, 32.16f * s, 36.2f * s)
-        bluePath.lineTo(39.89f * s, 42.2f * s)
-        bluePath.cubicTo(44.4f * s, 38.02f * s, 46.98f * s, 31.84f * s, 46.98f * s, 24.55f * s)
-        bluePath.close()
-        drawPath(bluePath, color = MongleGoogleBlue)
-
-        // Yellow — left arc (#FBBC05)
-        val yellowPath = Path()
-        yellowPath.moveTo(10.53f * s, 28.59f * s)
-        yellowPath.cubicTo(10.05f * s, 27.14f * s, 9.77f * s, 25.6f * s, 9.77f * s, 24f * s)
-        yellowPath.cubicTo(9.77f * s, 22.4f * s, 10.04f * s, 20.86f * s, 10.53f * s, 19.41f * s)
-        yellowPath.lineTo(2.55f * s, 13.22f * s)
-        yellowPath.cubicTo(0.92f * s, 16.46f * s, 0f, 20.12f * s, 0f, 24f * s)
-        yellowPath.cubicTo(0f, 27.88f * s, 0.92f * s, 31.54f * s, 2.56f * s, 34.78f * s)
-        yellowPath.lineTo(10.53f * s, 28.59f * s)
-        yellowPath.close()
-        drawPath(yellowPath, color = MongleGoogleYellow)
-
-        // Green — bottom arc (#34A853)
-        val greenPath = Path()
-        greenPath.moveTo(24f * s, 48f * s)
-        greenPath.cubicTo(30.48f * s, 48f * s, 35.93f * s, 45.87f * s, 39.89f * s, 42.19f * s)
-        greenPath.lineTo(32.16f * s, 36.19f * s)
-        greenPath.cubicTo(30.01f * s, 37.64f * s, 27.24f * s, 38.49f * s, 24f * s, 38.49f * s)
-        greenPath.cubicTo(17.74f * s, 38.49f * s, 12.43f * s, 34.27f * s, 10.53f * s, 28.58f * s)
-        greenPath.lineTo(2.55f * s, 34.77f * s)
-        greenPath.cubicTo(6.51f * s, 42.62f * s, 14.62f * s, 48f * s, 24f * s, 48f * s)
-        greenPath.close()
-        drawPath(greenPath, color = MongleGoogleGreen)
-    }
-}
 
