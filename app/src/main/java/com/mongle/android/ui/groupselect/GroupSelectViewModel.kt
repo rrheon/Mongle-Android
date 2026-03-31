@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.data.remote.ApiFamilyRepository
+import com.mongle.android.data.remote.ApiUserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,8 @@ data class GroupSelectUiState(
 
 @HiltViewModel
 class GroupSelectViewModel @Inject constructor(
-    private val familyRepository: ApiFamilyRepository
+    private val familyRepository: ApiFamilyRepository,
+    private val userRepository: ApiUserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupSelectUiState())
@@ -80,6 +82,11 @@ class GroupSelectViewModel @Inject constructor(
             runCatching {
                 familyRepository.createFamily(state.groupName, FamilyRole.OTHER)
             }.onSuccess { group ->
+                // 닉네임을 사용자 이름으로 업데이트
+                runCatching {
+                    val me = userRepository.getMe()
+                    userRepository.update(me.copy(name = state.nickname))
+                }
                 _uiState.update {
                     it.copy(inviteCode = group.inviteCode, step = GroupSelectStep.CREATED, isLoading = false)
                 }
@@ -111,6 +118,11 @@ class GroupSelectViewModel @Inject constructor(
             runCatching {
                 familyRepository.joinFamily(state.joinCode.uppercase(), FamilyRole.OTHER)
             }.onSuccess {
+                // 닉네임을 사용자 이름으로 업데이트
+                runCatching {
+                    val me = userRepository.getMe()
+                    userRepository.update(me.copy(name = state.nickname))
+                }
                 _uiState.update { it.copy(isLoading = false) }
                 onJoined()
             }.onFailure { e ->

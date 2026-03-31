@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -745,6 +746,7 @@ private fun CreateStep(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
+                .navigationBarsPadding()
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md)
         ) {
             MongleButton(
@@ -891,6 +893,7 @@ private fun JoinStep(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
+                .navigationBarsPadding()
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md)
         ) {
             MongleButton(
@@ -1056,6 +1059,7 @@ private fun CreatedStep(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
+                .navigationBarsPadding()
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md),
             verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
         ) {
