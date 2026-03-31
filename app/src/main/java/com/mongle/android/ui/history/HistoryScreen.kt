@@ -366,10 +366,8 @@ private fun MoodTimelineSection(
 
 @Composable
 private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
-    val moodColor = answer.moodId?.let { id ->
-        val idx = moodIds.indexOf(id)
-        if (idx >= 0) moodColors[idx] else null
-    }
+    val moodIdx = answer.moodId?.let { moodIds.indexOf(it).takeIf { i -> i >= 0 } }
+    val moodColor = moodIdx?.let { moodColors[it] }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -378,41 +376,19 @@ private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
             .padding(12.dp),
         verticalAlignment = Alignment.Top
     ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .background(
-                    moodColor?.copy(alpha = 0.2f) ?: MonglePrimaryLight,
-                    CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = answer.userName.take(1),
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                color = moodColor ?: MonglePrimary
-            )
-        }
+        MongleCharacterAvatar(
+            name = answer.userName,
+            index = moodIdx ?: 0,
+            size = 36.dp,
+            color = moodColor
+        )
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = answer.userName,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MongleTextPrimary
-                )
-                if (answer.moodId != null) {
-                    val moodIdx = moodIds.indexOf(answer.moodId)
-                    if (moodIdx >= 0) {
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = moodLabels[moodIdx],
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            color = moodColors[moodIdx]
-                        )
-                    }
-                }
-            }
+            Text(
+                text = answer.userName,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MongleTextPrimary
+            )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = answer.content,

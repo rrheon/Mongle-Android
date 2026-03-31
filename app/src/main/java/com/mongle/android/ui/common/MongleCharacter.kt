@@ -148,9 +148,10 @@ fun MongleCharacterAvatar(
     name: String,
     index: Int,
     size: Dp = 44.dp,
+    color: Color? = null,
     modifier: Modifier = Modifier
 ) {
-    val bodyColor = characterColors[index % characterColors.size]
+    val bodyColor = color ?: characterColors[index % characterColors.size]
     val eyeSize = size * 0.18f
     val eyeOffset = size * 0.14f
 
