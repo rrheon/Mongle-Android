@@ -112,7 +112,13 @@ fun SettingsScreen(
     familyId: java.util.UUID? = null,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val rawUiState by viewModel.uiState.collectAsState()
+    // rootUiState 의 currentUser 를 즉시 반영 (LaunchedEffect 지연 없이)
+    val uiState = if (currentUser != null && currentUser != rawUiState.currentUser) {
+        rawUiState.copy(currentUser = currentUser)
+    } else {
+        rawUiState
+    }
     val context = LocalContext.current
     val navController = rememberNavController()
     var toastData by remember { mutableStateOf<MongleToastData?>(null) }
@@ -688,7 +694,7 @@ private fun GroupManagementScreen(
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(MongleSpacing.md)
-                .padding(bottom = MongleSpacing.xl),
+                .padding(bottom = MongleSpacing.md),
             verticalArrangement = Arrangement.spacedBy(MongleSpacing.md)
         ) {
             if (uiState.family == null) {
@@ -730,14 +736,17 @@ private fun GroupManagementScreen(
                     isOwner = uiState.isOwner,
                     onKickMemberTapped = onKickMemberTapped
                 )
-
-                // 그룹 나가기 버튼
-                MongleButton(
-                    text = "그룹 나가기",
-                    onClick = onLeaveGroupTapped,
-                    style = MongleButtonStyle.SECONDARY
-                )
             }
+        }
+
+        // 그룹 나가기 버튼 — 하단 고정
+        if (uiState.family != null) {
+            MongleButton(
+                text = "그룹 나가기",
+                onClick = onLeaveGroupTapped,
+                style = MongleButtonStyle.SECONDARY,
+                modifier = Modifier.padding(MongleSpacing.md)
+            )
         }
     }
 }

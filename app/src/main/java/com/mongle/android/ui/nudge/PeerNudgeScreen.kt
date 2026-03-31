@@ -61,6 +61,7 @@ fun PeerNudgeScreen(
     currentUserHearts: Int,
     adManager: AdManager,
     onBack: () -> Unit,
+    onNudgeSent: (heartsRemaining: Int) -> Unit = {},
     viewModel: PeerNudgeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -72,6 +73,13 @@ fun PeerNudgeScreen(
             targetUserName = targetUser.name,
             hearts = currentUserHearts
         )
+    }
+
+    // 재촉 전송 성공 시 하트 잔량을 상위에 알림
+    LaunchedEffect(uiState.isSent, uiState.heartsRemaining) {
+        if (uiState.isSent && uiState.heartsRemaining != null) {
+            onNudgeSent(uiState.heartsRemaining!!)
+        }
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -195,7 +203,7 @@ fun PeerNudgeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "✅ 재촉 메시지를 보냈어요!",
+                            text = "재촉 메시지를 보냈어요!",
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = MonglePrimary
                         )
@@ -220,7 +228,7 @@ fun PeerNudgeScreen(
                             )
                         } else {
                             Text(
-                                text = "재촉하기 💌",
+                                text = "재촉하기",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 16.sp
@@ -254,7 +262,7 @@ fun PeerNudgeScreen(
                             )
                         } else {
                             Text(
-                                text = "광고 보고 재촉하기 💚",
+                                text = "광고 보고 재촉하기",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 16.sp
