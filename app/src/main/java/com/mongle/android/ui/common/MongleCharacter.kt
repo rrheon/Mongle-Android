@@ -80,8 +80,9 @@ fun MongleCharacter(
     modifier: Modifier = Modifier
 ) {
     val bodyColor = characterColors[index % characterColors.size]
-    val eyeSize = size * 0.14f
-    val eyeOffset = size * 0.13f
+    val eyeSize = size * 0.18f
+    val eyeHOffset = size * 0.144f
+    val eyeVOffset = size * 0.04f
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -99,32 +100,32 @@ fun MongleCharacter(
                 .background(bodyColor, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            // 왼쪽 눈 (흰 테두리 + 검정 원)
+            // 왼쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 2.dp)
-                    .offset(x = -eyeOffset)
+                    .size(eyeSize + 3.dp)
+                    .offset(x = -eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
                         .size(eyeSize)
-                        .background(Color.Black, CircleShape)
+                        .background(MongleTextPrimary, CircleShape)
                 )
             }
-            // 오른쪽 눈 (흰 테두리 + 검정 원)
+            // 오른쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 2.dp)
-                    .offset(x = eyeOffset)
+                    .size(eyeSize + 3.dp)
+                    .offset(x = eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
                         .size(eyeSize)
-                        .background(Color.Black, CircleShape)
+                        .background(MongleTextPrimary, CircleShape)
                 )
             }
 
@@ -153,8 +154,9 @@ fun MongleCharacterAvatar(
     modifier: Modifier = Modifier
 ) {
     val bodyColor = color ?: characterColors[index % characterColors.size]
-    val eyeSize = size * 0.14f
-    val eyeOffset = size * 0.13f
+    val eyeSize = size * 0.18f
+    val eyeHOffset = size * 0.144f
+    val eyeVOffset = size * 0.04f
 
     Box(
         modifier = modifier
@@ -171,29 +173,29 @@ fun MongleCharacterAvatar(
         // 왼쪽 눈 (흰 테두리)
         Box(
             modifier = Modifier
-                .size(eyeSize + 2.dp)
-                .offset(x = -eyeOffset)
+                .size(eyeSize + 3.dp)
+                .offset(x = -eyeHOffset, y = eyeVOffset)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .size(eyeSize)
-                    .background(Color.Black, CircleShape)
+                    .background(MongleTextPrimary, CircleShape)
             )
         }
         // 오른쪽 눈 (흰 테두리)
         Box(
             modifier = Modifier
-                .size(eyeSize + 2.dp)
-                .offset(x = eyeOffset)
+                .size(eyeSize + 3.dp)
+                .offset(x = eyeHOffset, y = eyeVOffset)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .size(eyeSize)
-                    .background(Color.Black, CircleShape)
+                    .background(MongleTextPrimary, CircleShape)
             )
         }
     }
@@ -488,8 +490,9 @@ private fun SceneMongleItem(
     hasCurrentUserSkipped: Boolean = false
 ) {
     val size = 52.dp
-    val eyeSize = size * 0.14f
-    val eyeOffset = size * 0.13f
+    val eyeSize = size * 0.18f
+    val eyeHOffset = size * 0.144f
+    val eyeVOffset = size * 0.04f
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         // 상태 배지
@@ -606,32 +609,32 @@ private fun SceneMongleItem(
                 .background(color, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            // 왼쪽 눈 (흰 테두리 + 검정 원)
+            // 왼쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 2.dp)
-                    .offset(x = -eyeOffset)
+                    .size(eyeSize + 3.dp)
+                    .offset(x = -eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
                         .size(eyeSize)
-                        .background(Color.Black, CircleShape)
+                        .background(MongleTextPrimary, CircleShape)
                 )
             }
-            // 오른쪽 눈 (흰 테두리 + 검정 원)
+            // 오른쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 2.dp)
-                    .offset(x = eyeOffset)
+                    .size(eyeSize + 3.dp)
+                    .offset(x = eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
                         .size(eyeSize)
-                        .background(Color.Black, CircleShape)
+                        .background(MongleTextPrimary, CircleShape)
                 )
             }
         }
