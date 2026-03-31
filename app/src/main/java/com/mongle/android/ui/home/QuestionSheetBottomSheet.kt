@@ -184,8 +184,8 @@ fun QuestionSheetBottomSheet(
             QuestionSheetActionRow(
                 icon = Icons.Default.Forward,
                 title = "질문 넘기기",
-                subtitle = "하트 3개 소모 · 다른 가족 답변 열람 가능",
-                enabled = true,
+                subtitle = if (hasAnswered) "답변 완료 후에는 넘길 수 없어요" else "하트 3개 소모 · 다른 가족 답변 열람 가능",
+                enabled = !hasAnswered,
                 onClick = onSkipTapped
             )
         }
