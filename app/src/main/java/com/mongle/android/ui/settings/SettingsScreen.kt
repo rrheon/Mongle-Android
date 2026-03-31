@@ -40,7 +40,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -556,41 +558,38 @@ private fun GroupManagementScreen(
 
     // 멤버 내보내기 확인 — iOS MonglePopupView 스타일
     if (uiState.showKickConfirmation) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = onKickMemberCancelled,
-            title = {
-                Text(
-                    text = uiState.kickTargetMember?.let { "${it.name}님을 내보낼까요?" }
-                        ?: "멤버 내보내기"
-                )
-            },
-            text = { Text("해당 멤버는 그룹에서 제외됩니다.") },
-            confirmButton = {
-                TextButton(onClick = onKickMemberConfirmed) {
-                    Text("내보내기", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onKickMemberCancelled) { Text("취소") }
-            }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = uiState.kickTargetMember?.let { "${it.name}님을 내보낼까요?" } ?: "멤버 내보내기",
+                description = "해당 멤버는 그룹에서 제외됩니다.",
+                primaryLabel = "내보내기",
+                onPrimary = onKickMemberConfirmed,
+                secondaryLabel = "취소",
+                onSecondary = onKickMemberCancelled,
+                isDestructive = true
+            )
+        }
     }
 
     // 그룹 나가기 확인
     if (uiState.showLeaveGroupConfirmation) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = onLeaveGroupCancelled,
-            title = { Text("그룹 나가기") },
-            text = { Text("그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.") },
-            confirmButton = {
-                TextButton(onClick = onLeaveGroupConfirmed) {
-                    Text("나가기", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onLeaveGroupCancelled) { Text("취소") }
-            }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "그룹 나가기",
+                description = "그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.",
+                primaryLabel = "나가기",
+                onPrimary = onLeaveGroupConfirmed,
+                secondaryLabel = "취소",
+                onSecondary = onLeaveGroupCancelled,
+                isDestructive = true
+            )
+        }
     }
 
     // 방장 위임 시트
@@ -931,36 +930,38 @@ private fun AccountManagementScreen(
 ) {
     // 로그아웃 확인 다이얼로그
     if (uiState.showLogoutConfirmation) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = onLogoutCancelled,
-            title = { Text("로그아웃") },
-            text = { Text("정말 로그아웃할까요?") },
-            confirmButton = {
-                TextButton(onClick = onLogoutConfirmed) {
-                    Text("로그아웃", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onLogoutCancelled) { Text("취소") }
-            }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "로그아웃",
+                description = "정말 로그아웃할까요?",
+                primaryLabel = "로그아웃",
+                onPrimary = onLogoutConfirmed,
+                secondaryLabel = "취소",
+                onSecondary = onLogoutCancelled,
+                isDestructive = true
+            )
+        }
     }
 
     // 계정 탈퇴 확인 다이얼로그
     if (uiState.showDeleteAccountConfirmation) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = onDeleteAccountCancelled,
-            title = { Text("계정 탈퇴") },
-            text = { Text("탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.") },
-            confirmButton = {
-                TextButton(onClick = onDeleteAccountConfirmed) {
-                    Text("탈퇴하기", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDeleteAccountCancelled) { Text("취소") }
-            }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "계정 탈퇴",
+                description = "탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.",
+                primaryLabel = "탈퇴하기",
+                onPrimary = onDeleteAccountConfirmed,
+                secondaryLabel = "취소",
+                onSecondary = onDeleteAccountCancelled,
+                isDestructive = true
+            )
+        }
     }
 
     Column(

@@ -25,7 +25,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,7 +37,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -191,14 +192,17 @@ fun QuestionDetailScreen(
 
     // 기분 미선택 알림
     if (uiState.showMoodRequiredAlert) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = viewModel::dismissMoodRequiredAlert,
-            title = { Text("오늘의 몽글을 선택해주세요") },
-            text = { Text("지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요") },
-            confirmButton = {
-                TextButton(onClick = viewModel::dismissMoodRequiredAlert) { Text("확인") }
-            }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "오늘의 몽글을 선택해주세요",
+                description = "지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요",
+                primaryLabel = "확인",
+                onPrimary = viewModel::dismissMoodRequiredAlert
+            )
+        }
     }
 }
 
