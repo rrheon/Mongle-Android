@@ -3,6 +3,7 @@ package com.mongle.android.ui.question
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Answer
+import com.mongle.android.domain.model.Mood
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AnswerRepository
@@ -32,12 +33,13 @@ data class QuestionDetailUiState(
     val myAnswer: Answer? = null,
     val familyAnswers: List<FamilyAnswer> = emptyList(),
     val answerText: String = "",
+    val selectedMood: Mood? = null,
     val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
 ) {
     val hasMyAnswer: Boolean get() = myAnswer != null
-    val isValidAnswer: Boolean get() = answerText.trim().isNotEmpty()
+    val isValidAnswer: Boolean get() = answerText.trim().isNotEmpty() && selectedMood != null
 }
 
 sealed class QuestionDetailEvent {
@@ -109,10 +111,18 @@ class QuestionDetailViewModel @Inject constructor(
         _uiState.update { it.copy(answerText = text, errorMessage = null) }
     }
 
+    fun selectMood(mood: Mood) {
+        _uiState.update { it.copy(selectedMood = mood) }
+    }
+
     fun submitAnswer() {
         val state = _uiState.value
-        if (!state.isValidAnswer) {
+        if (state.answerText.trim().isEmpty()) {
             _uiState.update { it.copy(errorMessage = "답변을 입력해주세요.") }
+            return
+        }
+        if (state.selectedMood == null) {
+            _uiState.update { it.copy(errorMessage = "오늘의 기분을 선택해주세요.") }
             return
         }
         val question = state.question ?: run {
@@ -139,6 +149,7 @@ class QuestionDetailViewModel @Inject constructor(
                     userId = userId,
                     content = state.answerText.trim(),
                     imageUrl = null,
+                    moodId = state.selectedMood?.id,
                     createdAt = Date(),
                     updatedAt = if (state.myAnswer != null) Date() else null
                 )

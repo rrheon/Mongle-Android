@@ -17,7 +17,8 @@ class ApiAnswerRepository @Inject constructor(
         val req = CreateAnswerRequest(
             questionId = answer.dailyQuestionId.toString(),
             content = answer.content,
-            imageUrl = answer.imageUrl
+            imageUrl = answer.imageUrl,
+            moodId = answer.moodId
         )
         api.createAnswer(req).toDomain()
     }

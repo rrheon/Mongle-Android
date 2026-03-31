@@ -9,6 +9,7 @@ data class Answer(
     val userId: UUID,
     val content: String,
     val imageUrl: String?,
+    val moodId: String? = null,
     val createdAt: Date,
     val updatedAt: Date? = null,
     val reactionIds: List<UUID> = emptyList(),

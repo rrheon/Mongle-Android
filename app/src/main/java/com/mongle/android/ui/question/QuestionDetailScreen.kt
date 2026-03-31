@@ -1,6 +1,10 @@
 package com.mongle.android.ui.question
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,10 +13,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,26 +32,39 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Answer
+import com.mongle.android.domain.model.Mood
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleCard
 import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.common.MongleTextField
+import com.mongle.android.ui.theme.MongleMoodAngry
+import com.mongle.android.ui.theme.MongleMoodAnxious
+import com.mongle.android.ui.theme.MongleMoodCalm
+import com.mongle.android.ui.theme.MongleMoodExcited
+import com.mongle.android.ui.theme.MongleMoodHappy
+import com.mongle.android.ui.theme.MongleMoodLoved
+import com.mongle.android.ui.theme.MongleMoodSad
+import com.mongle.android.ui.theme.MongleMoodTired
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextSecondary
@@ -60,6 +81,7 @@ fun QuestionDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(question, currentUser) {
         viewModel.initialize(question, currentUser, familyMembers)
@@ -74,7 +96,15 @@ fun QuestionDetailScreen(
         }
     }
 
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.dismissError()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -131,6 +161,22 @@ fun QuestionDetailScreen(
 
                     Spacer(modifier = Modifier.height(MongleSpacing.lg))
 
+                    // 기분 선택 섹션 (답변 미제출 시)
+                    if (!uiState.hasMyAnswer) {
+                        Text(
+                            text = "오늘 기분이 어때요?",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                        MoodPicker(
+                            selectedMood = uiState.selectedMood,
+                            onMoodSelected = viewModel::selectMood
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(MongleSpacing.lg))
+
                     // 내 답변 입력 섹션
                     if (!uiState.hasMyAnswer) {
                         Text(
@@ -145,9 +191,7 @@ fun QuestionDetailScreen(
                             placeholder = "오늘의 질문에 답해보세요...",
                             modifier = Modifier.fillMaxWidth(),
                             maxLines = 6,
-                            minLines = 3,
-                            isError = uiState.errorMessage != null,
-                            errorMessage = uiState.errorMessage
+                            minLines = 3
                         )
                     } else {
                         Text(
@@ -197,6 +241,76 @@ fun QuestionDetailScreen(
                             .padding(MongleSpacing.md)
                     )
                 }
+            }
+        }
+    }
+}
+
+private fun moodColor(mood: Mood) = when (mood) {
+    Mood.HAPPY -> MongleMoodHappy
+    Mood.LOVED -> MongleMoodLoved
+    Mood.CALM -> MongleMoodCalm
+    Mood.SAD -> MongleMoodSad
+    Mood.ANGRY -> MongleMoodAngry
+    Mood.ANXIOUS -> MongleMoodAnxious
+    Mood.EXCITED -> MongleMoodExcited
+    Mood.TIRED -> MongleMoodTired
+}
+
+@Composable
+private fun MoodPicker(
+    selectedMood: Mood?,
+    onMoodSelected: (Mood) -> Unit
+) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(MongleSpacing.sm)) {
+        items(Mood.entries) { mood ->
+            val isSelected = mood == selectedMood
+            val color = moodColor(mood)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable { onMoodSelected(mood) }
+                    .padding(4.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .then(
+                            if (isSelected) Modifier.border(2.5.dp, MonglePrimary, CircleShape)
+                            else Modifier
+                        )
+                        .background(color, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // 눈 (왼쪽)
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .offset(x = (-7).dp, y = (-3).dp)
+                            .background(Color.Black, CircleShape)
+                    )
+                    // 눈 (오른쪽)
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .offset(x = 7.dp, y = (-3).dp)
+                            .background(Color.Black, CircleShape)
+                    )
+                    // 이모지 (아래쪽)
+                    Text(
+                        text = mood.emoji,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.offset(y = 10.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = mood.displayName,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (isSelected) MonglePrimary else MongleTextSecondary,
+                    fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.SemiBold
+                    else androidx.compose.ui.text.font.FontWeight.Normal
+                )
             }
         }
     }

@@ -216,7 +216,8 @@ data class FamilyAnswersResponse(
 data class CreateAnswerRequest(
     val questionId: String,
     val content: String,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val moodId: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -249,6 +250,11 @@ data class MarkAllReadResponse(
 )
 
 // ── 재촉하기 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class NudgeRequest(
+    val targetUserId: String
+)
 
 @JsonClass(generateAdapter = true)
 data class NudgeResponse(
@@ -291,10 +297,10 @@ interface MongleApiService {
     @POST("auth/social")
     suspend fun socialLogin(@Body body: SocialLoginRequest): AuthResponse
 
-    @POST("auth/email/login")
+    @POST("auth/login")
     suspend fun emailLogin(@Body body: EmailLoginRequest): AuthResponse
 
-    @POST("auth/email/signup")
+    @POST("auth/signup")
     suspend fun emailSignup(@Body body: EmailSignupRequest): AuthResponse
 
     @POST("auth/refresh")
@@ -381,8 +387,8 @@ interface MongleApiService {
     ): AnswerResponse
 
     // Nudge
-    @POST("nudge/{targetUserId}")
-    suspend fun sendNudge(@Path("targetUserId") targetUserId: String): NudgeResponse
+    @POST("nudge")
+    suspend fun sendNudge(@Body body: NudgeRequest): NudgeResponse
 
     // Notifications
     @GET("notifications")

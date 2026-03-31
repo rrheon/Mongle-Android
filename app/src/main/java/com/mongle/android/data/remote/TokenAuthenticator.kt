@@ -29,8 +29,7 @@ class TokenAuthenticator @Inject constructor(
     private val sessionExpiredNotifier: SessionExpiredNotifier
 ) : Authenticator {
 
-    // NetworkModule의 BASE_URL과 동일하게 유지
-    private val baseUrl = "http://10.0.2.2:3000/"
+    private val baseUrl = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/"
 
     private val prefs by lazy {
         context.getSharedPreferences(AUTH_PREF_NAME, Context.MODE_PRIVATE)
