@@ -542,14 +542,14 @@ private fun TodayQuestionCard(
                     Text(
                         text = "오늘의 질문",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MonglePrimary
+                        color = MonglePrimary.copy(alpha = 0.85f)
                     )
                     if (hasAnswered) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = MonglePrimary,
+                            tint = MonglePrimary.copy(alpha = 0.85f),
                             modifier = Modifier.size(12.dp)
                         )
                     }
@@ -590,7 +590,7 @@ private fun TodayQuestionPlaceholderCard(modifier: Modifier = Modifier) {
                 Text(
                     "오늘의 질문",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MonglePrimary
+                    color = MonglePrimary.copy(alpha = 0.85f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
