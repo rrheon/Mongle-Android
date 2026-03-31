@@ -170,7 +170,10 @@ fun MongleNavHost(
                             targetUser = showNudgeTarget!!,
                             currentUserHearts = uiState.currentUser?.hearts ?: 0,
                             adManager = adManager,
-                            onBack = { showNudgeTarget = null }
+                            onBack = { showNudgeTarget = null },
+                            onNudgeSent = { heartsRemaining ->
+                                rootViewModel.updateHearts(heartsRemaining)
+                            }
                         )
                     }
                     showWriteQuestion -> {

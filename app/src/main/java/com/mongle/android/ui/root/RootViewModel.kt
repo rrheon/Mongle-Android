@@ -139,6 +139,12 @@ class RootViewModel @Inject constructor(
                     val dailyHeart = runCatching { userRepository.claimDailyHeart() }.getOrNull()
 
                     _uiState.update {
+                        // 서버의 familyMembers에서 현재 유저의 최신 moodId를 동기화
+                        val serverMe = members.firstOrNull { m -> m.id == it.currentUser?.id }
+                        val syncedUser = it.currentUser?.copy(
+                            moodId = serverMe?.moodId ?: it.currentUser.moodId,
+                            hearts = if (dailyHeart != null) dailyHeart.heartsRemaining else it.currentUser.hearts
+                        )
                         it.copy(
                             appState = AppState.Authenticated,
                             todayQuestion = question,
@@ -148,11 +154,7 @@ class RootViewModel @Inject constructor(
                             allFamilies = allFamilies,
                             hasAnsweredToday = question?.hasMyAnswer ?: false,
                             dailyHeartGranted = dailyHeart?.heartsGranted ?: 0,
-                            currentUser = if (dailyHeart != null) {
-                                it.currentUser?.copy(hearts = dailyHeart.heartsRemaining)
-                            } else {
-                                it.currentUser
-                            }
+                            currentUser = syncedUser
                         )
                     }
                 }
@@ -246,6 +248,12 @@ class RootViewModel @Inject constructor(
 
     fun dismissDailyHeartPopup() {
         _uiState.update { it.copy(dailyHeartGranted = 0) }
+    }
+
+    fun updateHearts(hearts: Int) {
+        _uiState.update { state ->
+            state.copy(currentUser = state.currentUser?.copy(hearts = hearts))
+        }
     }
 
     fun refreshData() {

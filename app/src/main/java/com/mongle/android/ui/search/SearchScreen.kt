@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -109,34 +110,13 @@ fun SearchScreen(
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 몽글 아이콘 (검색바)
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .background(MongleMonggleGreenLight, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val eyeSize = 3.dp
-                    val eyeOffset = 2.5.dp
-                    Box(
-                        modifier = Modifier
-                            .size(eyeSize + 1.dp)
-                            .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
-                            .background(Color.White, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(modifier = Modifier.size(eyeSize).background(Color.Black, CircleShape))
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(eyeSize + 1.dp)
-                            .offset(x = eyeOffset, y = -eyeSize * 0.3f)
-                            .background(Color.White, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Box(modifier = Modifier.size(eyeSize).background(Color.Black, CircleShape))
-                    }
-                }
+                // 돋보기 아이콘
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "검색",
+                    tint = MongleTextHint,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 BasicTextField(
                     value = uiState.query,
@@ -187,7 +167,12 @@ fun SearchScreen(
             uiState.query.trim().length >= 2 && uiState.results.isEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "🔍", fontSize = 40.sp)
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MongleTextHint,
+                            modifier = Modifier.size(40.dp)
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "\"${uiState.query.trim()}\"에 맞는 기록이 없어요",
@@ -238,7 +223,12 @@ fun SearchScreen(
             else -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "🌿", fontSize = 40.sp)
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            tint = MonglePrimary,
+                            modifier = Modifier.size(40.dp)
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = "가족의 소중한 기록을 검색해보세요",

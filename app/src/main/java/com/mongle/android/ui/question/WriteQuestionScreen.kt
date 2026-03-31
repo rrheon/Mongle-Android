@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -142,7 +144,7 @@ fun WriteQuestionScreen(
                 )
                 Spacer(modifier = Modifier.height(MongleSpacing.xs))
                 Text(
-                    text = "작성한 질문은 오늘의 질문으로 등록돼요.\n가족 모두가 답변할 수 있어요 🌿",
+                    text = "작성한 질문은 오늘의 질문으로 등록돼요.\n가족 모두가 답변할 수 있어요",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
@@ -160,11 +162,22 @@ fun WriteQuestionScreen(
                         )
                         .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm)
                 ) {
-                    Text(
-                        text = "❤️ 하트 3개가 차감됩니다",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = Color(0xFFFF6B6B)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null,
+                            tint = Color(0xFFFF6B6B),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "하트 3개가 차감됩니다",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                            color = Color(0xFFFF6B6B)
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(MongleSpacing.lg))

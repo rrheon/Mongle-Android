@@ -138,8 +138,18 @@ class GroupSelectViewModel @Inject constructor(
         }
     }
 
-    fun goToCreate() { _uiState.update { it.copy(step = GroupSelectStep.CREATE) } }
+    fun goToCreate() {
+        if (_uiState.value.groups.size >= 3) {
+            _uiState.update { it.copy(showMaxGroupsAlert = true) }
+            return
+        }
+        _uiState.update { it.copy(step = GroupSelectStep.CREATE) }
+    }
     fun goToJoin(prefillCode: String = "") {
+        if (_uiState.value.groups.size >= 3) {
+            _uiState.update { it.copy(showMaxGroupsAlert = true) }
+            return
+        }
         _uiState.update { it.copy(step = GroupSelectStep.JOIN, joinCode = prefillCode) }
     }
     fun goBack() {
