@@ -2,12 +2,12 @@ package com.mongle.android.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// MARK: - Primary (green)
-val MonglePrimary = Color(0xFF4CAF50)
-val MonglePrimaryDark = Color(0xFF7BC8A0)
+// MARK: - Primary (green) — monggleGreen: light 0xFF66BB6A / dark 0xFF8DD4AE
+val MonglePrimary = Color(0xFF66BB6A)
+val MonglePrimaryDark = Color(0xFF8DD4AE)
 val MonglePrimaryLight = Color(0xFFE8F5E1)
 val MonglePrimaryLightDark = Color(0xFF1E3A2A)
-val MonglePrimaryDarker = Color(0xFF388E3C)
+val MonglePrimaryDarker = Color(0xFF4CAF50)
 val MonglePrimaryDarkerDark = Color(0xFF5BAF85)
 val MonglePrimarySoft = Color(0xFFA5D6A7)
 val MonglePrimarySoftDark = Color(0xFFC2E8D4)

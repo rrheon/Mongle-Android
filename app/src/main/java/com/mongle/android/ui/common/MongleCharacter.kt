@@ -296,13 +296,16 @@ fun MongleSceneView(
         }
     }
 
-    // 답변 상태 변경 반영
-    LaunchedEffect(members.map { it.hasAnswered }) {
+    // 답변 상태 및 색상 변경 반영
+    LaunchedEffect(members.map { it.hasAnswered }, members.map { it.color }) {
         sceneMembers = sceneMembers.map { sm ->
             val updated = members.find { it.id == sm.id }
-            if (updated != null && sm.hasAnswered != updated.hasAnswered)
-                sm.copy(hasAnswered = updated.hasAnswered)
-            else sm
+            if (updated != null) {
+                var changed = sm
+                if (sm.hasAnswered != updated.hasAnswered) changed = changed.copy(hasAnswered = updated.hasAnswered)
+                if (sm.color != updated.color) changed = changed.copy(color = updated.color)
+                changed
+            } else sm
         }
     }
 

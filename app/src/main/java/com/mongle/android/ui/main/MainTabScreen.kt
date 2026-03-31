@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.history.HistoryScreen
@@ -82,10 +81,12 @@ fun MainTabScreen(
 
     Scaffold(
         bottomBar = {
+            // 탭바 아이콘 색상은 기존 그린(4CAF50) 유지
+            val tabSelectedColor = Color(0xFF4CAF50)
             val tabColors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MonglePrimary,
-                selectedTextColor = MonglePrimary,
-                indicatorColor = MonglePrimary.copy(alpha = 0.12f),
+                selectedIconColor = tabSelectedColor,
+                selectedTextColor = tabSelectedColor,
+                indicatorColor = tabSelectedColor.copy(alpha = 0.12f),
                 unselectedIconColor = Color(0xFF9E9E9E),
                 unselectedTextColor = Color(0xFF9E9E9E)
             )
