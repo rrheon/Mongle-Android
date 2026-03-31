@@ -51,6 +51,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.key
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalDensity
 import kotlinx.coroutines.delay
 import java.util.UUID
@@ -288,8 +289,8 @@ fun MongleSceneView(
     val stepSize = with(density) { 1.8.dp.toPx() }
     val targetThreshold = charSizePx * 0.25f
     val overlapLimit = 10
-    // 오늘의 질문 섹션 아래부터 캐릭터 이동 허용
-    val minY = topInsetPx.toFloat() + wallPadding
+    // 오늘의 질문 섹션 아래부터 캐릭터 이동 허용 (rememberUpdatedState로 물리 루프에서 항상 최신값 참조)
+    val currentMinY by rememberUpdatedState(topInsetPx.toFloat() + wallPadding)
 
     var sceneMembers by remember { mutableStateOf<List<SceneMember>>(emptyList()) }
     var sceneSize by remember { mutableStateOf(IntSize.Zero) }
@@ -298,7 +299,25 @@ fun MongleSceneView(
     LaunchedEffect(members.map { it.id }) {
         val s = sceneSize
         if (s.width > 0 && s.height > 0) {
-            sceneMembers = initSceneMembers(members, s.width.toFloat(), s.height.toFloat(), wallPadding, collisionRadius, minY)
+            sceneMembers = initSceneMembers(members, s.width.toFloat(), s.height.toFloat(), wallPadding, collisionRadius, currentMinY)
+        }
+    }
+
+    // topInsetPx 변경 시 경계 위에 있는 캐릭터를 아래로 밀어냄
+    LaunchedEffect(topInsetPx) {
+        if (sceneMembers.isEmpty()) return@LaunchedEffect
+        val newMinY = topInsetPx.toFloat() + wallPadding
+        val s = sceneSize
+        if (s.width <= 0 || s.height <= 0) return@LaunchedEffect
+        sceneMembers = sceneMembers.map { member ->
+            if (member.y < newMinY) {
+                member.copy(
+                    y = newMinY,
+                    restFramesLeft = (5..15).random(),
+                    targetX = randomInRange(wallPadding, s.width.toFloat() - wallPadding),
+                    targetY = randomInRange(newMinY, s.height.toFloat() - wallPadding)
+                )
+            } else member
         }
     }
 
@@ -327,13 +346,15 @@ fun MongleSceneView(
             val current = sceneMembers.toList()
             sceneMembers = current.mapIndexed { i, member ->
                 // 휴식 중
+                val topBound = currentMinY
+
                 if (member.restFramesLeft > 0) {
                     val newRest = member.restFramesLeft - 1
                     return@mapIndexed if (newRest == 0) {
                         member.copy(
                             restFramesLeft = 0,
                             targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(minY, h - wallPadding)
+                            targetY = randomInRange(topBound, h - wallPadding)
                         )
                     } else member.copy(restFramesLeft = newRest)
                 }
@@ -349,7 +370,7 @@ fun MongleSceneView(
                     } else {
                         member.copy(
                             targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(minY, h - wallPadding)
+                            targetY = randomInRange(topBound, h - wallPadding)
                         )
                     }
                 }
@@ -359,14 +380,26 @@ fun MongleSceneView(
                 var newTargetX = member.targetX
                 var newTargetY = member.targetY
 
-                // iOS 벽 충돌: 클램핑 + 새 목표 (멈추지 않음, stepCount 증가)
+                // 상단 경계(오늘의 질문 하단) 충돌: 정지 후 방향 전환
+                if (newY < topBound) {
+                    return@mapIndexed member.copy(
+                        y = topBound,
+                        x = newX.coerceIn(wallPadding, w - wallPadding),
+                        stepCount = member.stepCount + 1,
+                        restFramesLeft = (5..15).random(),
+                        targetX = randomInRange(wallPadding, w - wallPadding),
+                        targetY = randomInRange(topBound, h - wallPadding)
+                    )
+                }
+
+                // 좌우/하단 벽 충돌: 클램핑 + 새 목표
                 if (newX < wallPadding || newX > w - wallPadding ||
-                    newY < minY || newY > h - wallPadding
+                    newY > h - wallPadding
                 ) {
                     newX = newX.coerceIn(wallPadding, w - wallPadding)
-                    newY = newY.coerceIn(minY, h - wallPadding)
+                    newY = newY.coerceIn(topBound, h - wallPadding)
                     newTargetX = randomInRange(wallPadding, w - wallPadding)
-                    newTargetY = randomInRange(minY, h - wallPadding)
+                    newTargetY = randomInRange(topBound, h - wallPadding)
                 }
 
                 // iOS 캐릭터 충돌: 위치 갱신 안 함, overlapCounter 증가
@@ -380,7 +413,7 @@ fun MongleSceneView(
                         member.copy(
                             overlapCounter = 0,
                             targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(minY, h - wallPadding)
+                            targetY = randomInRange(topBound, h - wallPadding)
                         )
                     } else member.copy(overlapCounter = newOverlap)
                 }
@@ -401,7 +434,7 @@ fun MongleSceneView(
             sceneSize = size
             if (sceneMembers.isEmpty() && members.isNotEmpty()) {
                 sceneMembers = initSceneMembers(
-                    members, size.width.toFloat(), size.height.toFloat(), wallPadding, collisionRadius, minY
+                    members, size.width.toFloat(), size.height.toFloat(), wallPadding, collisionRadius, currentMinY
                 )
             }
         }
