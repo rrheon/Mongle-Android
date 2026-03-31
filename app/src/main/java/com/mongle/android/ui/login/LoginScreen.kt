@@ -35,8 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.mongle.android.R
+import androidx.compose.material3.Icon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -325,8 +327,18 @@ private fun SocialLoginButton(
                 when (provider) {
                     SocialProvider.KAKAO -> KakaoLogoIcon(size = 20.dp)
                     SocialProvider.GOOGLE -> GoogleLogoIcon(size = 20.dp)
-                    SocialProvider.APPLE -> AppleLogoIcon(size = 20.dp, tint = provider.contentColor)
-                    SocialProvider.NAVER -> NaverLogoIcon(size = 20.dp)
+                    SocialProvider.APPLE -> Icon(
+                        painter = painterResource(id = R.drawable.ic_apple_logo),
+                        contentDescription = null,
+                        tint = provider.contentColor,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    SocialProvider.NAVER -> Icon(
+                        painter = painterResource(id = R.drawable.ic_naver_logo),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
             Spacer(modifier = Modifier.width(MongleSpacing.sm))
@@ -418,79 +430,3 @@ private fun GoogleLogoIcon(size: Dp = 20.dp) {
     }
 }
 
-// MARK: - Apple 로고 아이콘 (간소화된 사과 모양)
-
-@Composable
-private fun AppleLogoIcon(size: Dp = 20.dp, tint: Color = Color.White) {
-    androidx.compose.foundation.Canvas(modifier = Modifier.size(size)) {
-        drawApplePath(tint)
-    }
-}
-
-private fun DrawScope.drawApplePath(color: Color) {
-    val w = size.width
-    val h = size.height
-
-    // Apple 로고 근사 (간소화된 버전)
-    // 줄기
-    val stemPath = Path()
-    stemPath.moveTo(w * 0.52f, h * 0.06f)
-    stemPath.cubicTo(w * 0.52f, h * 0.06f, w * 0.56f, h * 0.0f, w * 0.65f, h * 0.05f)
-    stemPath.cubicTo(w * 0.73f, h * 0.10f, w * 0.62f, h * 0.20f, w * 0.52f, h * 0.20f)
-    stemPath.close()
-    drawPath(stemPath, color = color)
-
-    // 사과 본체
-    val bodyPath = Path()
-    bodyPath.moveTo(w * 0.50f, h * 0.22f)
-    // 왼쪽 위 노치
-    bodyPath.cubicTo(w * 0.38f, h * 0.22f, w * 0.18f, h * 0.28f, w * 0.14f, h * 0.48f)
-    // 왼쪽 아래
-    bodyPath.cubicTo(w * 0.09f, h * 0.68f, w * 0.18f, h * 0.88f, w * 0.32f, h * 0.94f)
-    // 아래 중앙
-    bodyPath.cubicTo(w * 0.40f, h * 0.98f, w * 0.44f, h * 0.96f, w * 0.50f, h * 0.94f)
-    // 오른쪽 아래
-    bodyPath.cubicTo(w * 0.56f, h * 0.96f, w * 0.60f, h * 0.98f, w * 0.68f, h * 0.94f)
-    // 오른쪽 위
-    bodyPath.cubicTo(w * 0.82f, h * 0.88f, w * 0.91f, h * 0.68f, w * 0.86f, h * 0.48f)
-    // 오른쪽 위 노치
-    bodyPath.cubicTo(w * 0.82f, h * 0.28f, w * 0.62f, h * 0.22f, w * 0.50f, h * 0.22f)
-    bodyPath.close()
-    drawPath(bodyPath, color = color)
-}
-
-// MARK: - 네이버 로고 아이콘 ("N" 텍스트 기반)
-
-@Composable
-private fun NaverLogoIcon(size: Dp = 20.dp) {
-    androidx.compose.foundation.Canvas(modifier = Modifier.size(size)) {
-        val w = this.size.width
-        val h = this.size.height
-        val stroke = w * 0.16f
-
-        // N 글자를 Path로 그리기
-        val path = Path()
-        // 왼쪽 세로선
-        path.moveTo(w * 0.15f, h * 0.10f)
-        path.lineTo(w * 0.15f, h * 0.90f)
-        path.lineTo(w * 0.15f + stroke, h * 0.90f)
-        path.lineTo(w * 0.15f + stroke, h * 0.10f)
-        path.close()
-
-        // 대각선
-        path.moveTo(w * 0.15f, h * 0.10f)
-        path.lineTo(w * 0.15f + stroke, h * 0.10f)
-        path.lineTo(w * 0.85f, h * 0.90f)
-        path.lineTo(w * 0.85f - stroke, h * 0.90f)
-        path.close()
-
-        // 오른쪽 세로선
-        path.moveTo(w * 0.85f - stroke, h * 0.10f)
-        path.lineTo(w * 0.85f, h * 0.10f)
-        path.lineTo(w * 0.85f, h * 0.90f)
-        path.lineTo(w * 0.85f - stroke, h * 0.90f)
-        path.close()
-
-        drawPath(path, color = Color.White)
-    }
-}
