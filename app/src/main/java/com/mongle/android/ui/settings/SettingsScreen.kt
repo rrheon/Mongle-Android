@@ -378,7 +378,7 @@ private fun ProfileEditScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MoodCircle(color = moodColorFor(uiState.currentUser?.moodId), size = 80.dp)
+                MoodCircle(color = moodColorFor(uiState.currentUser?.moodId, uiState.currentUser?.role?.ordinal ?: 0), size = 80.dp)
                 Text(
                     text = "답변 수정 시 색상을 변경할 수 있어요.",
                     style = MaterialTheme.typography.bodySmall,
@@ -1164,14 +1164,22 @@ private fun moodLabelFor(moodId: String?) = when (moodId) {
     else    -> null
 }
 
+private val characterColors = listOf(
+    MongleMonggleGreenLight,
+    MongleMonggleYellow,
+    MongleMongglePink,
+    MongleMonggleBlue,
+    MongleMonggleOrange
+)
+
 @Composable
-private fun moodColorFor(moodId: String?) = when (moodId) {
+private fun moodColorFor(moodId: String?, roleIndex: Int = 0) = when (moodId) {
     "happy" -> MongleMonggleYellow
     "calm"  -> MongleMonggleGreenLight
     "loved" -> MongleMongglePink
     "sad"   -> MongleMonggleBlue
     "tired" -> MongleMonggleOrange
-    else    -> MongleMongglePink
+    else    -> characterColors[roleIndex % characterColors.size]
 }
 
 // MongleMonggle 캐릭터 (iOS MongleMonggle 동일)
@@ -1210,7 +1218,7 @@ private fun MoodCircle(color: Color, size: Dp) {
 // iOS HStack 스타일 프로필 카드 (monglePanel)
 @Composable
 private fun MyProfileCard(user: User) {
-    val moodColor = moodColorFor(user.moodId)
+    val moodColor = moodColorFor(user.moodId, user.role.ordinal)
     val moodLabel = moodLabelFor(user.moodId)
 
     MonglePanel(padding = MongleSpacing.md) {

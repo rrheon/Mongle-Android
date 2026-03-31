@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,7 +24,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +54,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.ui.common.MongleCharacter
 import com.mongle.android.ui.common.MongleCard
+import com.mongle.android.ui.theme.MongleMonggleBlue
+import com.mongle.android.ui.theme.MongleMonggleGreenLight
+import com.mongle.android.ui.theme.MongleMonggleOrange
+import com.mongle.android.ui.theme.MongleMongglePink
+import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
@@ -104,12 +109,34 @@ fun SearchScreen(
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "검색",
-                    tint = Color(0xFF6D6D6D),
-                    modifier = Modifier.size(16.dp)
-                )
+                // 몽글 아이콘 (검색바)
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(MongleMonggleGreenLight, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val eyeSize = 3.dp
+                    val eyeOffset = 2.5.dp
+                    Box(
+                        modifier = Modifier
+                            .size(eyeSize + 1.dp)
+                            .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                            .background(Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(modifier = Modifier.size(eyeSize).background(Color.Black, CircleShape))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(eyeSize + 1.dp)
+                            .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                            .background(Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(modifier = Modifier.size(eyeSize).background(Color.Black, CircleShape))
+                    }
+                }
                 Spacer(modifier = Modifier.width(8.dp))
                 BasicTextField(
                     value = uiState.query,
@@ -268,8 +295,7 @@ private fun SearchResultCard(
                 result.matchedAnswers.take(3).forEachIndexed { index, answer ->
                     AnswerRow(
                         answer = answer,
-                        query = query,
-                        colorIndex = index
+                        query = query
                     )
                     if (index < (result.matchedAnswers.take(3).size - 1)) {
                         Spacer(modifier = Modifier.height(6.dp))
@@ -283,15 +309,15 @@ private fun SearchResultCard(
 @Composable
 private fun AnswerRow(
     answer: HistoryAnswerSummary,
-    query: String,
-    colorIndex: Int
+    query: String
 ) {
+    val moodColor = moodColorForSearch(answer.moodId)
     Row(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // 몽글 캐릭터 아바타 (작은 크기)
-        MiniMongleAvatar(colorIndex = colorIndex)
+        // 몽글 캐릭터 아바타 (답변 시 선택한 감정 색상)
+        MiniMongleAvatar(bodyColor = moodColor)
 
         Column(modifier = Modifier.weight(1f)) {
             // 답변 내용 (검색어 하이라이팅)
@@ -303,23 +329,24 @@ private fun AnswerRow(
             )
             Spacer(modifier = Modifier.height(2.dp))
             // 멤버 이름 뱃지
-            MemberBadge(name = answer.userName, colorIndex = colorIndex)
+            MemberBadge(name = answer.userName, bgColor = moodColor.copy(alpha = 0.15f))
         }
     }
 }
 
+private fun moodColorForSearch(moodId: String?): Color = when (moodId) {
+    "happy" -> MongleMonggleYellow
+    "calm"  -> MongleMonggleGreenLight
+    "loved" -> MongleMongglePink
+    "sad"   -> MongleMonggleBlue
+    "tired" -> MongleMonggleOrange
+    else    -> MongleMonggleGreenLight
+}
+
 @Composable
-private fun MiniMongleAvatar(colorIndex: Int) {
-    val colors = listOf(
-        Color(0xFF8FD5A6),   // green (pastel)
-        Color(0xFFFFD54F),   // yellow
-        Color(0xFFF06292),   // pink
-        Color(0xFF42A5F5),   // blue
-        Color(0xFFFF9800)    // orange
-    )
-    val bodyColor = colors[colorIndex % colors.size]
-    val eyeSize = 5.dp
-    val eyeOffset = 4.dp
+private fun MiniMongleAvatar(bodyColor: Color) {
+    val eyeSize = 36.dp * 0.18f
+    val eyeOffset = 36.dp * 0.14f
 
     Box(
         modifier = Modifier
@@ -328,26 +355,33 @@ private fun MiniMongleAvatar(colorIndex: Int) {
             .background(bodyColor, CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Box(modifier = Modifier.size(eyeSize).padding(start = eyeOffset).background(Color.Black, CircleShape))
-        Box(modifier = Modifier.size(eyeSize).padding(start = eyeOffset).background(Color.Black, CircleShape))
-        // 간단하게 MongleCharacter 재사용하기 어렵기 때문에 직접 그림
+        Box(
+            modifier = Modifier
+                .size(eyeSize + 2.dp)
+                .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                .background(Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(modifier = Modifier.size(eyeSize).background(Color.Black, CircleShape))
+        }
+        Box(
+            modifier = Modifier
+                .size(eyeSize + 2.dp)
+                .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                .background(Color.White, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(modifier = Modifier.size(eyeSize).background(Color.Black, CircleShape))
+        }
     }
 }
 
 @Composable
-private fun MemberBadge(name: String, colorIndex: Int) {
-    val bgColors = listOf(
-        Color(0xFFE8F5EE),   // green tint
-        Color(0xFFFFF8E1),   // yellow tint
-        Color(0xFFFCE4EC),   // pink tint
-        Color(0xFFE3F2FD),   // blue tint
-        Color(0xFFFFF3E0)    // orange tint
-    )
-    val bg = bgColors[colorIndex % bgColors.size]
+private fun MemberBadge(name: String, bgColor: Color) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(bg)
+            .background(bgColor)
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(

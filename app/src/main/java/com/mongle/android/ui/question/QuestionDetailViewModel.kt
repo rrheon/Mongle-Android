@@ -87,12 +87,16 @@ class QuestionDetailViewModel @Inject constructor(
                         user?.let { FamilyAnswer(user = it, answer = answer) }
                     }
 
+                val moodIds = listOf("happy", "calm", "loved", "sad", "tired")
+                val moodIndex = myAnswer?.moodId?.let { moodIds.indexOf(it).takeIf { idx -> idx >= 0 } }
+
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         myAnswer = myAnswer,
                         familyAnswers = familyAnswers,
-                        answerText = myAnswer?.content ?: ""
+                        answerText = myAnswer?.content ?: "",
+                        selectedMoodIndex = moodIndex
                     )
                 }
             } catch (e: Exception) {
