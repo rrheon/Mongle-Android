@@ -43,7 +43,7 @@ data class QuestionDetailUiState(
 }
 
 sealed class QuestionDetailEvent {
-    data class AnswerSubmitted(val answer: Answer) : QuestionDetailEvent()
+    data class AnswerSubmitted(val answer: Answer, val isNewAnswer: Boolean) : QuestionDetailEvent()
     data object Closed : QuestionDetailEvent()
 }
 
@@ -128,7 +128,7 @@ class QuestionDetailViewModel @Inject constructor(
 
         val moodIds = listOf("happy", "calm", "loved", "sad", "tired")
         val moodId = state.selectedMoodIndex?.let { moodIds.getOrNull(it) }
-
+        val isNewAnswer = state.myAnswer == null
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
@@ -149,7 +149,7 @@ class QuestionDetailViewModel @Inject constructor(
                     answerRepository.create(answer)
                 }
                 _uiState.update { it.copy(isSubmitting = false, myAnswer = savedAnswer) }
-                _events.emit(QuestionDetailEvent.AnswerSubmitted(savedAnswer))
+                _events.emit(QuestionDetailEvent.AnswerSubmitted(savedAnswer, isNewAnswer))
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isSubmitting = false, errorMessage = e.message ?: "답변 제출에 실패했습니다.")

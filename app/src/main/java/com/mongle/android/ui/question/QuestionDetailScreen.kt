@@ -88,7 +88,7 @@ fun QuestionDetailScreen(
     question: Question,
     currentUser: User?,
     familyMembers: List<User> = emptyList(),
-    onAnswerSubmitted: (Answer) -> Unit,
+    onAnswerSubmitted: (Answer, Boolean) -> Unit,
     onClose: () -> Unit,
     viewModel: QuestionDetailViewModel = hiltViewModel()
 ) {
@@ -102,7 +102,7 @@ fun QuestionDetailScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is QuestionDetailEvent.AnswerSubmitted -> onAnswerSubmitted(event.answer)
+                is QuestionDetailEvent.AnswerSubmitted -> onAnswerSubmitted(event.answer, event.isNewAnswer)
                 QuestionDetailEvent.Closed -> onClose()
             }
         }
