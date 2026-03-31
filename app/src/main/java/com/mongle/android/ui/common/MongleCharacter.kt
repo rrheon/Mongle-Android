@@ -596,7 +596,7 @@ private fun SceneMongleItem(
             if (hasAnswered) {
                 Row(
                     modifier = Modifier
-                        .background(Color(0xFF4CAF50).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
+                        .background(Color(0xFF7CC8A0).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

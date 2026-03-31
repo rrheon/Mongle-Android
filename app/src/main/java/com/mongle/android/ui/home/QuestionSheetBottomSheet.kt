@@ -147,7 +147,7 @@ fun QuestionSheetBottomSheet(
                     .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
-                            colors = listOf(Color(0xFF6BBF93), Color(0xFF7BC8A0))
+                            colors = listOf(Color(0xFF8FD5A6), Color(0xFFA5E0BD))
                         )
                     )
                     .clickable { onAnswerTap() },

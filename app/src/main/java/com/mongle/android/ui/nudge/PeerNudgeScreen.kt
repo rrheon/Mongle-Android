@@ -241,7 +241,7 @@ fun PeerNudgeScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CC8A0))
                     ) {
                         if (uiState.isWatchingAd) {
                             CircularProgressIndicator(

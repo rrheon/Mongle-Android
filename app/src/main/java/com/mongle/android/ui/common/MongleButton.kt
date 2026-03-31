@@ -48,7 +48,7 @@ fun MongleButton(
         MongleButtonStyle.PRIMARY -> {
             val gradient = Brush.linearGradient(
                 colors = if (enabled && !isLoading)
-                    listOf(Color(0xFF6BBF93), Color(0xFF7BC8A0))
+                    listOf(Color(0xFF8FD5A6), Color(0xFFA5E0BD))
                 else
                     listOf(MonglePrimary.copy(alpha = 0.4f), MonglePrimary.copy(alpha = 0.4f))
             )
