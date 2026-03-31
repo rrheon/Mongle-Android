@@ -374,12 +374,12 @@ private fun HomeTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
-            .onGloballyPositioned { coordinates -> onTopBarMeasured(coordinates.size.height) }
     ) {
         // 1단: 그룹명 + 하트 + 알림
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .onGloballyPositioned { coordinates -> onTopBarMeasured(coordinates.size.height) }
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically

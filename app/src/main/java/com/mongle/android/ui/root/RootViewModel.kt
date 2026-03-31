@@ -222,12 +222,13 @@ class RootViewModel @Inject constructor(
         }
     }
 
-    fun onAnswerSubmitted(answer: Answer? = null) {
+    fun onAnswerSubmitted(answer: Answer? = null, isNewAnswer: Boolean = true) {
         _uiState.update { state ->
             if (answer != null) {
+                val heartsChange = if (isNewAnswer) 1 else -1
                 val updatedUser = state.currentUser?.copy(
                     moodId = answer.moodId,
-                    hearts = (state.currentUser.hearts) + 1
+                    hearts = (state.currentUser.hearts) + heartsChange
                 )
                 val updatedMembers = state.familyMembers.map { member ->
                     if (member.id == answer.userId) member.copy(moodId = answer.moodId) else member

@@ -95,9 +95,15 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 val dailyQId = UUID.fromString(dailyQuestionId)
-                val answers = answerRepository.getByDailyQuestion(dailyQId)
-                val statusMap = answers.associate { it.userId to true }
-                val answersMap = answers.associateBy { it.userId }
+                val familyAnswers = answerRepository.getByDailyQuestion(dailyQId)
+                // getFamilyAnswers API는 가족 답변만 반환하므로 현재 사용자의 답변도 별도 로드
+                val currentUserId = _uiState.value.currentUser?.id
+                val myAnswer = currentUserId?.let {
+                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
+                }
+                val allAnswers = if (myAnswer != null) familyAnswers + myAnswer else familyAnswers
+                val statusMap = allAnswers.associate { it.userId to true }
+                val answersMap = allAnswers.associateBy { it.userId }
                 _uiState.update {
                     it.copy(
                         memberAnswerStatus = statusMap,

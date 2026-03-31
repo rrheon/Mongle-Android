@@ -161,7 +161,7 @@ fun MongleNavHost(
                             currentUser = uiState.currentUser,
                             familyMembers = uiState.familyMembers,
                             onAnswerSubmitted = { answer, isNewAnswer ->
-                                rootViewModel.onAnswerSubmitted(answer)
+                                rootViewModel.onAnswerSubmitted(answer, isNewAnswer)
                                 showQuestionDetail = null
                                 showAnswerSubmittedToast = true
                                 if (isNewAnswer) showHeartPopup = true

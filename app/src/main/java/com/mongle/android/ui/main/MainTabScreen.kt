@@ -62,6 +62,11 @@ fun MainTabScreen(
         if (answerSubmittedCount > 0) historyViewModel.refresh()
     }
 
+    // 그룹 전환 시 History 데이터 새로고침
+    LaunchedEffect(rootUiState.family?.id) {
+        historyViewModel.refresh()
+    }
+
     // RootViewModel 데이터를 HomeViewModel에 주입
     LaunchedEffect(rootUiState) {
         homeViewModel.initialize(
@@ -137,7 +142,8 @@ fun MainTabScreen(
                     loginProviderType = null,
                     onLogout = onLogout,
                     onAccountDeleted = onLogout,
-                    onGroupLeft = onGroupLeft
+                    onGroupLeft = onGroupLeft,
+                    familyId = rootUiState.family?.id
                 )
             }
         }

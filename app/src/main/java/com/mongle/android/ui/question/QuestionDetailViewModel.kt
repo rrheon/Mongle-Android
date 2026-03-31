@@ -34,6 +34,7 @@ data class QuestionDetailUiState(
     val answerText: String = "",
     val selectedMoodIndex: Int? = null,
     val showMoodRequiredAlert: Boolean = false,
+    val showEditConfirmDialog: Boolean = false,
     val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
@@ -113,6 +114,10 @@ class QuestionDetailViewModel @Inject constructor(
         _uiState.update { it.copy(showMoodRequiredAlert = false) }
     }
 
+    fun dismissEditConfirmDialog() {
+        _uiState.update { it.copy(showEditConfirmDialog = false) }
+    }
+
     fun submitAnswer() {
         val state = _uiState.value
         if (state.answerText.trim().isEmpty()) {
@@ -123,6 +128,21 @@ class QuestionDetailViewModel @Inject constructor(
             _uiState.update { it.copy(showMoodRequiredAlert = true) }
             return
         }
+        // 기존 답변이 있으면 수정 확인 팝업 먼저 표시
+        if (state.myAnswer != null) {
+            _uiState.update { it.copy(showEditConfirmDialog = true) }
+            return
+        }
+        doSubmitAnswer()
+    }
+
+    fun confirmEditAnswer() {
+        _uiState.update { it.copy(showEditConfirmDialog = false) }
+        doSubmitAnswer()
+    }
+
+    private fun doSubmitAnswer() {
+        val state = _uiState.value
         val question = state.question ?: return
         val userId = state.currentUser?.id ?: return
 

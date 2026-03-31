@@ -69,7 +69,7 @@ class HistoryViewModel @Inject constructor(
 
     private fun loadHistory() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, selectedItem = null) }
             try {
                 val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
                 val totalMembers = familyResult?.second?.size ?: 1

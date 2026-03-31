@@ -204,6 +204,23 @@ fun QuestionDetailScreen(
             )
         }
     }
+
+    // 답변 수정 확인 (하트 소모 안내)
+    if (uiState.showEditConfirmDialog) {
+        Dialog(
+            onDismissRequest = viewModel::dismissEditConfirmDialog,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "답변을 수정할까요?",
+                description = "답변을 수정하면 하트 1개가 소모돼요.",
+                primaryLabel = "수정하기",
+                onPrimary = viewModel::confirmEditAnswer,
+                secondaryLabel = "취소",
+                onSecondary = viewModel::dismissEditConfirmDialog
+            )
+        }
+    }
 }
 
 // ─── 질문 카드 ───────────────────────────────────────────────────────────────

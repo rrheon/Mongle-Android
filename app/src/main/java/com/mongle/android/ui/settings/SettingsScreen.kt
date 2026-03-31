@@ -105,6 +105,7 @@ fun SettingsScreen(
     onLogout: () -> Unit,
     onAccountDeleted: () -> Unit,
     onGroupLeft: () -> Unit = {},
+    familyId: java.util.UUID? = null,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -112,7 +113,7 @@ fun SettingsScreen(
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(currentUser, loginProviderType) {
+    LaunchedEffect(currentUser, loginProviderType, familyId) {
         viewModel.initialize(currentUser, loginProviderType)
     }
 
