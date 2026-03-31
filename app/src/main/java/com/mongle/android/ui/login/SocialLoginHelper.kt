@@ -19,6 +19,8 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
+internal const val GOOGLE_WEB_CLIENT_ID = "43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com"
+
 // ── 카카오 ─────────────────────────────────────────
 
 suspend fun loginWithKakao(context: Context): KakaoLoginCredential =
@@ -113,4 +115,27 @@ fun signOutGoogle(context: Context, webClientId: String) {
         .requestEmail()
         .build()
     GoogleSignIn.getClient(context, gso).signOut()
+}
+
+// ── 계정 삭제 시 소셜 연결 해제 ─────────────────────────────────────────────
+
+/** Kakao 연결 해제 (계정 삭제 전 호출) */
+suspend fun unlinkKakao(): Unit = suspendCancellableCoroutine { cont ->
+    UserApiClient.instance.unlink { error ->
+        if (error != null) {
+            cont.resumeWithException(error)
+        } else {
+            cont.resume(Unit)
+        }
+    }
+}
+
+/** Google 앱 연결 취소 (계정 삭제 전 호출) */
+suspend fun revokeGoogleAccess(context: Context): Unit = suspendCancellableCoroutine { cont ->
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(GOOGLE_WEB_CLIENT_ID)
+        .requestEmail()
+        .build()
+    GoogleSignIn.getClient(context, gso).revokeAccess()
+        .addOnCompleteListener { cont.resume(Unit) }
 }

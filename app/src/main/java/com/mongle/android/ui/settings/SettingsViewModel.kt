@@ -1,5 +1,6 @@
 package com.mongle.android.ui.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.FamilyRole
@@ -9,7 +10,10 @@ import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.UserRepository
+import com.mongle.android.ui.login.revokeGoogleAccess
+import com.mongle.android.ui.login.unlinkKakao
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -55,7 +59,8 @@ sealed class SettingsEvent {
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
-    private val mongleRepository: MongleRepository
+    private val mongleRepository: MongleRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -249,9 +254,16 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onDeleteAccountConfirmed() {
+        val providerType = _uiState.value.loginProviderType
         _uiState.update { it.copy(showDeleteAccountConfirmation = false, isLoading = true) }
         viewModelScope.launch {
             try {
+                // 소셜 연결 해제 (iOS의 revokeClientSocialAccess와 동일, 실패해도 계정 삭제 진행)
+                when (providerType) {
+                    SocialProviderType.KAKAO -> runCatching { unlinkKakao() }
+                    SocialProviderType.GOOGLE -> runCatching { revokeGoogleAccess(context) }
+                    else -> {}
+                }
                 authRepository.deleteAccount()
                 _events.emit(SettingsEvent.AccountDeleted)
             } catch (e: Exception) {
