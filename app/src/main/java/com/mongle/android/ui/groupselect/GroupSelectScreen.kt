@@ -47,8 +47,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import com.mongle.android.ui.common.MongleToastData
+import com.mongle.android.ui.common.MongleToastHost
+import com.mongle.android.ui.common.MongleToastType
+import com.mongle.android.ui.common.defaultMessage
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -57,7 +59,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,7 +104,6 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 // ─── Color data ──────────────────────────────────────────────────────────────
@@ -139,8 +139,7 @@ fun GroupSelectScreen(
     viewModel: GroupSelectViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    var toastData by remember { mutableStateOf<MongleToastData?>(null) }
 
     // 화면 진입 시 이전 플로우 상태(CREATED 등) 초기화
     LaunchedEffect(Unit) { viewModel.resetToSelect() }
@@ -153,7 +152,12 @@ fun GroupSelectScreen(
     LaunchedEffect(Unit) { viewModel.loadGroups() }
 
     LaunchedEffect(showGroupLeftToast) {
-        if (showGroupLeftToast) snackbarHostState.showSnackbar("그룹에서 나왔어요")
+        if (showGroupLeftToast) {
+            toastData = MongleToastData(
+                message = MongleToastType.GROUP_LEFT.defaultMessage,
+                type = MongleToastType.GROUP_LEFT
+            )
+        }
     }
 
     LaunchedEffect(pendingInviteCode, uiState.step) {
@@ -165,7 +169,12 @@ fun GroupSelectScreen(
 
     LaunchedEffect(uiState.errorMessage) {
         if (uiState.errorMessage != null) {
-            snackbarHostState.showSnackbar(uiState.errorMessage!!)
+            val msg = uiState.errorMessage!!
+            val type = MongleToastType.fromErrorMessage(msg)
+            toastData = MongleToastData(
+                message = if (type.defaultMessage.isNotEmpty()) type.defaultMessage else msg,
+                type = type
+            )
             viewModel.clearError()
         }
     }
@@ -211,7 +220,10 @@ fun GroupSelectScreen(
                 inviteCode = uiState.inviteCode,
                 onContinue = { onCreatedOrJoined() },
                 onCopied = {
-                    scope.launch { snackbarHostState.showSnackbar("초대 코드가 복사되었어요!") }
+                    toastData = MongleToastData(
+                        message = MongleToastType.INVITE_CODE_COPIED.defaultMessage,
+                        type = MongleToastType.INVITE_CODE_COPIED
+                    )
                 }
             )
             GroupSelectStep.JOIN -> JoinStep(
@@ -229,9 +241,9 @@ fun GroupSelectScreen(
             )
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(MongleSpacing.md)
+        MongleToastHost(
+            toastData = toastData,
+            onDismiss = { toastData = null }
         )
     }
 }
@@ -545,11 +557,25 @@ private fun ActionSheetRow(
 // ─── MongleGroupCard (iOS MongleCardGroup 스타일) ──────────────────────────────
 
 @Composable
+private fun moodColor(moodId: String?, fallback: Color): Color = when (moodId) {
+    "happy" -> MongleMonggleYellow
+    "calm" -> MongleMonggleGreenLight
+    "loved" -> MongleMongglePink
+    "sad" -> MongleMonggleBlue
+    "tired" -> MongleMonggleOrange
+    else -> fallback
+}
+
+@Composable
 private fun MongleGroupCard(group: MongleGroup, onClick: () -> Unit) {
     val memberColors = if (group.memberIds.isEmpty()) {
         listOf(fallbackMonggleColors[0])
     } else {
-        group.memberIds.mapIndexed { i, _ -> fallbackMonggleColors[i % fallbackMonggleColors.size] }
+        group.memberIds.mapIndexed { i, _ ->
+            val fallback = fallbackMonggleColors[i % fallbackMonggleColors.size]
+            val moodId = group.memberMoodIds.getOrNull(i)
+            moodColor(moodId, fallback)
+        }
     }
 
     Row(

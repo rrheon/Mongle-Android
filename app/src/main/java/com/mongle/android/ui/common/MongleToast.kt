@@ -6,8 +6,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +42,9 @@ import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleError
 import com.mongle.android.ui.theme.MongleHeartRed
 import com.mongle.android.ui.theme.MonglePrimary
+import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextPrimary
+import kotlinx.coroutines.delay
 
 // MARK: - Toast Types (iOS ToastType 기준)
 
@@ -58,7 +64,17 @@ enum class MongleToastType {
     // Generic
     SUCCESS,
     ERROR,
-    INFO
+    INFO;
+
+    companion object {
+        /** 서버 에러 메시지에서 적합한 ToastType을 추론 */
+        fun fromErrorMessage(message: String): MongleToastType = when {
+            message.contains("최대") || message.contains("3개") -> MAX_GROUPS_REACHED
+            message.contains("이미") && message.contains("속해") -> ALREADY_MEMBER
+            message.contains("유효하지") || message.contains("초대코드") || message.contains("찾을 수 없") -> INVALID_INVITE_CODE
+            else -> ERROR
+        }
+    }
 }
 
 private val MongleToastType.icon: ImageVector
@@ -164,6 +180,55 @@ fun MongleToastOverlay(
     ) {
         if (message != null) {
             MongleToast(message = message, type = type)
+        }
+    }
+}
+
+// MARK: - Auto-dismiss Toast Host (iOS mongleErrorToast modifier 대응)
+// 화면 하단에 토스트를 표시하고 3초 후 자동으로 사라짐
+
+data class MongleToastData(
+    val message: String,
+    val type: MongleToastType = MongleToastType.ERROR
+)
+
+/**
+ * 화면 최상위에 배치하면 토스트를 자동으로 표시/dismiss하는 오버레이.
+ * iOS mongleErrorToast modifier와 동일한 동작.
+ */
+@Composable
+fun MongleToastHost(
+    toastData: MongleToastData?,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // 3초 후 자동 dismiss
+    LaunchedEffect(toastData) {
+        if (toastData != null) {
+            delay(3000L)
+            onDismiss()
+        }
+    }
+
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        AnimatedVisibility(
+            visible = toastData != null,
+            enter = fadeIn() + slideInVertically { it },
+            exit = fadeOut() + slideOutVertically { it },
+            modifier = Modifier
+                .padding(horizontal = MongleSpacing.md)
+                .padding(bottom = MongleSpacing.lg)
+                .navigationBarsPadding()
+        ) {
+            if (toastData != null) {
+                MongleToast(
+                    message = toastData.message,
+                    type = toastData.type
+                )
+            }
         }
     }
 }

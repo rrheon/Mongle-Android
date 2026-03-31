@@ -23,14 +23,17 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import com.mongle.android.ui.common.MongleToastData
+import com.mongle.android.ui.common.MongleToastHost
+import com.mongle.android.ui.common.MongleToastType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,7 +64,7 @@ fun PeerNudgeScreen(
     viewModel: PeerNudgeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
+    var toastData by remember { mutableStateOf<MongleToastData?>(null) }
 
     LaunchedEffect(targetUser) {
         viewModel.initialize(
@@ -73,7 +76,7 @@ fun PeerNudgeScreen(
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
+            toastData = MongleToastData(message = it, type = MongleToastType.ERROR)
             viewModel.dismissError()
         }
     }
@@ -263,9 +266,9 @@ fun PeerNudgeScreen(
             }
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
+        MongleToastHost(
+            toastData = toastData,
+            onDismiss = { toastData = null }
         )
     }
 }

@@ -52,8 +52,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import com.mongle.android.ui.common.MongleToastData
+import com.mongle.android.ui.common.MongleToastHost
+import com.mongle.android.ui.common.MongleToastType
+import com.mongle.android.ui.common.defaultMessage
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -63,7 +65,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -111,7 +115,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val navController = rememberNavController()
-    val snackbarHostState = remember { SnackbarHostState() }
+    var toastData by remember { mutableStateOf<MongleToastData?>(null) }
 
     LaunchedEffect(currentUser, loginProviderType, familyId) {
         viewModel.initialize(currentUser, loginProviderType)
@@ -130,7 +134,10 @@ fun SettingsScreen(
                     val clipboard =
                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     clipboard.setPrimaryClip(ClipData.newPlainText("invite_code", event.code))
-                    snackbarHostState.showSnackbar("초대 코드가 복사되었습니다.")
+                    toastData = MongleToastData(
+                        message = MongleToastType.INVITE_CODE_COPIED.defaultMessage,
+                        type = MongleToastType.INVITE_CODE_COPIED
+                    )
                 }
             }
         }
@@ -138,7 +145,11 @@ fun SettingsScreen(
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
+            val type = MongleToastType.fromErrorMessage(it)
+            toastData = MongleToastData(
+                message = if (type.defaultMessage.isNotEmpty()) type.defaultMessage else it,
+                type = type
+            )
             viewModel.dismissError()
         }
     }
@@ -210,9 +221,9 @@ fun SettingsScreen(
             }
         }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
+        MongleToastHost(
+            toastData = toastData,
+            onDismiss = { toastData = null }
         )
     }
 }
