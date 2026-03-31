@@ -232,17 +232,18 @@ private fun initSceneMembers(
     width: Float,
     height: Float,
     wallPadding: Float,
-    collisionRadius: Float
+    collisionRadius: Float,
+    minY: Float = wallPadding
 ): List<SceneMember> {
     val placed = mutableListOf<Pair<Float, Float>>()
     return members.map { info ->
         var px = randomInRange(wallPadding, width - wallPadding)
-        var py = randomInRange(wallPadding, height - wallPadding)
+        var py = randomInRange(minY, height - wallPadding)
         repeat(30) {
             val overlaps = placed.any { (ox, oy) -> hypot((px - ox), (py - oy)) < collisionRadius }
             if (!overlaps) return@repeat
             px = randomInRange(wallPadding, width - wallPadding)
-            py = randomInRange(wallPadding, height - wallPadding)
+            py = randomInRange(minY, height - wallPadding)
         }
         placed.add(px to py)
         SceneMember(
@@ -252,7 +253,7 @@ private fun initSceneMembers(
             hasAnswered = info.hasAnswered,
             x = px, y = py,
             targetX = randomInRange(wallPadding, width - wallPadding),
-            targetY = randomInRange(wallPadding, height - wallPadding)
+            targetY = randomInRange(minY, height - wallPadding)
         )
     }
 }
@@ -269,6 +270,7 @@ fun MongleSceneView(
     currentUserId: UUID?,
     hasCurrentUserAnswered: Boolean,
     hasCurrentUserSkipped: Boolean = false,
+    topInsetPx: Int = 0,
     onViewAnswer: (SceneMemberInfo) -> Unit = {},
     onNudge: (SceneMemberInfo) -> Unit = {},
     onSelfTap: () -> Unit = {},
@@ -284,6 +286,8 @@ fun MongleSceneView(
     val stepSize = with(density) { 1.8.dp.toPx() }
     val targetThreshold = charSizePx * 0.25f
     val overlapLimit = 10
+    // 오늘의 질문 섹션 아래부터 캐릭터 이동 허용
+    val minY = topInsetPx.toFloat() + wallPadding
 
     var sceneMembers by remember { mutableStateOf<List<SceneMember>>(emptyList()) }
     var sceneSize by remember { mutableStateOf(IntSize.Zero) }
@@ -292,7 +296,7 @@ fun MongleSceneView(
     LaunchedEffect(members.map { it.id }) {
         val s = sceneSize
         if (s.width > 0 && s.height > 0) {
-            sceneMembers = initSceneMembers(members, s.width.toFloat(), s.height.toFloat(), wallPadding, collisionRadius)
+            sceneMembers = initSceneMembers(members, s.width.toFloat(), s.height.toFloat(), wallPadding, collisionRadius, minY)
         }
     }
 
@@ -327,7 +331,7 @@ fun MongleSceneView(
                         member.copy(
                             restFramesLeft = 0,
                             targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(wallPadding, h - wallPadding)
+                            targetY = randomInRange(minY, h - wallPadding)
                         )
                     } else member.copy(restFramesLeft = newRest)
                 }
@@ -343,7 +347,7 @@ fun MongleSceneView(
                     } else {
                         member.copy(
                             targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(wallPadding, h - wallPadding)
+                            targetY = randomInRange(minY, h - wallPadding)
                         )
                     }
                 }
@@ -355,12 +359,12 @@ fun MongleSceneView(
 
                 // iOS 벽 충돌: 클램핑 + 새 목표 (멈추지 않음, stepCount 증가)
                 if (newX < wallPadding || newX > w - wallPadding ||
-                    newY < wallPadding || newY > h - wallPadding
+                    newY < minY || newY > h - wallPadding
                 ) {
                     newX = newX.coerceIn(wallPadding, w - wallPadding)
-                    newY = newY.coerceIn(wallPadding, h - wallPadding)
+                    newY = newY.coerceIn(minY, h - wallPadding)
                     newTargetX = randomInRange(wallPadding, w - wallPadding)
-                    newTargetY = randomInRange(wallPadding, h - wallPadding)
+                    newTargetY = randomInRange(minY, h - wallPadding)
                 }
 
                 // iOS 캐릭터 충돌: 위치 갱신 안 함, overlapCounter 증가
@@ -374,7 +378,7 @@ fun MongleSceneView(
                         member.copy(
                             overlapCounter = 0,
                             targetX = randomInRange(wallPadding, w - wallPadding),
-                            targetY = randomInRange(wallPadding, h - wallPadding)
+                            targetY = randomInRange(minY, h - wallPadding)
                         )
                     } else member.copy(overlapCounter = newOverlap)
                 }
@@ -395,7 +399,7 @@ fun MongleSceneView(
             sceneSize = size
             if (sceneMembers.isEmpty() && members.isNotEmpty()) {
                 sceneMembers = initSceneMembers(
-                    members, size.width.toFloat(), size.height.toFloat(), wallPadding, collisionRadius
+                    members, size.width.toFloat(), size.height.toFloat(), wallPadding, collisionRadius, minY
                 )
             }
         }
