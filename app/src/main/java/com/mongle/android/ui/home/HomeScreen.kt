@@ -524,50 +524,58 @@ private fun HomeTopBar(
 private fun TodayQuestionCard(
     question: Question,
     hasAnswered: Boolean,
-    onTap: () -> Unit,
+    onTap: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val isTappable = onTap != null
     Card(
-        modifier = modifier.clickable { onTap() },
+        modifier = modifier.then(
+            if (isTappable) Modifier.clickable { onTap?.invoke() } else Modifier
+        ),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.85f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
                         text = "오늘의 질문",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MonglePrimary.copy(alpha = 0.85f)
+                        color = MonglePrimary
                     )
                     if (hasAnswered) {
-                        Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = MonglePrimary.copy(alpha = 0.85f),
-                            modifier = Modifier.size(12.dp)
+                            tint = MonglePrimary,
+                            modifier = Modifier.size(14.dp)
                         )
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = question.content,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                    color = MongleTextPrimary,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = if (isTappable) MongleTextPrimary else MongleTextSecondary,
                     maxLines = 2
                 )
             }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MongleTextHint,
-                modifier = Modifier.size(18.dp)
-            )
+            if (isTappable) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MongleTextHint,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }
