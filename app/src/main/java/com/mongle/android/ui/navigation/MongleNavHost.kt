@@ -1,23 +1,43 @@
 package com.mongle.android.ui.navigation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.delay
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleLogo
@@ -32,7 +52,9 @@ import com.mongle.android.ui.question.QuestionDetailScreen
 import com.mongle.android.ui.question.WriteQuestionScreen
 import com.mongle.android.ui.root.AppState
 import com.mongle.android.ui.root.RootViewModel
+import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextSecondary
 import com.mongle.android.util.AdManager
 
 @Composable
@@ -47,6 +69,17 @@ fun MongleNavHost(
     var showWriteQuestion by remember { mutableStateOf(false) }
     var showGroupSelect by remember { mutableStateOf(false) }
     var groupLeftToast by remember { mutableStateOf(false) }
+    var showAnswerSubmittedToast by remember { mutableStateOf(false) }
+    var showHeartPopup by remember { mutableStateOf(false) }
+    var answerSubmittedCount by remember { mutableIntStateOf(0) }
+
+    // 답변 완료 토스트 3초 후 자동 닫기
+    LaunchedEffect(showAnswerSubmittedToast) {
+        if (showAnswerSubmittedToast) {
+            delay(3000)
+            showAnswerSubmittedToast = false
+        }
+    }
 
     when (uiState.appState) {
         AppState.Onboarding -> {
@@ -113,68 +146,151 @@ fun MongleNavHost(
                 )
             }
 
-            when {
-                showQuestionDetail != null -> {
-                    QuestionDetailScreen(
-                        question = showQuestionDetail!!,
-                        currentUser = uiState.currentUser,
-                        familyMembers = uiState.familyMembers,
-                        onAnswerSubmitted = {
-                            rootViewModel.onAnswerSubmitted()
-                            showQuestionDetail = null
-                        },
-                        onClose = { showQuestionDetail = null }
-                    )
+            // 답변 완료 하트 적립 팝업
+            if (showHeartPopup) {
+                HeartEarnedPopup(
+                    hearts = uiState.currentUser?.hearts ?: 0,
+                    onDismiss = { showHeartPopup = false }
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    showQuestionDetail != null -> {
+                        QuestionDetailScreen(
+                            question = showQuestionDetail!!,
+                            currentUser = uiState.currentUser,
+                            familyMembers = uiState.familyMembers,
+                            onAnswerSubmitted = { answer ->
+                                rootViewModel.onAnswerSubmitted(answer)
+                                showQuestionDetail = null
+                                showAnswerSubmittedToast = true
+                                showHeartPopup = true
+                                answerSubmittedCount++
+                            },
+                            onClose = { showQuestionDetail = null }
+                        )
+                    }
+                    showNotifications -> {
+                        NotificationScreen(onBack = { showNotifications = false })
+                    }
+                    showNudgeTarget != null && adManager != null -> {
+                        PeerNudgeScreen(
+                            targetUser = showNudgeTarget!!,
+                            currentUserHearts = uiState.currentUser?.hearts ?: 0,
+                            adManager = adManager,
+                            onBack = { showNudgeTarget = null }
+                        )
+                    }
+                    showWriteQuestion -> {
+                        WriteQuestionScreen(
+                            onClose = { showWriteQuestion = false },
+                            onQuestionSubmitted = { question ->
+                                showWriteQuestion = false
+                                rootViewModel.onAnswerSubmitted()
+                            }
+                        )
+                    }
+                    showGroupSelect -> {
+                        GroupSelectScreen(
+                            onBack = { showGroupSelect = false },
+                            onGroupSelected = { familyId ->
+                                showGroupSelect = false
+                                rootViewModel.onGroupSelected(familyId)
+                            },
+                            onCreatedOrJoined = {
+                                showGroupSelect = false
+                                rootViewModel.onGroupCreatedOrJoined()
+                            }
+                        )
+                    }
+                    else -> {
+                        MainTabScreen(
+                            rootUiState = uiState,
+                            onNavigateToQuestionDetail = { question -> showQuestionDetail = question },
+                            onNavigateToNotifications = { showNotifications = true },
+                            onNavigateToNudge = { user -> showNudgeTarget = user },
+                            onNavigateToWriteQuestion = { showWriteQuestion = true },
+                            onNavigateToGroupSelect = { showGroupSelect = true },
+                            onLogout = { rootViewModel.logout() },
+                            onGroupLeft = {
+                                groupLeftToast = true
+                                rootViewModel.loadHomeData()
+                            },
+                            answerSubmittedCount = answerSubmittedCount
+                        )
+                    }
                 }
-                showNotifications -> {
-                    NotificationScreen(onBack = { showNotifications = false })
-                }
-                showNudgeTarget != null && adManager != null -> {
-                    PeerNudgeScreen(
-                        targetUser = showNudgeTarget!!,
-                        currentUserHearts = uiState.currentUser?.hearts ?: 0,
-                        adManager = adManager,
-                        onBack = { showNudgeTarget = null }
-                    )
-                }
-                showWriteQuestion -> {
-                    WriteQuestionScreen(
-                        onClose = { showWriteQuestion = false },
-                        onQuestionSubmitted = { question ->
-                            showWriteQuestion = false
-                            rootViewModel.onAnswerSubmitted()
-                        }
-                    )
-                }
-                showGroupSelect -> {
-                    GroupSelectScreen(
-                        onBack = { showGroupSelect = false },
-                        onGroupSelected = { familyId ->
-                            showGroupSelect = false
-                            rootViewModel.onGroupSelected(familyId)
-                        },
-                        onCreatedOrJoined = {
-                            showGroupSelect = false
-                            rootViewModel.onGroupCreatedOrJoined()
-                        }
-                    )
-                }
-                else -> {
-                    MainTabScreen(
-                        rootUiState = uiState,
-                        onNavigateToQuestionDetail = { question -> showQuestionDetail = question },
-                        onNavigateToNotifications = { showNotifications = true },
-                        onNavigateToNudge = { user -> showNudgeTarget = user },
-                        onNavigateToWriteQuestion = { showWriteQuestion = true },
-                        onNavigateToGroupSelect = { showGroupSelect = true },
-                        onLogout = { rootViewModel.logout() },
-                        onGroupLeft = {
-                            groupLeftToast = true
-                            rootViewModel.loadHomeData()
-                        }
-                    )
+
+                // 답변 완료 토스트 (화면 하단)
+                AnimatedVisibility(
+                    visible = showAnswerSubmittedToast && showQuestionDetail == null,
+                    enter = fadeIn() + slideInVertically { it },
+                    exit = fadeOut() + slideOutVertically { it },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 96.dp, start = 16.dp, end = 16.dp)
+                ) {
+                    AnswerSubmittedToast()
                 }
             }
         }
     }
+}
+
+@Composable
+private fun AnswerSubmittedToast() {
+    Card(
+        shape = RoundedCornerShape(50),
+        colors = CardDefaults.cardColors(containerColor = MonglePrimary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Send,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = "마음을 남겼어요!",
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun HeartEarnedPopup(hearts: Int, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("하트 1개를 받았어요! ❤️") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("마음을 남겨서 하트 1개를 받았어요.")
+                Text(
+                    text = "현재 보유: $hearts 개",
+                    fontWeight = FontWeight.SemiBold,
+                    color = MonglePrimary
+                )
+                Text(
+                    text = "\n하트 사용처\n" +
+                        "• 질문 다시받기 (1개)\n" +
+                        "• 나만의 질문 작성 (1개)\n" +
+                        "• 재촉하기 (1개)\n\n" +
+                        "매일 오전 6시에 하트 1개가 충전돼요.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MongleTextSecondary
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("확인") }
+        }
+    )
 }

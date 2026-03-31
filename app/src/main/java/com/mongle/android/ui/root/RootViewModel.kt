@@ -3,6 +3,7 @@ package com.mongle.android.ui.root
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
@@ -221,8 +222,25 @@ class RootViewModel @Inject constructor(
         }
     }
 
-    fun onAnswerSubmitted() {
-        _uiState.update { it.copy(hasAnsweredToday = true) }
+    fun onAnswerSubmitted(answer: Answer? = null) {
+        _uiState.update { state ->
+            if (answer != null) {
+                val updatedUser = state.currentUser?.copy(
+                    moodId = answer.moodId,
+                    hearts = (state.currentUser.hearts) + 1
+                )
+                val updatedMembers = state.familyMembers.map { member ->
+                    if (member.id == answer.userId) member.copy(moodId = answer.moodId) else member
+                }
+                state.copy(
+                    hasAnsweredToday = true,
+                    currentUser = updatedUser,
+                    familyMembers = updatedMembers
+                )
+            } else {
+                state.copy(hasAnsweredToday = true)
+            }
+        }
     }
 
     fun dismissDailyHeartPopup() {
