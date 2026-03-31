@@ -37,7 +37,9 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -48,7 +50,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -141,6 +142,9 @@ fun GroupSelectScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    // 화면 진입 시 이전 플로우 상태(CREATED 등) 초기화
+    LaunchedEffect(Unit) { viewModel.resetToSelect() }
+
     // SELECT step에서 onBack이 제공된 경우 시스템 뒤로가기 연결
     if (onBack != null && uiState.step == GroupSelectStep.SELECT) {
         BackHandler { onBack() }
@@ -167,16 +171,17 @@ fun GroupSelectScreen(
     }
 
     if (uiState.showMaxGroupsAlert) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = { viewModel.dismissMaxGroupsAlert() },
-            title = { Text("그룹 한도 초과") },
-            text = { Text("그룹은 최대 3개까지 참여할 수 있어요.") },
-            confirmButton = {
-                TextButton(onClick = { viewModel.dismissMaxGroupsAlert() }) {
-                    Text("확인", color = MonglePrimary)
-                }
-            }
-        )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = "그룹 한도 초과",
+                description = "그룹은 최대 3개까지 참여할 수 있어요.",
+                primaryLabel = "확인",
+                onPrimary = { viewModel.dismissMaxGroupsAlert() }
+            )
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

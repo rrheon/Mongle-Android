@@ -152,6 +152,16 @@ class GroupSelectViewModel @Inject constructor(
             )
         }
     }
+    fun resetToSelect() {
+        _uiState.update {
+            it.copy(
+                step = GroupSelectStep.SELECT,
+                groupName = "", nickname = "", joinCode = "", inviteCode = "",
+                groupNameError = false, nicknameError = false, joinCodeError = false,
+                errorMessage = null
+            )
+        }
+    }
     fun dismissMaxGroupsAlert() { _uiState.update { it.copy(showMaxGroupsAlert = false) } }
     fun clearError() { _uiState.update { it.copy(errorMessage = null) } }
 }
