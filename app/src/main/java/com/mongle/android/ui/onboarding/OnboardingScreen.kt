@@ -146,7 +146,7 @@ private fun OnboardingPage1() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        MongleLogo(size = MongleLogoSize.LARGE)
+        MongleLogo(size = MongleLogoSize.MEDIUM)
 
         Spacer(modifier = Modifier.height(44.dp))
 
@@ -273,7 +273,7 @@ private fun MongleGroupCard(groupName: String) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                repeat(4) { index ->
+                repeat(5) { index ->
                     MongleCharacterAvatar(
                         name = "",
                         index = index,

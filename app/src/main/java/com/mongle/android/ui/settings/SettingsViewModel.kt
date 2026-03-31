@@ -31,6 +31,8 @@ data class SettingsUiState(
     val showLeaveGroupConfirmation: Boolean = false,
     val showTransferSheet: Boolean = false,
     val selectedTransferMemberId: java.util.UUID? = null,
+    val showKickConfirmation: Boolean = false,
+    val kickTargetMember: User? = null,
     val showEditProfile: Boolean = false,
     val editName: String = "",
     val editRole: FamilyRole = FamilyRole.OTHER,
@@ -198,7 +200,13 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(showTransferSheet = false, selectedTransferMemberId = null) }
     }
 
-    fun onKickMember(member: User) {
+    fun onKickMemberTapped(member: User) {
+        _uiState.update { it.copy(showKickConfirmation = true, kickTargetMember = member) }
+    }
+
+    fun onKickMemberConfirmed() {
+        val member = _uiState.value.kickTargetMember ?: return
+        _uiState.update { it.copy(showKickConfirmation = false, kickTargetMember = null) }
         viewModelScope.launch {
             try {
                 mongleRepository.kickMember(member.id)
@@ -211,6 +219,10 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onKickMemberCancelled() {
+        _uiState.update { it.copy(showKickConfirmation = false, kickTargetMember = null) }
     }
 
     // ── 로그아웃 ──────────────────────────────────────────

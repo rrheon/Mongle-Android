@@ -81,7 +81,25 @@ class RootViewModel @Inject constructor(
             val user = runCatching { authRepository.getCurrentUser() }.getOrNull()
             if (user != null) {
                 _uiState.update { it.copy(currentUser = user) }
-                loadHomeData()
+                // 서버에 실제 토큰 유효성 검증
+                val familiesResult = runCatching { mongleRepository.getMyFamilies() }
+                familiesResult.onSuccess { allFamilies ->
+                    _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
+                }.onFailure { e ->
+                    val msg = e.message ?: ""
+                    val isAuthError = msg.contains("401") ||
+                        msg.contains("token", ignoreCase = true) ||
+                        msg.contains("unauthorized", ignoreCase = true) ||
+                        msg.contains("invalid", ignoreCase = true)
+                    if (isAuthError) {
+                        // 토큰 만료/무효 → 세션 초기화 후 로그인 화면
+                        runCatching { authRepository.logout() }
+                        _uiState.update { RootUiState(appState = AppState.Unauthenticated) }
+                    } else {
+                        // 네트워크 오류 등 → 빈 목록으로 그룹선택화면
+                        _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = emptyList()) }
+                    }
+                }
             } else if (!hasSeenOnboarding()) {
                 _uiState.update { it.copy(appState = AppState.Onboarding) }
             } else {
@@ -166,8 +184,12 @@ class RootViewModel @Inject constructor(
     }
 
     fun onLoggedIn(user: User) {
-        _uiState.update { it.copy(currentUser = user) }
-        loadHomeData()
+        // 로그인 직후엔 항상 그룹선택화면으로 이동 (기존 그룹 있어도 선택하게)
+        viewModelScope.launch {
+            _uiState.update { it.copy(currentUser = user, appState = AppState.Loading) }
+            val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
+            _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
+        }
     }
 
     fun logout() {

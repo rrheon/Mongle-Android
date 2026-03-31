@@ -57,12 +57,8 @@ class ApiFamilyRepository @Inject constructor(
     }
 
     override suspend fun getMyFamilies(): List<MongleGroup> = safeCall {
-        try {
-            val response = api.getMyFamilies()
-            response.families.map { it.toGroup() }
-        } catch (e: Exception) {
-            emptyList()
-        }
+        val response = api.getMyFamilies()
+        response.families.map { it.toGroup() }
     }
 
     override suspend fun selectFamily(familyId: java.util.UUID): MongleGroup = safeCall {

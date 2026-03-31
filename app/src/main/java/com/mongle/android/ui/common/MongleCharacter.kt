@@ -434,7 +434,7 @@ private fun AnimatedSceneMemberBox(
     val animSpec = tween<Float>(durationMillis = 110, easing = LinearEasing)
     val animX by animateFloatAsState(targetValue = member.x, animationSpec = animSpec, label = "x")
     val animY by animateFloatAsState(targetValue = member.y, animationSpec = animSpec, label = "y")
-    val hopTarget = (-abs(sin(member.stepCount * PI / 5.0)) * 8).toFloat()
+    val hopTarget = (-abs(sin(member.stepCount * PI / 4.0)) * 14).toFloat()
     val animHop by animateFloatAsState(targetValue = hopTarget, animationSpec = animSpec, label = "hop")
     val half = (charSizePx / 2).roundToInt()
 

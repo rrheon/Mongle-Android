@@ -1,5 +1,6 @@
 package com.mongle.android.ui.notification
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,8 @@ fun NotificationScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    BackHandler { onBack() }
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {

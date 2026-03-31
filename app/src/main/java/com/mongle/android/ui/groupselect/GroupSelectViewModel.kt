@@ -27,7 +27,8 @@ data class GroupSelectUiState(
     val nicknameError: Boolean = false,
     val joinCodeError: Boolean = false,
     val showMaxGroupsAlert: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val selectedColorId: String = "calm"
 )
 
 @HiltViewModel
@@ -56,6 +57,10 @@ class GroupSelectViewModel @Inject constructor(
 
     fun onJoinCodeChanged(code: String) {
         _uiState.update { it.copy(joinCode = code, joinCodeError = false) }
+    }
+
+    fun onColorChanged(colorId: String) {
+        _uiState.update { it.copy(selectedColorId = colorId) }
     }
 
     fun createGroup(onCreated: () -> Unit) {
