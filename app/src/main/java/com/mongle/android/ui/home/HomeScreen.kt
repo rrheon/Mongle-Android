@@ -30,14 +30,15 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -68,8 +69,11 @@ import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleSceneView
 import com.mongle.android.ui.common.SceneMemberInfo
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleHeartRed
 import com.mongle.android.ui.theme.MongleHeartRedLight
+import com.mongle.android.ui.theme.MongleRadius
 import com.mongle.android.ui.theme.MongleMonggleBlue
 import com.mongle.android.ui.theme.MongleMonggleGreenLight
 import com.mongle.android.ui.theme.MongleMonggleOrange
@@ -432,57 +436,37 @@ private fun HomeTopBar(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // 하트 버튼
-                Box {
-                    Row(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(MongleHeartRedLight)
-                            .clickable { showHeartMenu = true }
-                            .padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                Row(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MongleHeartRedLight)
+                        .clickable { showHeartMenu = true }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                        tint = MongleHeartRed,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Text(
+                        text = hearts.toString(),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MongleTextPrimary
+                    )
+                }
+
+                // 하트 정보 팝업 (iOS HeartInfoPopupView 동일)
+                if (showHeartMenu) {
+                    Dialog(
+                        onDismissRequest = { showHeartMenu = false },
+                        properties = DialogProperties(usePlatformDefaultWidth = false)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = null,
-                            tint = MongleHeartRed,
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Text(
-                            text = hearts.toString(),
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = MongleTextPrimary
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showHeartMenu,
-                        onDismissRequest = { showHeartMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Column {
-                                    Text(
-                                        text = "현재 보유 ${hearts}개 ❤️",
-                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = MongleHeartRed
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    HorizontalDivider()
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text("🔄 질문 다시받기  하트 1개", style = MaterialTheme.typography.bodySmall)
-                                    Text("✏️ 나만의 질문 작성  하트 3개", style = MaterialTheme.typography.bodySmall)
-                                    Text("📣 재촉하기  하트 1개", style = MaterialTheme.typography.bodySmall)
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    HorizontalDivider()
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        "☀️ 매일 오전 +1 · 답변 완료 +3",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MongleTextHint
-                                    )
-                                }
-                            },
-                            onClick = { showHeartMenu = false }
+                        HeartInfoPopup(
+                            hearts = hearts,
+                            onClose = { showHeartMenu = false }
                         )
                     }
                 }
@@ -609,6 +593,150 @@ private fun TodayQuestionPlaceholderCard(modifier: Modifier = Modifier) {
                 )
             }
         }
+    }
+}
+
+// ─── 하트 정보 팝업 (iOS HeartInfoPopupView) ─────────────────────────────────
+
+@Composable
+private fun HeartInfoPopup(hearts: Int, onClose: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.45f))
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClose
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 344.dp)
+                .padding(horizontal = MongleSpacing.lg)
+                .clip(RoundedCornerShape(MongleRadius.xl))
+                .background(Color.White)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                    onClick = {} // 카드 내부 클릭 시 dismiss 방지
+                )
+                .padding(MongleSpacing.lg),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(MongleSpacing.lg)
+        ) {
+            // 아이콘
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(MongleHeartRedLight, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = MongleHeartRed,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // 제목 + 보유 하트
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
+            ) {
+                Text(
+                    text = "하트",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MongleTextPrimary
+                )
+                Row(
+                    modifier = Modifier
+                        .background(MongleHeartRedLight, RoundedCornerShape(MongleRadius.full))
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(MongleSpacing.xs)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = null,
+                        tint = MongleHeartRed,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "현재 보유 ${hearts}개",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MongleHeartRed
+                    )
+                }
+            }
+
+            // 안내 목록
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.background,
+                        RoundedCornerShape(MongleRadius.large)
+                    )
+                    .padding(MongleSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
+            ) {
+                HeartInfoRow(
+                    icon = Icons.Default.Refresh,
+                    color = MonglePrimary,
+                    text = "질문 다시받기에 하트 1개가 사용돼요"
+                )
+                HeartInfoRow(
+                    icon = Icons.Default.CheckCircle,
+                    color = MongleAccentOrange,
+                    text = "나만의 질문 작성에 하트 1개가 사용돼요"
+                )
+                HeartInfoRow(
+                    icon = Icons.Default.Favorite,
+                    color = MongleHeartRed,
+                    text = "재촉하기에 하트 1개가 사용돼요"
+                )
+                HeartInfoRow(
+                    icon = Icons.Default.WbSunny,
+                    color = MonglePrimary,
+                    text = "매일 오전 6시에 하트 1개가 충전돼요"
+                )
+                HeartInfoRow(
+                    icon = Icons.Default.CheckCircle,
+                    color = MonglePrimary,
+                    text = "답변을 완료하면 하트 1개를 얻을 수 있어요"
+                )
+            }
+
+            // 닫기 버튼
+            com.mongle.android.ui.common.MongleButton(
+                text = "확인",
+                onClick = onClose
+            )
+        }
+    }
+}
+
+@Composable
+private fun HeartInfoRow(icon: ImageVector, color: Color, text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = MongleTextSecondary,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
