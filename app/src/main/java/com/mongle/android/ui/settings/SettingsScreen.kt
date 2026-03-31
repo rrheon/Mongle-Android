@@ -83,11 +83,11 @@ import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleButtonStyle
 import com.mongle.android.ui.common.MongleTextField
-import com.mongle.android.ui.theme.MongleMoodCalm
-import com.mongle.android.ui.theme.MongleMoodHappy
-import com.mongle.android.ui.theme.MongleMoodLoved
-import com.mongle.android.ui.theme.MongleMoodSad
-import com.mongle.android.ui.theme.MongleMoodTired
+import com.mongle.android.ui.theme.MongleMonggleBlue
+import com.mongle.android.ui.theme.MongleMonggleGreenLight
+import com.mongle.android.ui.theme.MongleMonggleOrange
+import com.mongle.android.ui.theme.MongleMongglePink
+import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
@@ -612,7 +612,7 @@ private fun GroupManagementScreen(
                     color = MongleTextSecondary
                 )
                 val monggleColors = listOf(
-                    MongleMoodHappy, MongleMoodCalm, MongleMoodLoved, MongleMoodSad, MongleMoodTired
+                    MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
                 )
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                     itemsIndexed(uiState.transferCandidates) { index, member ->
@@ -835,7 +835,7 @@ private fun MembersSection(
     if (members.isEmpty()) return
 
     val monggleColors = listOf(
-        MongleMoodHappy, MongleMoodCalm, MongleMoodLoved, MongleMoodSad, MongleMoodTired
+        MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
     )
 
     Column(
@@ -1155,12 +1155,12 @@ private fun moodLabelFor(moodId: String?) = when (moodId) {
 
 @Composable
 private fun moodColorFor(moodId: String?) = when (moodId) {
-    "happy" -> MongleMoodHappy
-    "calm"  -> MongleMoodCalm
-    "loved" -> MongleMoodLoved
-    "sad"   -> MongleMoodSad
-    "tired" -> MongleMoodTired
-    else    -> MongleMoodLoved
+    "happy" -> MongleMonggleYellow
+    "calm"  -> MongleMonggleGreenLight
+    "loved" -> MongleMongglePink
+    "sad"   -> MongleMonggleBlue
+    "tired" -> MongleMonggleOrange
+    else    -> MongleMongglePink
 }
 
 // MongleMonggle 캐릭터 (iOS MongleMonggle 동일)

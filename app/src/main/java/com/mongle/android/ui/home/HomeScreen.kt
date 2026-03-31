@@ -147,7 +147,10 @@ fun HomeScreen(
             SceneMemberInfo(
                 id = user.id,
                 name = user.name,
-                color = if (hasAnswered && answer != null) moodColor(answer.moodId, fallbackColor) else fallbackColor,
+                color = if (hasAnswered) {
+                    val moodId = answer?.moodId ?: user.moodId
+                    moodColor(moodId, fallbackColor)
+                } else fallbackColor,
                 hasAnswered = hasAnswered
             )
         }
