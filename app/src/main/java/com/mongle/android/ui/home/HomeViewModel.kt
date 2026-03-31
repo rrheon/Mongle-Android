@@ -82,7 +82,9 @@ class HomeViewModel @Inject constructor(
                 familyMembers = familyMembers,
                 allFamilies = allFamilies,
                 currentUser = currentUser,
-                hasAnsweredToday = hasAnsweredToday
+                hasAnsweredToday = hasAnsweredToday,
+                memberAnswerStatus = emptyMap(),
+                memberAnswers = emptyMap()
             )
         }
         // 오늘의 질문이 있으면 가족 답변 상태 로드
