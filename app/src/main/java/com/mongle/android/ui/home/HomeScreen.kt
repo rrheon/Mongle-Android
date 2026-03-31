@@ -88,6 +88,15 @@ private val sceneCharacterColors = listOf(
     MongleMonggleOrange
 )
 
+private fun moodColor(moodId: String?, fallback: Color): Color = when (moodId) {
+    "happy" -> MongleMonggleYellow
+    "calm" -> MongleMonggleGreenLight
+    "loved" -> MongleMongglePink
+    "sad" -> MongleMonggleBlue
+    "tired" -> MongleMonggleOrange
+    else -> fallback
+}
+
 @Composable
 fun HomeScreen(
     onNavigateToQuestionDetail: (Question) -> Unit,
@@ -128,11 +137,14 @@ fun HomeScreen(
     // 씬 멤버 목록 (둘러보기 모드에서는 데모 캐릭터 표시)
     val sceneMembers = if (uiState.familyMembers.isNotEmpty()) {
         uiState.familyMembers.mapIndexed { index, user ->
+            val fallbackColor = sceneCharacterColors[index % sceneCharacterColors.size]
+            val answer = uiState.memberAnswers[user.id]
+            val hasAnswered = uiState.memberAnswerStatus[user.id] == true
             SceneMemberInfo(
                 id = user.id,
                 name = user.name,
-                color = sceneCharacterColors[index % sceneCharacterColors.size],
-                hasAnswered = uiState.memberAnswerStatus[user.id] == true
+                color = if (hasAnswered && answer != null) moodColor(answer.moodId, fallbackColor) else fallbackColor,
+                hasAnswered = hasAnswered
             )
         }
     } else {
