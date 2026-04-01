@@ -48,7 +48,7 @@ fun MainTabScreen(
     onNavigateToWriteQuestion: () -> Unit = {},
     onNavigateToGroupSelect: () -> Unit = {},
     onGroupSelected: (java.util.UUID) -> Unit = {},
-    onQuestionSkipped: (Question) -> Unit = {},
+    onQuestionSkipped: (Int) -> Unit = {},
     onLogout: () -> Unit = {},
     onGroupLeft: () -> Unit = {},
     answerSubmittedCount: Int = 0
@@ -69,8 +69,8 @@ fun MainTabScreen(
 
     // 질문 넘기기 성공 시 RootViewModel에 전파
     LaunchedEffect(Unit) {
-        homeViewModel.skipEvents.collect { newQuestion ->
-            onQuestionSkipped(newQuestion)
+        homeViewModel.skipEvents.collect { heartsRemaining ->
+            onQuestionSkipped(heartsRemaining)
         }
     }
 

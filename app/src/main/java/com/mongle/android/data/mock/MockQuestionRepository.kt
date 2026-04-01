@@ -90,9 +90,8 @@ class MockQuestionRepository @Inject constructor() : QuestionRepository {
         return newQuestion
     }
 
-    override suspend fun skipQuestion(): Question {
+    override suspend fun skipQuestion(): Int {
         delay(400)
-        val dayOfYear = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR)
-        return mockQuestions[(dayOfYear + 1) % mockQuestions.size]
+        return 7 // mock: 남은 하트 수
     }
 }

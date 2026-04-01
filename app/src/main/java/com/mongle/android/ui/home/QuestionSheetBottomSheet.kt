@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -210,9 +209,8 @@ private fun QuestionSheetActionRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = MongleSpacing.md)
-            .shadow(elevation = 1.dp, shape = RoundedCornerShape(MongleRadius.medium))
             .clip(RoundedCornerShape(MongleRadius.medium))
-            .background(color = MonglePrimaryLight.copy(alpha = 0.3f))
+            .background(color = Color.White)
             .border(width = 1.dp, color = MongleBorder, shape = RoundedCornerShape(MongleRadius.medium))
             .clickable { onClick() }
             .padding(vertical = MongleSpacing.sm, horizontal = MongleSpacing.md),

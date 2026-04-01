@@ -333,7 +333,7 @@ interface MongleApiService {
     suspend fun getTodayQuestion(): DailyQuestionResponse
 
     @POST("questions/skip")
-    suspend fun skipQuestion(): DailyQuestionResponse
+    suspend fun skipQuestion(): SkipQuestionResponse
 
     @GET("questions")
     suspend fun getQuestionHistory(
@@ -342,7 +342,7 @@ interface MongleApiService {
     ): QuestionHistoryPageResponse
 
     @POST("questions/custom")
-    suspend fun createCustomQuestion(@Body body: CreateCustomQuestionRequest): DailyQuestionResponse
+    suspend fun createCustomQuestion(@Body body: CreateCustomQuestionRequest): SkipQuestionResponse
 
     // Families
     @GET("families/my")

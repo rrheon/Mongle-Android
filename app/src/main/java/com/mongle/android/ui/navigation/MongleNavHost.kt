@@ -226,8 +226,8 @@ fun MongleNavHost(
                             onNavigateToWriteQuestion = { showWriteQuestion = true },
                             onNavigateToGroupSelect = { showGroupSelect = true },
                             onGroupSelected = { familyId -> rootViewModel.onGroupSelected(familyId) },
-                            onQuestionSkipped = { newQuestion ->
-                                rootViewModel.onQuestionSkipped(newQuestion)
+                            onQuestionSkipped = { heartsRemaining ->
+                                rootViewModel.onQuestionSkipped(heartsRemaining)
                                 showSkipToast = true
                             },
                             onLogout = { rootViewModel.logout() },

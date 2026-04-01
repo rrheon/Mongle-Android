@@ -272,15 +272,11 @@ class RootViewModel @Inject constructor(
         }
     }
 
-    fun onQuestionSkipped(newQuestion: Question) {
+    fun onQuestionSkipped(heartsRemaining: Int) {
         _uiState.update {
             it.copy(
-                todayQuestion = newQuestion,
-                hasAnsweredToday = false,
                 hasSkippedToday = true,
-                currentUser = it.currentUser?.copy(
-                    hearts = (it.currentUser.hearts - 3).coerceAtLeast(0)
-                )
+                currentUser = it.currentUser?.copy(hearts = heartsRemaining)
             )
         }
     }

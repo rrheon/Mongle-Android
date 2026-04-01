@@ -67,9 +67,9 @@ class HomeViewModel @Inject constructor(
     private val _events = MutableSharedFlow<HomeEvent>()
     val events: SharedFlow<HomeEvent> = _events.asSharedFlow()
 
-    /** 질문 넘기기 성공 시 새 질문을 상위로 전파 */
-    private val _skipEvents = MutableSharedFlow<Question>()
-    val skipEvents: SharedFlow<Question> = _skipEvents.asSharedFlow()
+    /** 질문 넘기기 성공 시 남은 하트 수를 상위로 전파 */
+    private val _skipEvents = MutableSharedFlow<Int>()
+    val skipEvents: SharedFlow<Int> = _skipEvents.asSharedFlow()
 
     fun initialize(
         todayQuestion: Question?,
@@ -207,19 +207,17 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching { questionRepository.skipQuestion() }
-                .onSuccess { newQuestion ->
+                .onSuccess { heartsRemaining ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            todayQuestion = newQuestion,
-                            hasAnsweredToday = false,
                             hasSkippedToday = true,
-                            memberAnswerStatus = emptyMap(),
-                            memberAnswers = emptyMap()
+                            currentUser = it.currentUser?.copy(hearts = heartsRemaining)
                         )
                     }
-                    newQuestion.dailyQuestionId?.let { loadFamilyAnswers(it) }
-                    _skipEvents.emit(newQuestion)
+                    // 넘기기 후 다른 가족 답변을 볼 수 있도록 답변 로드
+                    _uiState.value.todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it) }
+                    _skipEvents.emit(heartsRemaining)
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "질문 넘기기에 실패했습니다.") }
