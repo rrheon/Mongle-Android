@@ -7,7 +7,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -119,7 +117,7 @@ fun WriteQuestionScreen(
                     )
                 }
                 Text(
-                    text = "나만의 질문 작성하기",
+                    text = "질문 작성하기",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextPrimary
                 )
@@ -138,47 +136,17 @@ fun WriteQuestionScreen(
 
                 // 설명 섹션
                 Text(
-                    text = "가족에게 묻고 싶은 질문을 작성해요",
+                    text = "나만의 질문을 작성해요",
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextPrimary
                 )
                 Spacer(modifier = Modifier.height(MongleSpacing.xs))
                 Text(
-                    text = "작성한 질문은 오늘의 질문으로 등록돼요.\n가족 모두가 답변할 수 있어요",
+                    text = "작성한 질문은 오늘의 질문으로 등록돼요.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
                 )
-
-                Spacer(modifier = Modifier.height(MongleSpacing.lg))
-
-                // 하트 비용 안내
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Color(0xFFFFE5E5),
-                            RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = null,
-                            tint = Color(0xFFFF6B6B),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = "하트 3개가 차감됩니다",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                            color = Color(0xFFFF6B6B)
-                        )
-                    }
-                }
 
                 Spacer(modifier = Modifier.height(MongleSpacing.lg))
 

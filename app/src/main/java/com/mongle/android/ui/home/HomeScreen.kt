@@ -131,6 +131,7 @@ fun HomeScreen(
     var showAnswerFirstDialog by remember { mutableStateOf<String?>(null) }
     var showNudgeUnavailableDialog by remember { mutableStateOf<String?>(null) }
     var showSkipConfirmDialog by remember { mutableStateOf(false) }
+    var showWriteConfirmDialog by remember { mutableStateOf(false) }
 
     // ViewModel 이벤트 처리
     LaunchedEffect(Unit) {
@@ -320,7 +321,7 @@ fun HomeScreen(
             },
             onWriteQuestionTap = {
                 showQuestionSheet = false
-                onNavigateToWriteQuestion()
+                showWriteConfirmDialog = true
             },
             onSkipTapped = {
                 showQuestionSheet = false
@@ -377,6 +378,36 @@ fun HomeScreen(
                 secondaryLabel = "취소",
                 onSecondary = { showNudgeUnavailableDialog = null }
             )
+        }
+    }
+
+    // 나만의 질문 작성하기 확인 팝업
+    if (showWriteConfirmDialog) {
+        val currentHearts = uiState.currentUser?.hearts ?: 0
+        Dialog(
+            onDismissRequest = { showWriteConfirmDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            if (currentHearts >= 3) {
+                MonglePopup(
+                    title = "나만의 질문을 작성할까요?",
+                    description = "하트 3개를 소모하여 나만의 질문을\n오늘의 질문으로 등록해요.",
+                    primaryLabel = "작성하기",
+                    onPrimary = {
+                        showWriteConfirmDialog = false
+                        onNavigateToWriteQuestion()
+                    },
+                    secondaryLabel = "취소",
+                    onSecondary = { showWriteConfirmDialog = false }
+                )
+            } else {
+                MonglePopup(
+                    title = "하트가 부족해요",
+                    description = "질문을 작성하려면 하트 3개가 필요해요.\n현재 하트: ${currentHearts}개",
+                    primaryLabel = "확인",
+                    onPrimary = { showWriteConfirmDialog = false }
+                )
+            }
         }
     }
 
