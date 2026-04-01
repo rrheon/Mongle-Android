@@ -82,10 +82,10 @@ class GroupSelectViewModel @Inject constructor(
             runCatching {
                 familyRepository.createFamily(state.groupName, FamilyRole.OTHER)
             }.onSuccess { group ->
-                // 닉네임을 사용자 이름으로 업데이트
+                // 닉네임과 캐릭터 색상을 사용자 정보에 업데이트
                 runCatching {
                     val me = userRepository.getMe()
-                    userRepository.update(me.copy(name = state.nickname))
+                    userRepository.update(me.copy(name = state.nickname, moodId = state.selectedColorId))
                 }
                 _uiState.update {
                     it.copy(inviteCode = group.inviteCode, step = GroupSelectStep.CREATED, isLoading = false)
@@ -118,10 +118,10 @@ class GroupSelectViewModel @Inject constructor(
             runCatching {
                 familyRepository.joinFamily(state.joinCode.uppercase(), FamilyRole.OTHER)
             }.onSuccess {
-                // 닉네임을 사용자 이름으로 업데이트
+                // 닉네임과 캐릭터 색상을 사용자 정보에 업데이트
                 runCatching {
                     val me = userRepository.getMe()
-                    userRepository.update(me.copy(name = state.nickname))
+                    userRepository.update(me.copy(name = state.nickname, moodId = state.selectedColorId))
                 }
                 _uiState.update { it.copy(isLoading = false) }
                 onJoined()

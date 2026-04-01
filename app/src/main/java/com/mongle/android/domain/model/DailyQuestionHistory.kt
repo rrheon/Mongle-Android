@@ -7,6 +7,7 @@ data class DailyQuestionHistory(
     val question: Question,
     val date: Date,
     val hasMyAnswer: Boolean,
+    val isSkipped: Boolean = false,
     val familyAnswerCount: Int,
     val answers: List<HistoryAnswerSummary> = emptyList()
 )

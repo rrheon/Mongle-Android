@@ -43,7 +43,8 @@ class ApiUserRepository @Inject constructor(
         val response = api.updateMe(
             UpdateUserRequest(
                 name = user.name,
-                role = user.role.name
+                role = user.role.name,
+                moodId = user.moodId
             )
         )
         response.toDomain()

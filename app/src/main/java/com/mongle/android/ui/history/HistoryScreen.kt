@@ -214,8 +214,8 @@ fun HistoryScreen(
                             selectedDate = uiState.selectedDate,
                             onClick = { viewModel.onItemTapped(selectedItem) }
                         )
-                        // 내가 답변한 경우에만 다른 멤버 답변 표시
-                        if (selectedItem.userAnswered) {
+                        // 내가 답변했거나 넘기기한 경우에만 다른 멤버 답변 표시
+                        if (selectedItem.userAnswered || selectedItem.isSkipped) {
                             selectedItem.memberAnswers.forEach { answer ->
                                 FamilyAnswerCard(answer = answer)
                             }

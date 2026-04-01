@@ -28,6 +28,7 @@ data class HistoryItem(
     val totalMembers: Int,
     val isCompleted: Boolean,
     val userAnswered: Boolean,
+    val isSkipped: Boolean = false,
     val memberAnswers: List<HistoryAnswerSummary> = emptyList()
 )
 
@@ -91,11 +92,6 @@ class HistoryViewModel @Inject constructor(
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
                     }
-                    // 오늘 날짜는 내가 답변한 경우에만 노출
-                    val isToday = cal.timeInMillis == todayCal.timeInMillis
-                    if (isToday && !item.hasMyAnswer) {
-                        return@forEach
-                    }
                     historyMap[cal.timeInMillis] = HistoryItem(
                         id = runCatching { UUID.fromString(item.id) }.getOrElse { UUID.randomUUID() },
                         date = item.date,
@@ -104,6 +100,7 @@ class HistoryViewModel @Inject constructor(
                         totalMembers = totalMembers,
                         isCompleted = item.familyAnswerCount >= totalMembers,
                         userAnswered = item.hasMyAnswer,
+                        isSkipped = item.isSkipped,
                         memberAnswers = item.answers
                     )
                 }

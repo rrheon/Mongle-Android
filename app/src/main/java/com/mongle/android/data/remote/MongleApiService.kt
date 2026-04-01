@@ -61,7 +61,8 @@ data class ApiUserResponse(
 data class UpdateUserRequest(
     val name: String? = null,
     val profileImageUrl: String? = null,
-    val role: String? = null
+    val role: String? = null,
+    val moodId: String? = null
 )
 
 @JsonClass(generateAdapter = true)

@@ -260,6 +260,13 @@ class RootViewModel @Inject constructor(
                 state.copy(hasAnsweredToday = true)
             }
         }
+        // 서버에 moodId 동기화 (그룹선택/홈/My 화면 모두 반영)
+        if (answer?.moodId != null) {
+            viewModelScope.launch {
+                val user = _uiState.value.currentUser ?: return@launch
+                runCatching { userRepository.update(user) }
+            }
+        }
     }
 
     fun dismissDailyHeartPopup() {
