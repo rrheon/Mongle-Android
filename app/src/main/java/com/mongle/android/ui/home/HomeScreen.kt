@@ -130,6 +130,7 @@ fun HomeScreen(
     // 다이얼로그 상태
     var showAnswerFirstDialog by remember { mutableStateOf<String?>(null) }
     var showNudgeUnavailableDialog by remember { mutableStateOf<String?>(null) }
+    var showSkipConfirmDialog by remember { mutableStateOf(false) }
 
     // ViewModel 이벤트 처리
     LaunchedEffect(Unit) {
@@ -323,7 +324,7 @@ fun HomeScreen(
             },
             onSkipTapped = {
                 showQuestionSheet = false
-                viewModel.skipQuestion()
+                showSkipConfirmDialog = true
             }
         )
     }
@@ -376,6 +377,36 @@ fun HomeScreen(
                 secondaryLabel = "취소",
                 onSecondary = { showNudgeUnavailableDialog = null }
             )
+        }
+    }
+
+    // 질문 넘기기 확인 팝업
+    if (showSkipConfirmDialog) {
+        val currentHearts = uiState.currentUser?.hearts ?: 0
+        Dialog(
+            onDismissRequest = { showSkipConfirmDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            if (currentHearts >= 3) {
+                MonglePopup(
+                    title = "질문을 넘기시겠어요?",
+                    description = "하트 3개를 소모하여 새로운 질문으로\n변경됩니다. 넘긴 후에는 다른 가족의\n답변을 열람할 수 있어요.",
+                    primaryLabel = "넘기기",
+                    onPrimary = {
+                        showSkipConfirmDialog = false
+                        viewModel.skipQuestion()
+                    },
+                    secondaryLabel = "취소",
+                    onSecondary = { showSkipConfirmDialog = false }
+                )
+            } else {
+                MonglePopup(
+                    title = "하트가 부족해요",
+                    description = "질문을 넘기려면 하트 3개가 필요해요.\n현재 하트: ${currentHearts}개",
+                    primaryLabel = "확인",
+                    onPrimary = { showSkipConfirmDialog = false }
+                )
+            }
         }
     }
 }

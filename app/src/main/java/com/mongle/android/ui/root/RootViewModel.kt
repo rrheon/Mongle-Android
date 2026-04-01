@@ -275,7 +275,10 @@ class RootViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 todayQuestion = newQuestion,
-                hasAnsweredToday = false
+                hasAnsweredToday = false,
+                currentUser = it.currentUser?.copy(
+                    hearts = (it.currentUser.hearts - 3).coerceAtLeast(0)
+                )
             )
         }
     }

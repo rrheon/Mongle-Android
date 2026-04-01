@@ -213,7 +213,10 @@ class HomeViewModel @Inject constructor(
                             hasAnsweredToday = false,
                             hasSkippedToday = true,
                             memberAnswerStatus = emptyMap(),
-                            memberAnswers = emptyMap()
+                            memberAnswers = emptyMap(),
+                            currentUser = it.currentUser?.copy(
+                                hearts = (it.currentUser.hearts - 3).coerceAtLeast(0)
+                            )
                         )
                     }
                     newQuestion.dailyQuestionId?.let { loadFamilyAnswers(it) }
