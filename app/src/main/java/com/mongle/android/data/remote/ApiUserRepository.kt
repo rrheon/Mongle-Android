@@ -62,6 +62,10 @@ class ApiUserRepository @Inject constructor(
         api.grantAdHearts(AdHeartRewardRequest(amount)).heartsRemaining
     }
 
+    suspend fun registerFcmToken(token: String) = safeCall {
+        api.registerDeviceToken(RegisterDeviceTokenRequest(token))
+    }
+
     override suspend fun claimDailyHeart(): DailyHeartResult? = try {
         val resp = api.claimDailyHeart()
         if (resp.alreadyClaimed || resp.heartsGranted <= 0) null

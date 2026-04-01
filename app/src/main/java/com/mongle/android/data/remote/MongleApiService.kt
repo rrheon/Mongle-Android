@@ -293,6 +293,13 @@ data class SkipQuestionResponse(
     val heartsRemaining: Int
 )
 
+// ── FCM 디바이스 토큰 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class RegisterDeviceTokenRequest(
+    val token: String
+)
+
 // ── Retrofit 인터페이스 ──────────────────────────────
 
 interface MongleApiService {
@@ -328,6 +335,9 @@ interface MongleApiService {
 
     @POST("users/me/hearts/daily")
     suspend fun claimDailyHeart(): DailyHeartResponse
+
+    @PATCH("users/me/device-token")
+    suspend fun registerDeviceToken(@Body body: RegisterDeviceTokenRequest)
 
     // Questions
     @GET("questions/today")

@@ -141,6 +141,16 @@ class RootViewModel @Inject constructor(
                     // 일일 접속 하트 획득 시도
                     val dailyHeart = runCatching { userRepository.claimDailyHeart() }.getOrNull()
 
+                    // FCM 토큰 서버 등록
+                    runCatching {
+                        val fcmToken = context.getSharedPreferences("fcm", Context.MODE_PRIVATE)
+                            .getString("token", null)
+                        if (fcmToken != null) {
+                            (userRepository as? com.mongle.android.data.remote.ApiUserRepository)
+                                ?.registerFcmToken(fcmToken)
+                        }
+                    }
+
                     // 오늘의 질문이 없으면 히스토리에서 가장 최근 질문을 가져와 표시
                     val lastQ = if (question == null) {
                         runCatching {
