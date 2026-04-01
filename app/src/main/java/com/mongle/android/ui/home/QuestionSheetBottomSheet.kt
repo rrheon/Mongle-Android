@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Forward
@@ -31,18 +32,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mongle.android.domain.model.Question
+import com.mongle.android.ui.theme.MongleBorder
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
+import com.mongle.android.ui.theme.MongleRadius
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
-import com.mongle.android.ui.theme.MongleTextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,19 +115,28 @@ fun QuestionSheetBottomSheet(
                     )
                     .padding(MongleSpacing.md)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = "오늘의 질문",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MonglePrimary
                     )
                     if (hasAnswered) {
-                        Spacer(modifier = Modifier.width(MongleSpacing.xs))
+                        Spacer(modifier = Modifier.weight(1f))
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
                             tint = MonglePrimary,
                             modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = "답변 완료",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = MonglePrimary
                         )
                     }
                 }
@@ -171,21 +183,16 @@ fun QuestionSheetBottomSheet(
                 icon = Icons.Default.Edit,
                 title = "나만의 질문 작성하기",
                 subtitle = "하트 3개 소모",
-                enabled = true,
                 onClick = onWriteQuestionTap
             )
 
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = MongleSpacing.md),
-                color = Color(0xFFEEEEEE)
-            )
+            Spacer(modifier = Modifier.height(MongleSpacing.xs))
 
             // ── 질문 넘기기 ──
             QuestionSheetActionRow(
                 icon = Icons.Default.Forward,
                 title = "질문 넘기기",
-                subtitle = if (hasAnswered) "답변 완료 후에는 넘길 수 없어요" else "하트 3개 소모 · 다른 가족 답변 열람 가능",
-                enabled = !hasAnswered,
+                subtitle = "하트 3개 소모 · 다른 가족 답변 열람 가능",
                 onClick = onSkipTapped
             )
         }
@@ -197,48 +204,46 @@ private fun QuestionSheetActionRow(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    enabled: Boolean,
     onClick: () -> Unit
 ) {
-    val contentAlpha = if (enabled) 1f else 0.4f
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (enabled) Modifier.clickable { onClick() } else Modifier
-            )
-            .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm),
+            .padding(horizontal = MongleSpacing.md)
+            .shadow(elevation = 1.dp, shape = RoundedCornerShape(MongleRadius.medium))
+            .clip(RoundedCornerShape(MongleRadius.medium))
+            .background(color = MonglePrimaryLight.copy(alpha = 0.3f))
+            .border(width = 1.dp, color = MongleBorder, shape = RoundedCornerShape(MongleRadius.medium))
+            .clickable { onClick() }
+            .padding(vertical = MongleSpacing.sm, horizontal = MongleSpacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MonglePrimary,
             modifier = Modifier
-                .size(36.dp)
-                .background(
-                    color = if (enabled) MonglePrimaryLight else Color(0xFFF0F0F0),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (enabled) MonglePrimary else MongleTextHint,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+                .size(22.dp)
+                .width(36.dp)
+        )
         Spacer(modifier = Modifier.width(MongleSpacing.sm))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MongleTextPrimary.copy(alpha = contentAlpha)
+                color = MongleTextPrimary
             )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MongleTextSecondary.copy(alpha = contentAlpha)
+                color = MongleTextHint
             )
         }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = MongleTextHint,
+            modifier = Modifier.size(16.dp)
+        )
     }
 }

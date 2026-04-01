@@ -63,6 +63,8 @@ fun MongleNavHost(
     var showGroupSelect by remember { mutableStateOf(false) }
     var groupLeftToast by remember { mutableStateOf(false) }
     var showAnswerSubmittedToast by remember { mutableStateOf(false) }
+    var showSkipToast by remember { mutableStateOf(false) }
+    var showWriteQuestionToast by remember { mutableStateOf(false) }
     var showHeartPopup by remember { mutableStateOf(false) }
     var answerSubmittedCount by remember { mutableIntStateOf(0) }
 
@@ -71,6 +73,22 @@ fun MongleNavHost(
         if (showAnswerSubmittedToast) {
             delay(3000)
             showAnswerSubmittedToast = false
+        }
+    }
+
+    // 질문 넘기기 토스트 3초 후 자동 닫기
+    LaunchedEffect(showSkipToast) {
+        if (showSkipToast) {
+            delay(3000)
+            showSkipToast = false
+        }
+    }
+
+    // 나만의 질문 작성 토스트 3초 후 자동 닫기
+    LaunchedEffect(showWriteQuestionToast) {
+        if (showWriteQuestionToast) {
+            delay(3000)
+            showWriteQuestionToast = false
         }
     }
 
@@ -181,7 +199,8 @@ fun MongleNavHost(
                             onClose = { showWriteQuestion = false },
                             onQuestionSubmitted = { question ->
                                 showWriteQuestion = false
-                                rootViewModel.onAnswerSubmitted()
+                                rootViewModel.onWriteQuestionSubmitted(question)
+                                showWriteQuestionToast = true
                             }
                         )
                     }
@@ -207,7 +226,10 @@ fun MongleNavHost(
                             onNavigateToWriteQuestion = { showWriteQuestion = true },
                             onNavigateToGroupSelect = { showGroupSelect = true },
                             onGroupSelected = { familyId -> rootViewModel.onGroupSelected(familyId) },
-                            onQuestionSkipped = { newQuestion -> rootViewModel.onQuestionSkipped(newQuestion) },
+                            onQuestionSkipped = { newQuestion ->
+                                rootViewModel.onQuestionSkipped(newQuestion)
+                                showSkipToast = true
+                            },
                             onLogout = { rootViewModel.logout() },
                             onGroupLeft = {
                                 groupLeftToast = true
@@ -223,6 +245,24 @@ fun MongleNavHost(
                     message = if (showAnswerSubmittedToast && showQuestionDetail == null)
                         MongleToastType.ANSWER_SUBMITTED.defaultMessage else null,
                     type = MongleToastType.ANSWER_SUBMITTED,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 96.dp, start = 16.dp, end = 16.dp)
+                )
+
+                // 질문 넘기기 토스트
+                MongleToastOverlay(
+                    message = if (showSkipToast) MongleToastType.REFRESH_QUESTION.defaultMessage else null,
+                    type = MongleToastType.REFRESH_QUESTION,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 96.dp, start = 16.dp, end = 16.dp)
+                )
+
+                // 나만의 질문 작성 토스트
+                MongleToastOverlay(
+                    message = if (showWriteQuestionToast) MongleToastType.WRITE_QUESTION.defaultMessage else null,
+                    type = MongleToastType.WRITE_QUESTION,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 96.dp, start = 16.dp, end = 16.dp)
@@ -246,7 +286,7 @@ private fun HeartEarnedPopup(hearts: Int, onDismiss: () -> Unit) {
             onPrimary = onDismiss,
             extraContent = {
                 Text(
-                    text = "하트 사용처\n• 질문 다시받기 (1개)\n• 나만의 질문 작성 (1개)\n• 재촉하기 (1개)\n\n매일 오전 6시에 하트 1개가 충전돼요.",
+                    text = "하트 사용처\n• 질문 넘기기 (3개)\n• 나만의 질문 작성 (3개)\n• 재촉하기 (1개)\n\n매일 오전 6시에 하트 1개가 충전돼요.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MongleTextSecondary
                 )
