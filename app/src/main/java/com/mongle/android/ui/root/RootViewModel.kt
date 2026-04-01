@@ -271,6 +271,15 @@ class RootViewModel @Inject constructor(
         }
     }
 
+    fun onQuestionSkipped(newQuestion: Question) {
+        _uiState.update {
+            it.copy(
+                todayQuestion = newQuestion,
+                hasAnsweredToday = false
+            )
+        }
+    }
+
     fun refreshData() {
         loadHomeData()
     }

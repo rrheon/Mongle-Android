@@ -321,12 +321,13 @@ fun MongleSceneView(
         }
     }
 
-    // 답변 상태 및 색상 변경 반영
-    LaunchedEffect(members.map { it.hasAnswered }, members.map { it.color }) {
+    // 답변 상태, 색상, 이름 변경 반영 (그룹 전환 시 닉네임도 즉시 동기화)
+    LaunchedEffect(members.map { it.hasAnswered }, members.map { it.color }, members.map { it.name }) {
         sceneMembers = sceneMembers.map { sm ->
             val updated = members.find { it.id == sm.id }
             if (updated != null) {
                 var changed = sm
+                if (sm.name != updated.name) changed = changed.copy(name = updated.name)
                 if (sm.hasAnswered != updated.hasAnswered) changed = changed.copy(hasAnswered = updated.hasAnswered)
                 if (sm.color != updated.color) changed = changed.copy(color = updated.color)
                 changed

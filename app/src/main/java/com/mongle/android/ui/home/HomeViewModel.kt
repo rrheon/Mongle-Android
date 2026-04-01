@@ -67,6 +67,10 @@ class HomeViewModel @Inject constructor(
     private val _events = MutableSharedFlow<HomeEvent>()
     val events: SharedFlow<HomeEvent> = _events.asSharedFlow()
 
+    /** 질문 넘기기 성공 시 새 질문을 상위로 전파 */
+    private val _skipEvents = MutableSharedFlow<Question>()
+    val skipEvents: SharedFlow<Question> = _skipEvents.asSharedFlow()
+
     fun initialize(
         todayQuestion: Question?,
         lastQuestion: Question? = null,
@@ -207,11 +211,13 @@ class HomeViewModel @Inject constructor(
                             isLoading = false,
                             todayQuestion = newQuestion,
                             hasAnsweredToday = false,
+                            hasSkippedToday = true,
                             memberAnswerStatus = emptyMap(),
                             memberAnswers = emptyMap()
                         )
                     }
                     newQuestion.dailyQuestionId?.let { loadFamilyAnswers(it) }
+                    _skipEvents.emit(newQuestion)
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "질문 넘기기에 실패했습니다.") }

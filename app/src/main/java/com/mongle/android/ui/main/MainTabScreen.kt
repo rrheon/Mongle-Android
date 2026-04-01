@@ -48,6 +48,7 @@ fun MainTabScreen(
     onNavigateToWriteQuestion: () -> Unit = {},
     onNavigateToGroupSelect: () -> Unit = {},
     onGroupSelected: (java.util.UUID) -> Unit = {},
+    onQuestionSkipped: (Question) -> Unit = {},
     onLogout: () -> Unit = {},
     onGroupLeft: () -> Unit = {},
     answerSubmittedCount: Int = 0
@@ -64,6 +65,13 @@ fun MainTabScreen(
     // 그룹 전환 시 History 데이터 새로고침
     LaunchedEffect(rootUiState.family?.id) {
         historyViewModel.refresh()
+    }
+
+    // 질문 넘기기 성공 시 RootViewModel에 전파
+    LaunchedEffect(Unit) {
+        homeViewModel.skipEvents.collect { newQuestion ->
+            onQuestionSkipped(newQuestion)
+        }
     }
 
     // RootViewModel 데이터를 HomeViewModel에 주입
