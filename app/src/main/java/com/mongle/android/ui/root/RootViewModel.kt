@@ -48,7 +48,8 @@ data class RootUiState(
     val hasSkippedToday: Boolean = false,
     val errorMessage: String? = null,
     val pendingInviteCode: String? = null,
-    val dailyHeartGranted: Int = 0
+    val dailyHeartGranted: Int = 0,
+    val pendingNotificationType: String? = null
 )
 
 @HiltViewModel
@@ -220,6 +221,14 @@ class RootViewModel @Inject constructor(
 
     fun clearPendingInviteCode() {
         _uiState.update { it.copy(pendingInviteCode = null) }
+    }
+
+    fun handleNotificationTap(type: String) {
+        _uiState.update { it.copy(pendingNotificationType = type) }
+    }
+
+    fun clearPendingNotification() {
+        _uiState.update { it.copy(pendingNotificationType = null) }
     }
 
     fun onBrowse() {

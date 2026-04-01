@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         adManager.setActivity(this)
         intent?.data?.let { uri -> rootViewModel.handleDeepLink(uri) }
+        intent?.getStringExtra("notification_type")?.let { rootViewModel.handleNotificationTap(it) }
         setContent {
             MongleTheme {
                 MongleNavHost(
@@ -49,5 +50,6 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.data?.let { uri -> rootViewModel.handleDeepLink(uri) }
+        intent.getStringExtra("notification_type")?.let { rootViewModel.handleNotificationTap(it) }
     }
 }

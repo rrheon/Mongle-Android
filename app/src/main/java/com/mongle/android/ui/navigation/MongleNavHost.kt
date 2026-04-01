@@ -92,6 +92,24 @@ fun MongleNavHost(
         }
     }
 
+    // 알림 탭 네비게이션 처리
+    LaunchedEffect(uiState.pendingNotificationType) {
+        val type = uiState.pendingNotificationType ?: return@LaunchedEffect
+        if (uiState.appState != AppState.Authenticated) return@LaunchedEffect
+        when (type) {
+            "MEMBER_ANSWERED" -> {
+                // 본인이 답했으면 답변 목록, 안 했으면 답변 입력 화면 → 둘 다 QuestionDetail로 이동 (화면 내에서 분기)
+                uiState.todayQuestion?.let { showQuestionDetail = it }
+            }
+            "NEW_QUESTION", "ANSWER_REQUEST" -> {
+                if (!uiState.hasAnsweredToday) {
+                    uiState.todayQuestion?.let { showQuestionDetail = it }
+                }
+            }
+        }
+        rootViewModel.clearPendingNotification()
+    }
+
     when (uiState.appState) {
         AppState.Onboarding -> {
             OnboardingScreen(
