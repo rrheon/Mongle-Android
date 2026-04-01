@@ -339,6 +339,9 @@ interface MongleApiService {
     @PATCH("users/me/device-token")
     suspend fun registerDeviceToken(@Body body: RegisterDeviceTokenRequest)
 
+    @PATCH("users/me/fcm-token")
+    suspend fun registerFcmToken(@Body body: RegisterDeviceTokenRequest)
+
     // Questions
     @GET("questions/today")
     suspend fun getTodayQuestion(): DailyQuestionResponse
