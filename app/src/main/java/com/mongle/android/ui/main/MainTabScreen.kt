@@ -84,7 +84,8 @@ fun MainTabScreen(
             familyMembers = rootUiState.familyMembers,
             allFamilies = rootUiState.allFamilies,
             currentUser = rootUiState.currentUser,
-            hasAnsweredToday = rootUiState.hasAnsweredToday
+            hasAnsweredToday = rootUiState.hasAnsweredToday,
+            hasSkippedToday = rootUiState.hasSkippedToday
         )
     }
 

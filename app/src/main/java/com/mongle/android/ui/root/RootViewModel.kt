@@ -45,6 +45,7 @@ data class RootUiState(
     val familyMembers: List<User> = emptyList(),
     val allFamilies: List<MongleGroup> = emptyList(),
     val hasAnsweredToday: Boolean = false,
+    val hasSkippedToday: Boolean = false,
     val errorMessage: String? = null,
     val pendingInviteCode: String? = null,
     val dailyHeartGranted: Int = 0
@@ -275,6 +276,19 @@ class RootViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 todayQuestion = newQuestion,
+                hasAnsweredToday = false,
+                hasSkippedToday = true,
+                currentUser = it.currentUser?.copy(
+                    hearts = (it.currentUser.hearts - 3).coerceAtLeast(0)
+                )
+            )
+        }
+    }
+
+    fun onWriteQuestionSubmitted(question: Question) {
+        _uiState.update {
+            it.copy(
+                todayQuestion = question,
                 hasAnsweredToday = false,
                 currentUser = it.currentUser?.copy(
                     hearts = (it.currentUser.hearts - 3).coerceAtLeast(0)

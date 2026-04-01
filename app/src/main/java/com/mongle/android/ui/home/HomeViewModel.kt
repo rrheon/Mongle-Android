@@ -79,7 +79,8 @@ class HomeViewModel @Inject constructor(
         familyMembers: List<User>,
         allFamilies: List<MongleGroup> = emptyList(),
         currentUser: User?,
-        hasAnsweredToday: Boolean
+        hasAnsweredToday: Boolean,
+        hasSkippedToday: Boolean = false
     ) {
         _uiState.update {
             it.copy(
@@ -91,6 +92,7 @@ class HomeViewModel @Inject constructor(
                 allFamilies = allFamilies,
                 currentUser = currentUser,
                 hasAnsweredToday = hasAnsweredToday,
+                hasSkippedToday = hasSkippedToday,
                 memberAnswerStatus = emptyMap(),
                 memberAnswers = emptyMap()
             )
@@ -213,10 +215,7 @@ class HomeViewModel @Inject constructor(
                             hasAnsweredToday = false,
                             hasSkippedToday = true,
                             memberAnswerStatus = emptyMap(),
-                            memberAnswers = emptyMap(),
-                            currentUser = it.currentUser?.copy(
-                                hearts = (it.currentUser.hearts - 3).coerceAtLeast(0)
-                            )
+                            memberAnswers = emptyMap()
                         )
                     }
                     newQuestion.dailyQuestionId?.let { loadFamilyAnswers(it) }
