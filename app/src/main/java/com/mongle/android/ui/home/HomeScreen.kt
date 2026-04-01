@@ -174,8 +174,6 @@ fun HomeScreen(
         }
     }
 
-    val isBeforeNoon = remember { java.time.LocalTime.now().isBefore(java.time.LocalTime.NOON) }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -242,8 +240,12 @@ fun HomeScreen(
                         .padding(horizontal = MongleSpacing.md)
                         .padding(bottom = MongleSpacing.sm)
                 )
-            } else if (isBeforeNoon) {
-                TodayQuestionPlaceholderCard(
+            } else if (uiState.lastQuestion != null) {
+                // 오늘의 질문이 아직 도착하지 않았을 때 전날 질문을 읽기 전용으로 표시
+                TodayQuestionCard(
+                    question = uiState.lastQuestion!!,
+                    hasAnswered = true,
+                    onTap = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MongleSpacing.md)

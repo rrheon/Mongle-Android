@@ -70,6 +70,7 @@ fun MainTabScreen(
     LaunchedEffect(rootUiState) {
         homeViewModel.initialize(
             todayQuestion = rootUiState.todayQuestion,
+            lastQuestion = rootUiState.lastQuestion,
             familyTree = rootUiState.familyTree,
             family = rootUiState.family,
             familyMembers = rootUiState.familyMembers,

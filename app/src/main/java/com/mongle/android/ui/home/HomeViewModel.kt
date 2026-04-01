@@ -25,6 +25,8 @@ import javax.inject.Inject
 
 data class HomeUiState(
     val todayQuestion: Question? = null,
+    /** 오늘의 질문이 아직 도착하지 않았을 때 보여줄 전날 질문 */
+    val lastQuestion: Question? = null,
     val familyTree: TreeProgress = TreeProgress(),
     val family: MongleGroup? = null,
     val familyMembers: List<User> = emptyList(),
@@ -67,6 +69,7 @@ class HomeViewModel @Inject constructor(
 
     fun initialize(
         todayQuestion: Question?,
+        lastQuestion: Question? = null,
         familyTree: TreeProgress,
         family: MongleGroup?,
         familyMembers: List<User>,
@@ -77,6 +80,7 @@ class HomeViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 todayQuestion = todayQuestion,
+                lastQuestion = lastQuestion,
                 familyTree = familyTree,
                 family = family,
                 familyMembers = familyMembers,

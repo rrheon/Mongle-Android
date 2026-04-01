@@ -480,13 +480,13 @@ private fun EmptyDateCard(selectedDate: Date, modifier: Modifier = Modifier) {
         dateCal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR) &&
             dateCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
     }
-    val noon = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, 12)
+    val questionTime = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 11)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
     }.time
-    val isBeforeNoon = Date() < noon
-    val message = if (isToday && isBeforeNoon) "아직 질문을 받아오지 않았어요" else "이 날의 기록이 없어요"
+    val isBeforeQuestionTime = Date() < questionTime
+    val message = if (isToday && isBeforeQuestionTime) "오전 11시에 새로운 질문이 도착해요" else "이 날의 기록이 없어요"
 
     Column(
         modifier = modifier

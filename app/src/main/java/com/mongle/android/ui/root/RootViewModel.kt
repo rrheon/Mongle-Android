@@ -38,6 +38,8 @@ data class RootUiState(
     val appState: AppState = AppState.Loading,
     val currentUser: User? = null,
     val todayQuestion: Question? = null,
+    /** 오늘의 질문이 아직 도착하지 않았을 때 보여줄 전날 질문 */
+    val lastQuestion: Question? = null,
     val familyTree: TreeProgress = TreeProgress(),
     val family: MongleGroup? = null,
     val familyMembers: List<User> = emptyList(),
@@ -138,16 +140,29 @@ class RootViewModel @Inject constructor(
                     // 일일 접속 하트 획득 시도
                     val dailyHeart = runCatching { userRepository.claimDailyHeart() }.getOrNull()
 
+                    // 오늘의 질문이 없으면 히스토리에서 가장 최근 질문을 가져와 표시
+                    val lastQ = if (question == null) {
+                        runCatching {
+                            questionRepository.getDailyHistory(page = 1, limit = 1).firstOrNull()?.question
+                        }.getOrNull()
+                    } else null
+
                     _uiState.update {
-                        // 서버의 familyMembers에서 현재 유저의 최신 moodId를 동기화
+                        // 서버의 familyMembers에서 현재 유저의 최신 정보를 동기화 (그룹별 닉네임 포함)
                         val serverMe = members.firstOrNull { m -> m.id == it.currentUser?.id }
-                        val syncedUser = it.currentUser?.copy(
-                            moodId = serverMe?.moodId ?: it.currentUser.moodId,
-                            hearts = if (dailyHeart != null) dailyHeart.heartsRemaining else it.currentUser.hearts
-                        )
+                        val syncedUser = if (serverMe != null) {
+                            serverMe.copy(
+                                hearts = if (dailyHeart != null) dailyHeart.heartsRemaining else serverMe.hearts
+                            )
+                        } else {
+                            it.currentUser?.copy(
+                                hearts = if (dailyHeart != null) dailyHeart.heartsRemaining else (it.currentUser.hearts)
+                            )
+                        }
                         it.copy(
                             appState = AppState.Authenticated,
                             todayQuestion = question,
+                            lastQuestion = lastQ,
                             familyTree = tree ?: TreeProgress(),
                             family = family,
                             familyMembers = members,
