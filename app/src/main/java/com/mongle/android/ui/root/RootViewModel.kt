@@ -49,7 +49,8 @@ data class RootUiState(
     val errorMessage: String? = null,
     val pendingInviteCode: String? = null,
     val dailyHeartGranted: Int = 0,
-    val pendingNotificationType: String? = null
+    val pendingNotificationType: String? = null,
+    val pendingAppleCallbackUri: android.net.Uri? = null
 )
 
 @HiltViewModel
@@ -209,6 +210,12 @@ class RootViewModel @Inject constructor(
     }
 
     fun handleDeepLink(uri: android.net.Uri) {
+        // Apple Sign-In 콜백: monggle://apple-callback?id_token=...&code=...
+        if (uri.scheme == "monggle" && uri.host == "apple-callback") {
+            _uiState.update { it.copy(pendingAppleCallbackUri = uri) }
+            return
+        }
+
         val code = when {
             uri.scheme == "monggle" && uri.host == "join" -> uri.pathSegments.firstOrNull()?.uppercase()
             uri.host == "monggle.app" && uri.pathSegments.size >= 2 && uri.pathSegments[0] == "join" -> uri.pathSegments[1].uppercase()
@@ -217,6 +224,10 @@ class RootViewModel @Inject constructor(
         if (code != null) {
             _uiState.update { it.copy(pendingInviteCode = code) }
         }
+    }
+
+    fun clearPendingAppleCallback() {
+        _uiState.update { it.copy(pendingAppleCallbackUri = null) }
     }
 
     fun clearPendingInviteCode() {

@@ -38,6 +38,10 @@ class ApiNotificationRepository @Inject constructor(
         api.markAllNotificationsRead().count
     }
 
+    suspend fun deleteNotification(notificationId: String) = safeCall {
+        api.deleteNotification(notificationId)
+    }
+
     private fun NotificationDto.toApp() = AppNotification(
         id = id,
         type = type,

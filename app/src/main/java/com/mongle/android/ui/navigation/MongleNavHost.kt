@@ -136,7 +136,9 @@ fun MongleNavHost(
         AppState.Unauthenticated -> {
             LoginScreen(
                 onLoggedIn = { user -> rootViewModel.onLoggedIn(user) },
-                onBrowse = { rootViewModel.onBrowse() }
+                onBrowse = { rootViewModel.onBrowse() },
+                pendingAppleCallbackUri = uiState.pendingAppleCallbackUri,
+                onAppleCallbackConsumed = { rootViewModel.clearPendingAppleCallback() }
             )
         }
 
@@ -188,6 +190,8 @@ fun MongleNavHost(
                             question = showQuestionDetail!!,
                             currentUser = uiState.currentUser,
                             familyMembers = uiState.familyMembers,
+                            currentUserHearts = uiState.currentUser?.hearts ?: 0,
+                            adManager = adManager,
                             onAnswerSubmitted = { answer, isNewAnswer ->
                                 rootViewModel.onAnswerSubmitted(answer, isNewAnswer)
                                 showQuestionDetail = null
@@ -205,6 +209,7 @@ fun MongleNavHost(
                         PeerNudgeScreen(
                             targetUser = showNudgeTarget!!,
                             currentUserHearts = uiState.currentUser?.hearts ?: 0,
+                            questionContent = uiState.todayQuestion?.content ?: "",
                             adManager = adManager,
                             onBack = { showNudgeTarget = null },
                             onNudgeSent = { heartsRemaining ->

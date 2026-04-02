@@ -3,7 +3,6 @@ package com.mongle.android.domain.model
 enum class SocialProviderType(val value: String) {
     APPLE("apple"),
     KAKAO("kakao"),
-    NAVER("naver"),
     GOOGLE("google")
 }
 
@@ -18,7 +17,6 @@ interface SocialLoginCredential {
      * 서버에 전송할 제공자별 페이로드 (key-value)
      * - Apple: identity_token, authorization_code, name?, email?
      * - Kakao: access_token, name?, email?
-     * - Naver: access_token, name?, email?
      * - Google: id_token, name?, email?
      */
     val fields: Map<String, String>
@@ -45,6 +43,21 @@ data class GoogleLoginCredential(
     override val providerType = SocialProviderType.GOOGLE
     override val fields: Map<String, String> = buildMap {
         put("id_token", idToken)
+        name?.let { put("name", it) }
+        email?.let { put("email", it) }
+    }
+}
+
+data class AppleLoginCredential(
+    val identityToken: String,
+    val authorizationCode: String,
+    val name: String? = null,
+    val email: String? = null
+) : SocialLoginCredential {
+    override val providerType = SocialProviderType.APPLE
+    override val fields: Map<String, String> = buildMap {
+        put("identity_token", identityToken)
+        put("authorization_code", authorizationCode)
         name?.let { put("name", it) }
         email?.let { put("email", it) }
     }

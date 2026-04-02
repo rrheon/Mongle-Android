@@ -109,10 +109,6 @@ class ApiAuthRepository @Inject constructor(
                     name = credential.fields["name"],
                     email = credential.fields["email"]
                 )
-                SocialProviderType.NAVER -> SocialLoginRequest(
-                    provider = "naver",
-                    access_token = credential.fields["access_token"]
-                )
             }
             val response = api.socialLogin(request)
             saveSession(response.user, response.token, response.refresh_token)

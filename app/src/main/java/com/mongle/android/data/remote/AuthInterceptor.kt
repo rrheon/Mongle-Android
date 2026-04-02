@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.Interceptor
 import okhttp3.Response
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,13 +21,16 @@ class AuthInterceptor @Inject constructor(
             .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             .getString(KEY_TOKEN, null)
 
-        val request = if (token != null) {
-            chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
-        } else {
-            chain.request()
+        val lang = when (Locale.getDefault().language) {
+            "ko" -> "ko"
+            "ja" -> "ja"
+            else -> "en"
         }
+
+        val request = chain.request().newBuilder()
+            .addHeader("Accept-Language", lang)
+            .apply { if (token != null) addHeader("Authorization", "Bearer $token") }
+            .build()
 
         return chain.proceed(request)
     }

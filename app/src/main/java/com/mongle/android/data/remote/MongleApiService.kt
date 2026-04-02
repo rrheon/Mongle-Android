@@ -416,4 +416,7 @@ interface MongleApiService {
 
     @PATCH("notifications/read-all")
     suspend fun markAllNotificationsRead(): MarkAllReadResponse
+
+    @DELETE("notifications/{notificationId}")
+    suspend fun deleteNotification(@Path("notificationId") notificationId: String)
 }

@@ -22,7 +22,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -41,6 +42,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -75,6 +77,9 @@ dependencies {
     // Social Login
     implementation(libs.play.services.auth)
     implementation(libs.kakao.auth)
+
+    // Browser (Custom Tabs for Apple Sign-In)
+    implementation(libs.androidx.browser)
 
     // Google Mobile Ads (AdMob)
     implementation(libs.google.mobile.ads)

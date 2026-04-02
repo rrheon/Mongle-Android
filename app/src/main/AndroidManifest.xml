@@ -16,6 +16,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Mongle">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,6 +29,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="monggle" android:host="join" />
+            </intent-filter>
+
+            <!-- Apple Sign-In 콜백 딥링크 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="monggle" android:host="apple-callback" />
             </intent-filter>
 
             <!-- Android App Links -->
