@@ -23,6 +23,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,11 +52,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mongle.android.R
 import com.mongle.android.domain.model.HistoryAnswerSummary
+import com.mongle.android.ui.common.AdBannerSection
 import com.mongle.android.ui.common.MongleCharacter
 import com.mongle.android.ui.common.MongleCard
+import com.mongle.android.ui.common.MongleLogo
+import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.theme.MongleMonggleBlue
 import com.mongle.android.ui.theme.MongleMonggleGreenLight
 import com.mongle.android.ui.theme.MongleMonggleOrange
@@ -135,7 +142,7 @@ fun SearchScreen(
                     decorationBox = { innerTextField ->
                         if (uiState.query.isEmpty()) {
                             Text(
-                                text = "답변이나 질문 검색",
+                                text = stringResource(R.string.search_placeholder),
                                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
                                 color = MongleTextHint
                             )
@@ -143,6 +150,18 @@ fun SearchScreen(
                         innerTextField()
                     }
                 )
+                // Clear 버튼 (iOS 동일)
+                if (uiState.query.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.search_clear),
+                        tint = MongleTextHint,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable { viewModel.onQueryChanged("") }
+                    )
+                }
             }
         }
 
@@ -157,7 +176,7 @@ fun SearchScreen(
             uiState.showMinLengthHint -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "2글자 이상 입력해 주세요",
+                        text = stringResource(R.string.search_min_length),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MongleTextHint
                     )
@@ -175,7 +194,7 @@ fun SearchScreen(
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "\"${uiState.query.trim()}\"에 맞는 기록이 없어요",
+                            text = stringResource(R.string.search_no_results, uiState.query.trim()),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MongleTextHint
                         )
@@ -184,6 +203,10 @@ fun SearchScreen(
             }
 
             uiState.results.isNotEmpty() -> {
+                // 플랫 리스트로 변환하여 11개마다 광고 삽입 (iOS 동일)
+                val flatResults = uiState.results
+                val totalCount = flatResults.size
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -193,7 +216,7 @@ fun SearchScreen(
                     item {
                         Spacer(modifier = Modifier.height(MongleSpacing.md))
                         Text(
-                            text = "${uiState.resultCount}개의 기록을 찾았어요",
+                            text = stringResource(R.string.search_result_count, uiState.resultCount),
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                             color = MongleTextHint
                         )
@@ -202,17 +225,30 @@ fun SearchScreen(
 
                     // 날짜별 그룹핑
                     val grouped = uiState.results.groupBy { it.date.toDateKey() }
+                    var globalIndex = 0
                     grouped.entries.sortedByDescending { it.key }.forEach { (_, items) ->
                         item {
                             DateGroupHeader(date = items.first().date)
                             Spacer(modifier = Modifier.height(MongleSpacing.sm))
                         }
-                        items(items, key = { it.dailyQuestionId }) { result ->
-                            SearchResultCard(
-                                result = result,
-                                query = uiState.query.trim()
-                            )
-                            Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                        items.forEach { result ->
+                            val currentIndex = globalIndex
+                            globalIndex++
+                            item(key = result.dailyQuestionId) {
+                                SearchResultCard(
+                                    result = result,
+                                    query = uiState.query.trim()
+                                )
+                                Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                            }
+                            // 11개마다 또는 마지막 아이템 뒤에 광고 배너 삽입
+                            if ((currentIndex + 1) % 11 == 0 || currentIndex + 1 == totalCount) {
+                                item(key = "ad_$currentIndex") {
+                                    AdBannerSection(
+                                        modifier = Modifier.padding(vertical = MongleSpacing.sm)
+                                    )
+                                }
+                            }
                         }
                         item { Spacer(modifier = Modifier.height(MongleSpacing.xs)) }
                     }
@@ -223,15 +259,10 @@ fun SearchScreen(
             else -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            tint = MonglePrimary,
-                            modifier = Modifier.size(40.dp)
-                        )
+                        MongleLogo(size = MongleLogoSize.LARGE)
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "가족의 소중한 기록을 검색해보세요",
+                            text = stringResource(R.string.search_empty),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MongleTextHint
                         )

@@ -1,6 +1,7 @@
 package com.mongle.android.ui.login
 
 import android.app.Activity
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.mongle.android.R
 import androidx.compose.material3.Icon
 import androidx.compose.ui.text.font.FontWeight
@@ -51,9 +53,8 @@ import com.mongle.android.ui.theme.MongleAppleTextLight
 import com.mongle.android.ui.theme.MongleGoogleBorder
 import com.mongle.android.ui.theme.MongleKakao
 import com.mongle.android.ui.theme.MongleKakaoText
-import com.mongle.android.ui.theme.MongleNaver
-import com.mongle.android.ui.theme.MongleNaverText
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleBackgroundLight
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
@@ -64,6 +65,8 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoggedIn: (User) -> Unit,
     onBrowse: () -> Unit = {},
+    pendingAppleCallbackUri: Uri? = null,
+    onAppleCallbackConsumed: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -84,6 +87,20 @@ fun LoginScreen(
         }
     }
 
+    // Apple Sign-In 콜백 처리: 서버가 monggle://apple-callback 으로 리다이렉트하면 여기서 수신
+    LaunchedEffect(pendingAppleCallbackUri) {
+        val uri = pendingAppleCallbackUri ?: return@LaunchedEffect
+        onAppleCallbackConsumed()
+        try {
+            val credential = handleAppleCallback(uri)
+            Log.d("LoginScreen", "Apple 토큰 파싱 성공 → 서버 로그인 요청")
+            viewModel.loginWithSocial(credential)
+        } catch (e: Exception) {
+            Log.e("LoginScreen", "Apple 로그인 실패: ${e.message}")
+            viewModel.setError(e.message ?: "Apple 로그인에 실패했습니다.")
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -95,15 +112,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFFFF8F0),
-                        Color(0xFFFFF2EB),
-                        Color(0xFFEFF8F1)
-                    )
-                )
-            )
+            .background(MongleBackgroundLight) // iOS 기준: 단색 background
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -124,7 +133,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(MongleSpacing.md))
 
                     Text(
-                        text = "몽글",
+                        text = stringResource(R.string.login_title),
                         style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
                         color = MongleTextPrimary
                     )
@@ -132,7 +141,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(MongleSpacing.xs))
 
                     Text(
-                        text = "오늘의 마음은 어떤 색인가요?",
+                        text = stringResource(R.string.login_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MongleTextSecondary
                     )
@@ -149,16 +158,6 @@ fun LoginScreen(
                     .padding(bottom = 40.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 에러 메시지
-                if (uiState.errorMessage != null) {
-                    Text(
-                        text = uiState.errorMessage!!,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(MongleSpacing.sm))
-                }
-
                 // 카카오 로그인
                 SocialLoginButton(
                     provider = SocialProvider.KAKAO,
@@ -178,7 +177,7 @@ fun LoginScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                Spacer(modifier = Modifier.height(MongleSpacing.md))
 
                 // Google 로그인
                 SocialLoginButton(
@@ -198,18 +197,8 @@ fun LoginScreen(
                     provider = SocialProvider.APPLE,
                     enabled = !uiState.isLoading,
                     onClick = {
-                        viewModel.setError("Apple 로그인은 준비 중입니다.")
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(MongleSpacing.sm))
-
-                // 네이버 로그인
-                SocialLoginButton(
-                    provider = SocialProvider.NAVER,
-                    enabled = !uiState.isLoading,
-                    onClick = {
-                        viewModel.setError("네이버 로그인은 준비 중입니다.")
+                        Log.d("LoginScreen", "Apple 로그인 버튼 클릭 → Custom Tab 실행")
+                        launchAppleSignIn(context)
                     }
                 )
 
@@ -221,11 +210,35 @@ fun LoginScreen(
                     enabled = !uiState.isLoading
                 ) {
                     Text(
-                        text = "둘러보기",
+                        text = stringResource(R.string.login_browse),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MongleTextHint
                     )
                 }
+            }
+        }
+
+        // 에러 토스트 (iOS 기준: mongleErrorToast 방식)
+        if (uiState.errorMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.xl)
+            ) {
+                Text(
+                    text = uiState.errorMessage!!,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF1A1A1A).copy(alpha = 0.85f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm)
+                )
+            }
+            LaunchedEffect(uiState.errorMessage) {
+                kotlinx.coroutines.delay(2000)
+                viewModel.dismissError()
             }
         }
 
@@ -246,21 +259,20 @@ fun LoginScreen(
 // MARK: - Social Login Provider
 
 enum class SocialProvider {
-    KAKAO, GOOGLE, APPLE, NAVER;
+    KAKAO, GOOGLE, APPLE;
 
     val title: String
         get() = when (this) {
             KAKAO -> "카카오로 계속하기"
             GOOGLE -> "Google로 계속하기"
             APPLE -> "Apple로 계속하기"
-            NAVER -> "네이버로 계속하기"
         }
 
     /** 카카오 공식 가이드: 12dp, 그 외: 16dp */
     val cornerRadius: Dp
         get() = when (this) {
             KAKAO -> 12.dp
-            else -> 16.dp
+            GOOGLE, APPLE -> 16.dp
         }
 
     val backgroundColor: Color
@@ -268,7 +280,6 @@ enum class SocialProvider {
             KAKAO -> MongleKakao
             GOOGLE -> Color.White
             APPLE -> MongleAppleLight
-            NAVER -> MongleNaver
         }
 
     val contentColor: Color
@@ -276,8 +287,14 @@ enum class SocialProvider {
             KAKAO -> MongleKakaoText
             GOOGLE -> MongleTextPrimary
             APPLE -> MongleAppleTextLight
-            NAVER -> MongleNaverText
         }
+}
+
+@Composable
+private fun SocialProvider.localizedTitle(): String = when (this) {
+    SocialProvider.KAKAO -> stringResource(R.string.login_kakao)
+    SocialProvider.GOOGLE -> stringResource(R.string.login_google)
+    SocialProvider.APPLE -> stringResource(R.string.login_apple)
 }
 
 // MARK: - SocialLoginButton
@@ -334,17 +351,11 @@ private fun SocialLoginButton(
                         tint = provider.contentColor,
                         modifier = Modifier.size(18.dp)
                     )
-                    SocialProvider.NAVER -> Icon(
-                        painter = painterResource(id = R.drawable.ic_naver_logo),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
                 }
             }
             Spacer(modifier = Modifier.width(MongleSpacing.sm))
             Text(
-                text = provider.title,
+                text = provider.localizedTitle(),
                 style = MaterialTheme.typography.labelLarge,
                 color = provider.contentColor
             )

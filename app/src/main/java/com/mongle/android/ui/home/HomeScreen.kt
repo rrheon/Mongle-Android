@@ -24,8 +24,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -75,6 +77,7 @@ import com.mongle.android.ui.common.SceneMemberInfo
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleHeartRed
+import com.mongle.android.ui.theme.MongleBgNeutral
 import com.mongle.android.ui.theme.MongleHeartRedLight
 import com.mongle.android.ui.theme.MongleRadius
 import com.mongle.android.ui.theme.MongleMonggleBlue
@@ -87,6 +90,8 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 
 // iOS monggleColor(for:) 순서와 동일: [Green, Yellow, Pink, Blue, Orange]
 private val sceneCharacterColors = listOf(
@@ -166,7 +171,13 @@ fun HomeScreen(
         }
     } else {
         // 둘러보기 모드: 5명의 데모 캐릭터로 애니메이션 씬 표시
-        listOf("몽글이", "다정이", "포근이", "따뜻이", "느낌이").mapIndexed { index, demoName ->
+        listOf(
+            stringResource(R.string.demo_char_1),
+            stringResource(R.string.demo_char_2),
+            stringResource(R.string.demo_char_3),
+            stringResource(R.string.demo_char_4),
+            stringResource(R.string.demo_char_5)
+        ).mapIndexed { index, demoName ->
             SceneMemberInfo(
                 id = java.util.UUID.nameUUIDFromBytes("demo_$index".toByteArray()),
                 name = demoName,
@@ -217,11 +228,11 @@ fun HomeScreen(
                 .onGloballyPositioned { overlayHeightPx = it.size.height }
         ) {
             HomeTopBar(
-                groupName = uiState.family?.name ?: "몽글",
+                groupName = uiState.family?.name ?: stringResource(R.string.home_default_group),
                 currentFamilyId = uiState.family?.id,
                 allFamilies = uiState.allFamilies,
                 hearts = uiState.currentUser?.hearts ?: 0,
-                hasNotification = false,
+                hasNotification = uiState.hasUnreadNotifications,
                 showGroupDropdown = showGroupDropdown,
                 onGroupDropdownToggle = { showGroupDropdown = !showGroupDropdown },
                 onTopBarMeasured = { topBarHeightPx = it },
@@ -348,14 +359,14 @@ fun HomeScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "먼저 답변을 완료해 주세요",
-                description = "${name}의 답변을 보려면\n먼저 오늘의 질문에 답변해야 해요",
-                primaryLabel = "답변하기",
+                title = stringResource(R.string.home_answer_first_title),
+                description = stringResource(R.string.home_answer_first_view_desc, name),
+                primaryLabel = stringResource(R.string.home_answer_btn),
                 onPrimary = {
                     showAnswerFirstDialog = null
                     if (uiState.todayQuestion != null) showQuestionSheet = true
                 },
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = { showAnswerFirstDialog = null }
             )
         }
@@ -368,14 +379,14 @@ fun HomeScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "먼저 답변을 완료해 주세요",
-                description = "${name}에게 재촉하려면\n먼저 오늘의 질문에 답변해야 해요",
-                primaryLabel = "답변하기",
+                title = stringResource(R.string.home_answer_first_title),
+                description = stringResource(R.string.home_answer_first_nudge_desc, name),
+                primaryLabel = stringResource(R.string.home_answer_btn),
                 onPrimary = {
                     showNudgeUnavailableDialog = null
                     if (uiState.todayQuestion != null) showQuestionSheet = true
                 },
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = { showNudgeUnavailableDialog = null }
             )
         }
@@ -390,21 +401,21 @@ fun HomeScreen(
         ) {
             if (currentHearts >= 3) {
                 MonglePopup(
-                    title = "나만의 질문을 작성할까요?",
-                    description = "하트 3개를 소모하여 나만의 질문을\n오늘의 질문으로 등록해요.",
-                    primaryLabel = "작성하기",
+                    title = stringResource(R.string.home_write_question_title),
+                    description = stringResource(R.string.home_write_question_desc),
+                    primaryLabel = stringResource(R.string.home_write_btn),
                     onPrimary = {
                         showWriteConfirmDialog = false
                         onNavigateToWriteQuestion()
                     },
-                    secondaryLabel = "취소",
+                    secondaryLabel = stringResource(R.string.common_cancel),
                     onSecondary = { showWriteConfirmDialog = false }
                 )
             } else {
                 MonglePopup(
-                    title = "하트가 부족해요",
-                    description = "질문을 작성하려면 하트 3개가 필요해요.\n현재 하트: ${currentHearts}개",
-                    primaryLabel = "확인",
+                    title = stringResource(R.string.home_hearts_insufficient_title),
+                    description = stringResource(R.string.home_hearts_insufficient_write, currentHearts),
+                    primaryLabel = stringResource(R.string.common_confirm),
                     onPrimary = { showWriteConfirmDialog = false }
                 )
             }
@@ -420,21 +431,21 @@ fun HomeScreen(
         ) {
             if (currentHearts >= 3) {
                 MonglePopup(
-                    title = "질문을 넘기시겠어요?",
-                    description = "하트 3개를 소모하여 새로운 질문으로\n변경됩니다. 넘긴 후에는 다른 가족의\n답변을 열람할 수 있어요.",
-                    primaryLabel = "넘기기",
+                    title = stringResource(R.string.home_skip_question_title),
+                    description = stringResource(R.string.home_skip_question_desc),
+                    primaryLabel = stringResource(R.string.home_skip_btn),
                     onPrimary = {
                         showSkipConfirmDialog = false
                         viewModel.skipQuestion()
                     },
-                    secondaryLabel = "취소",
+                    secondaryLabel = stringResource(R.string.common_cancel),
                     onSecondary = { showSkipConfirmDialog = false }
                 )
             } else {
                 MonglePopup(
-                    title = "하트가 부족해요",
-                    description = "질문을 넘기려면 하트 3개가 필요해요.\n현재 하트: ${currentHearts}개",
-                    primaryLabel = "확인",
+                    title = stringResource(R.string.home_hearts_insufficient_title),
+                    description = stringResource(R.string.home_hearts_insufficient_skip, currentHearts),
+                    primaryLabel = stringResource(R.string.common_confirm),
                     onPrimary = { showSkipConfirmDialog = false }
                 )
             }
@@ -508,7 +519,7 @@ private fun HomeTopBar(
                 Row(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(MongleHeartRedLight)
+                        .background(MongleBgNeutral) // iOS 기준: bgNeutral
                         .clickable { showHeartMenu = true }
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -552,7 +563,7 @@ private fun HomeTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
-                        contentDescription = "알림",
+                        contentDescription = stringResource(R.string.home_notifications),
                         tint = MonglePrimary,
                         modifier = Modifier.size(13.dp)
                     )
@@ -597,7 +608,7 @@ private fun TodayQuestionCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "오늘의 질문",
+                        text = stringResource(R.string.home_today_question),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MonglePrimary
                     )
@@ -644,13 +655,13 @@ private fun TodayQuestionPlaceholderCard(modifier: Modifier = Modifier) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "오늘의 질문",
+                    stringResource(R.string.home_today_question),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MonglePrimary.copy(alpha = 0.85f)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "오후 12시에 다시 질문을 받을 수 있어요",
+                    stringResource(R.string.home_question_placeholder),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary,
                     maxLines = 2
@@ -678,7 +689,7 @@ private fun HeartCalloutBubble(hearts: Int, onDismiss: () -> Unit) {
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 52.dp, end = MongleSpacing.md)
-                .width(230.dp)
+                .width(220.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(Color.White)
                 .clickable(
@@ -703,7 +714,7 @@ private fun HeartCalloutBubble(hearts: Int, onDismiss: () -> Unit) {
                     modifier = Modifier.size(13.dp)
                 )
                 Text(
-                    text = "현재 보유 ${hearts}개",
+                    text = stringResource(R.string.home_heart_count, hearts),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleHeartRed
                 )
@@ -712,9 +723,9 @@ private fun HeartCalloutBubble(hearts: Int, onDismiss: () -> Unit) {
             HorizontalDivider(color = Color(0xFFE0E0E0))
 
             // 사용처 목록
-            HeartCalloutRow(icon = Icons.Default.Refresh, color = MonglePrimary, label = "질문 다시받기", cost = "1개")
-            HeartCalloutRow(icon = Icons.Default.CheckCircle, color = MongleAccentOrange, label = "나만의 질문 작성", cost = "3개")
-            HeartCalloutRow(icon = Icons.Default.Favorite, color = MongleHeartRed, label = "재촉하기", cost = "1개")
+            HeartCalloutRow(icon = Icons.Default.Refresh, color = MonglePrimary, label = stringResource(R.string.home_heart_replace), cost = "1")
+            HeartCalloutRow(icon = Icons.Default.Create, color = MongleAccentOrange, label = stringResource(R.string.home_heart_write), cost = "3")
+            HeartCalloutRow(icon = Icons.Default.Campaign, color = MongleHeartRed, label = stringResource(R.string.home_heart_nudge), cost = "1")
 
             HorizontalDivider(color = Color(0xFFE0E0E0))
 
@@ -730,7 +741,7 @@ private fun HeartCalloutBubble(hearts: Int, onDismiss: () -> Unit) {
                     modifier = Modifier.size(11.dp)
                 )
                 Text(
-                    text = "매일 오전 +1 · 답변 완료 +1",
+                    text = stringResource(R.string.home_heart_earn_rate),
                     style = MaterialTheme.typography.labelSmall,
                     color = MongleTextSecondary
                 )
@@ -759,7 +770,7 @@ private fun HeartCalloutRow(icon: ImageVector, color: Color, label: String, cost
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = "하트 $cost",
+            text = cost,
             style = MaterialTheme.typography.labelSmall,
             color = MongleHeartRed
         )
@@ -829,7 +840,7 @@ private fun HomeGroupDropdownPanel(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    "그룹 관리",
+                    stringResource(R.string.home_group_manage),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary,
                     modifier = Modifier.weight(1f)

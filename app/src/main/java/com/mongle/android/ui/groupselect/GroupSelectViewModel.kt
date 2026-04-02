@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class GroupSelectStep { SELECT, CREATE, CREATED, JOIN }
+enum class GroupSelectStep { SELECT, CREATE, NOTIFICATION_PERMISSION, QUIET_HOURS, CREATED, JOIN }
 
 data class GroupSelectUiState(
     val step: GroupSelectStep = GroupSelectStep.SELECT,
@@ -88,7 +88,7 @@ class GroupSelectViewModel @Inject constructor(
                     userRepository.update(me.copy(name = state.nickname, moodId = state.selectedColorId))
                 }
                 _uiState.update {
-                    it.copy(inviteCode = group.inviteCode, step = GroupSelectStep.CREATED, isLoading = false)
+                    it.copy(inviteCode = group.inviteCode, step = GroupSelectStep.NOTIFICATION_PERMISSION, isLoading = false)
                 }
             }.onFailure { e ->
                 val msg = e.message ?: "그룹 생성에 실패했어요"
@@ -172,6 +172,28 @@ class GroupSelectViewModel @Inject constructor(
             )
         }
     }
+    // ─── Notification permission & quiet hours ────────────────────────────────
+
+    fun goToNotificationPermission() {
+        _uiState.update { it.copy(step = GroupSelectStep.NOTIFICATION_PERMISSION) }
+    }
+
+    fun onNotificationPermissionAllowed() {
+        _uiState.update { it.copy(step = GroupSelectStep.QUIET_HOURS) }
+    }
+
+    fun onNotificationPermissionSkipped() {
+        _uiState.update { it.copy(step = GroupSelectStep.QUIET_HOURS) }
+    }
+
+    fun onQuietHoursAccepted() {
+        _uiState.update { it.copy(step = GroupSelectStep.CREATED) }
+    }
+
+    fun onQuietHoursSkipped() {
+        _uiState.update { it.copy(step = GroupSelectStep.CREATED) }
+    }
+
     fun dismissMaxGroupsAlert() { _uiState.update { it.copy(showMaxGroupsAlert = false) } }
     fun clearError() { _uiState.update { it.copy(errorMessage = null) } }
 }

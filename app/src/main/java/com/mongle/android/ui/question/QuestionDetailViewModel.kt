@@ -2,10 +2,12 @@ package com.mongle.android.ui.question
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AnswerRepository
+import com.mongle.android.util.AdManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,12 +37,16 @@ data class QuestionDetailUiState(
     val selectedMoodIndex: Int? = null,
     val showMoodRequiredAlert: Boolean = false,
     val showEditConfirmDialog: Boolean = false,
+    val showEditAdDialog: Boolean = false,
+    val hearts: Int = 0,
+    val isWatchingAd: Boolean = false,
     val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
 ) {
     val hasMyAnswer: Boolean get() = myAnswer != null
     val isValidAnswer: Boolean get() = answerText.trim().isNotEmpty() && selectedMoodIndex != null
+    val hasEnoughHeartsForEdit: Boolean get() = hearts >= 1
 }
 
 sealed class QuestionDetailEvent {
@@ -50,7 +56,8 @@ sealed class QuestionDetailEvent {
 
 @HiltViewModel
 class QuestionDetailViewModel @Inject constructor(
-    private val answerRepository: AnswerRepository
+    private val answerRepository: AnswerRepository,
+    private val userRepository: ApiUserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QuestionDetailUiState())
@@ -59,12 +66,13 @@ class QuestionDetailViewModel @Inject constructor(
     private val _events = MutableSharedFlow<QuestionDetailEvent>()
     val events: SharedFlow<QuestionDetailEvent> = _events.asSharedFlow()
 
-    fun initialize(question: Question, currentUser: User?, familyMembers: List<User> = emptyList()) {
+    fun initialize(question: Question, currentUser: User?, familyMembers: List<User> = emptyList(), hearts: Int = 0) {
         _uiState.update {
             it.copy(
                 question = question,
                 currentUser = currentUser,
                 familyMembers = familyMembers,
+                hearts = hearts,
                 isLoading = true
             )
         }
@@ -132,9 +140,14 @@ class QuestionDetailViewModel @Inject constructor(
             _uiState.update { it.copy(showMoodRequiredAlert = true) }
             return
         }
-        // 기존 답변이 있으면 수정 확인 팝업 먼저 표시
+        // 기존 답변이 있으면 하트 확인 후 수정 확인 팝업 표시
         if (state.myAnswer != null) {
-            _uiState.update { it.copy(showEditConfirmDialog = true) }
+            if (state.hasEnoughHeartsForEdit) {
+                _uiState.update { it.copy(showEditConfirmDialog = true) }
+            } else {
+                // 하트 부족 → 광고 보기 팝업
+                _uiState.update { it.copy(showEditAdDialog = true) }
+            }
             return
         }
         doSubmitAnswer()
@@ -143,6 +156,33 @@ class QuestionDetailViewModel @Inject constructor(
     fun confirmEditAnswer() {
         _uiState.update { it.copy(showEditConfirmDialog = false) }
         doSubmitAnswer()
+    }
+
+    fun dismissEditAdDialog() {
+        _uiState.update { it.copy(showEditAdDialog = false) }
+    }
+
+    fun watchAdForEdit(adManager: AdManager) {
+        val state = _uiState.value
+        if (state.isWatchingAd) return
+        _uiState.update { it.copy(isWatchingAd = true, showEditAdDialog = false, errorMessage = null) }
+        adManager.showRewardedAd(
+            onRewarded = {
+                viewModelScope.launch {
+                    try {
+                        val heartsAfterAd = userRepository.grantAdHearts(1)
+                        _uiState.update { it.copy(hearts = heartsAfterAd, isWatchingAd = false) }
+                        // 광고 시청 후 바로 수정 실행
+                        doSubmitAnswer()
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(isWatchingAd = false, errorMessage = e.message) }
+                    }
+                }
+            },
+            onFailed = {
+                _uiState.update { it.copy(isWatchingAd = false, errorMessage = "광고를 불러올 수 없습니다.") }
+            }
+        )
     }
 
     private fun doSubmitAnswer() {

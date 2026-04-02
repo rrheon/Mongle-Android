@@ -3,7 +3,9 @@ package com.mongle.android.ui.login
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import androidx.browser.customtabs.CustomTabsIntent
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -13,6 +15,7 @@ import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import com.mongle.android.domain.model.AppleLoginCredential
 import com.mongle.android.domain.model.GoogleLoginCredential
 import com.mongle.android.domain.model.KakaoLoginCredential
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -20,6 +23,12 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 internal const val GOOGLE_WEB_CLIENT_ID = "43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com"
+
+// Apple Sign-In OAuth 설정
+// client_id: Apple Developer에서 등록한 Services ID
+// redirect_uri: 서버에서 form_post를 받아 monggle://apple-callback 으로 리다이렉트
+internal const val APPLE_CLIENT_ID = "com.mongle.app.signin"
+internal const val APPLE_REDIRECT_URI = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/auth/apple/callback"
 
 // ── 카카오 ─────────────────────────────────────────
 
@@ -138,4 +147,46 @@ suspend fun revokeGoogleAccess(context: Context): Unit = suspendCancellableCorou
         .build()
     GoogleSignIn.getClient(context, gso).revokeAccess()
         .addOnCompleteListener { cont.resume(Unit) }
+}
+
+// ── 애플 ────────────────────────────────────────────
+// Apple Sign-In on Android: Custom Tab → Apple OAuth → 서버 콜백 → 앱 딥링크
+
+/**
+ * Apple OAuth URL을 빌드하여 Custom Tab으로 실행합니다.
+ * 서버가 form_post를 받아 monggle://apple-callback?id_token=...&code=... 로 리다이렉트합니다.
+ */
+fun launchAppleSignIn(context: Context) {
+    val appleAuthUrl = Uri.parse("https://appleid.apple.com/auth/authorize").buildUpon()
+        .appendQueryParameter("client_id", APPLE_CLIENT_ID)
+        .appendQueryParameter("redirect_uri", APPLE_REDIRECT_URI)
+        .appendQueryParameter("response_type", "code id_token")
+        .appendQueryParameter("scope", "name email")
+        .appendQueryParameter("response_mode", "form_post")
+        .build()
+
+    Log.d("AppleLogin", "Apple OAuth URL: $appleAuthUrl")
+
+    val customTabsIntent = CustomTabsIntent.Builder().build()
+    customTabsIntent.launchUrl(context, appleAuthUrl)
+}
+
+/**
+ * Apple 콜백 딥링크 URI에서 credential을 파싱합니다.
+ * URI 형식: monggle://apple-callback?id_token=...&code=...&name=...&email=...
+ */
+fun handleAppleCallback(uri: Uri): AppleLoginCredential {
+    val idToken = uri.getQueryParameter("id_token")
+        ?: throw Exception("Apple 로그인 실패: identity_token이 없습니다.")
+    val code = uri.getQueryParameter("code")
+        ?: throw Exception("Apple 로그인 실패: authorization_code가 없습니다.")
+
+    Log.d("AppleLogin", "Apple 콜백 수신 | id_token=${idToken.take(30)}... | code=${code.take(20)}...")
+
+    return AppleLoginCredential(
+        identityToken = idToken,
+        authorizationCode = code,
+        name = uri.getQueryParameter("name"),
+        email = uri.getQueryParameter("email")
+    )
 }

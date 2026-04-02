@@ -57,6 +57,8 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -113,12 +115,12 @@ fun WriteQuestionScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "뒤로",
+                        contentDescription = stringResource(R.string.common_back),
                         tint = MongleTextPrimary
                     )
                 }
                 Text(
-                    text = "질문 작성하기",
+                    text = stringResource(R.string.write_title),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextPrimary
                 )
@@ -137,13 +139,13 @@ fun WriteQuestionScreen(
 
                 // 설명 섹션
                 Text(
-                    text = "나만의 질문을 작성해요",
+                    text = stringResource(R.string.write_section_title),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextPrimary
                 )
                 Spacer(modifier = Modifier.height(MongleSpacing.xs))
                 Text(
-                    text = "작성한 질문은 오늘의 질문으로 등록돼요.",
+                    text = stringResource(R.string.write_section_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight
@@ -153,7 +155,7 @@ fun WriteQuestionScreen(
 
                 // 텍스트 에디터 섹션
                 Text(
-                    text = "질문",
+                    text = stringResource(R.string.write_field_label),
                     style = MaterialTheme.typography.labelMedium,
                     color = MongleTextHint
                 )
@@ -167,7 +169,7 @@ fun WriteQuestionScreen(
                         .height(160.dp),
                     placeholder = {
                         Text(
-                            text = "예) 오늘 하루 가장 기억에 남는 순간은 무엇인가요?",
+                            text = stringResource(R.string.write_placeholder),
                             color = MongleTextHint
                         )
                     },
@@ -186,7 +188,7 @@ fun WriteQuestionScreen(
                     horizontalArrangement = Arrangement.End
                 ) {
                     Text(
-                        text = "${uiState.questionText.length} 자",
+                        text = stringResource(R.string.write_char_count, uiState.questionText.length),
                         style = MaterialTheme.typography.bodySmall,
                         color = MongleTextHint,
                         modifier = Modifier.padding(top = MongleSpacing.xs)
@@ -205,7 +207,7 @@ fun WriteQuestionScreen(
             ) {
                 HorizontalDivider(color = MongleBorder)
                 MongleButton(
-                    text = if (uiState.isSubmitting) "등록 중..." else "질문 등록하기",
+                    text = if (uiState.isSubmitting) stringResource(R.string.write_submitting) else stringResource(R.string.write_submit),
                     onClick = viewModel::onSubmit,
                     enabled = uiState.canSubmit,
                     isLoading = uiState.isSubmitting,

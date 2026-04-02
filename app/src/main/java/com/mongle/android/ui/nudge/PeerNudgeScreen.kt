@@ -12,13 +12,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,7 +53,11 @@ import com.mongle.android.ui.common.MongleCharacter
 import com.mongle.android.ui.theme.MongleHeartRed
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
+import com.mongle.android.ui.theme.MongleTextHint
+import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import com.mongle.android.util.AdManager
 
 private val NudgeBgStart = Color(0xFFFFF8F0)
@@ -59,6 +67,7 @@ private val NudgeBgEnd   = Color(0xFFEFF8F1)
 fun PeerNudgeScreen(
     targetUser: User,
     currentUserHearts: Int,
+    questionContent: String = "",
     adManager: AdManager,
     onBack: () -> Unit,
     onNudgeSent: (heartsRemaining: Int) -> Unit = {},
@@ -109,12 +118,12 @@ fun PeerNudgeScreen(
                 IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "뒤로가기",
+                        contentDescription = stringResource(R.string.common_back),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Text(
-                    text = "재촉하기",
+                    text = stringResource(R.string.nudge_title),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
@@ -142,132 +151,206 @@ fun PeerNudgeScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(MongleSpacing.lg))
 
-            // 대상 멤버 캐릭터
-            MongleCharacter(
-                user = targetUser,
-                index = 0,
-                size = 80.dp,
-                showName = false
-            )
-
-            Spacer(modifier = Modifier.height(MongleSpacing.md))
-
-            Text(
-                text = "${uiState.targetUserName}에게",
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "재촉 메시지를 보낼까요?",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MongleTextSecondary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 하트 비용 안내
-            Row(
+            // Scrollable 3-section layout (iOS 동일 구조)
+            Column(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(100.dp))
-                    .background(MongleHeartRed.copy(alpha = 0.1f))
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(MongleSpacing.lg)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = null,
-                    tint = MongleHeartRed,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = "하트 1개 소모",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                    color = MongleHeartRed
-                )
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            when {
-                uiState.isSent -> {
-                    // 전송 완료
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MonglePrimary.copy(alpha = 0.1f))
-                            .padding(MongleSpacing.md),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "재촉 메시지를 보냈어요!",
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                            color = MonglePrimary
+                // ── Section 1: 오늘의 질문 카드 ──
+                if (questionContent.isNotBlank()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White.copy(alpha = 0.6f)
                         )
-                    }
-                }
-                uiState.hasEnoughHearts -> {
-                    // 하트 충분 — 재촉하기 버튼
-                    Button(
-                        onClick = { viewModel.sendNudge() },
-                        enabled = !uiState.isLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MonglePrimary)
                     ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
+                        Column(modifier = Modifier.padding(MongleSpacing.lg)) {
                             Text(
-                                text = "재촉하기",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp
-                                )
+                                text = stringResource(R.string.nudge_today_question),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MonglePrimary
+                            )
+                            Spacer(modifier = Modifier.height(MongleSpacing.xs))
+                            Text(
+                                text = questionContent,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = MongleTextPrimary
                             )
                         }
                     }
                 }
-                else -> {
-                    // 하트 부족 — 광고 버튼
-                    Text(
-                        text = "하트가 부족해요.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MongleTextSecondary
+
+                // ── Section 2: 빈 상태 (아직 답변 안 함) ──
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = MongleSpacing.lg),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
+                ) {
+                    MongleCharacter(
+                        user = targetUser,
+                        index = 0,
+                        size = 60.dp,
+                        showName = false
                     )
-                    Spacer(modifier = Modifier.height(MongleSpacing.sm))
-                    Button(
-                        onClick = { viewModel.watchAdForNudge(adManager) },
-                        enabled = !uiState.isWatchingAd,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CC8A0))
+                    Spacer(modifier = Modifier.height(MongleSpacing.xs))
+                    Text(
+                        text = stringResource(R.string.nudge_not_answered, uiState.targetUserName),
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MongleTextPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = stringResource(R.string.nudge_hint),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MongleTextHint,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // ── Section 3: 넛지 카드 ──
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(MongleSpacing.lg),
+                        verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
                     ) {
-                        if (uiState.isWatchingAd) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "광고 보고 재촉하기",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp
+                        Text(
+                            text = stringResource(R.string.nudge_prompt),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MongleTextPrimary
+                        )
+                        Text(
+                            text = stringResource(R.string.nudge_desc, uiState.targetUserName),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MongleTextSecondary
+                        )
+
+                        // 보유 하트 + 비용 배지
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(MongleSpacing.xs)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Favorite,
+                                    contentDescription = null,
+                                    tint = MongleHeartRed,
+                                    modifier = Modifier.size(14.dp)
                                 )
-                            )
+                                Text(
+                                    text = stringResource(R.string.nudge_hearts, uiState.hearts),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MongleTextSecondary
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(100.dp))
+                                    .background(MongleHeartRed.copy(alpha = 0.12f))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "-1",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MongleHeartRed
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(MongleSpacing.xs))
+
+                        // 버튼 영역
+                        when {
+                            uiState.isSent -> {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(MonglePrimary.copy(alpha = 0.1f))
+                                        .padding(vertical = 14.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.nudge_sent),
+                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                        color = MonglePrimary
+                                    )
+                                }
+                            }
+                            uiState.hasEnoughHearts -> {
+                                Button(
+                                    onClick = { viewModel.sendNudge() },
+                                    enabled = !uiState.isLoading,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(52.dp),
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MonglePrimary)
+                                ) {
+                                    if (uiState.isLoading) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Text(
+                                            text = stringResource(R.string.nudge_send),
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 16.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                            else -> {
+                                Text(
+                                    text = stringResource(R.string.nudge_insufficient),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MongleTextSecondary
+                                )
+                                Spacer(modifier = Modifier.height(MongleSpacing.xxs))
+                                Button(
+                                    onClick = { viewModel.watchAdForNudge(adManager) },
+                                    enabled = !uiState.isWatchingAd,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(52.dp),
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CC8A0))
+                                ) {
+                                    if (uiState.isWatchingAd) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            color = Color.White,
+                                            strokeWidth = 2.dp
+                                        )
+                                    } else {
+                                        Text(
+                                            text = stringResource(R.string.nudge_watch_ad),
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 16.sp
+                                            )
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

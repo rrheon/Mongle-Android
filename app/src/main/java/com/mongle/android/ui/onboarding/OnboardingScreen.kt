@@ -34,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.common.MongleLogo
@@ -108,9 +110,9 @@ fun OnboardingScreen(
 
                 MongleButton(
                     text = when {
-                        pagerState.currentPage == 0 -> "시작하기"
-                        isLastPage -> "몽글 시작하기 🌿"
-                        else -> "다음"
+                        pagerState.currentPage == 0 -> stringResource(R.string.onboarding_start)
+                        isLastPage -> stringResource(R.string.onboarding_get_started)
+                        else -> stringResource(R.string.common_next)
                     },
                     onClick = {
                         if (isLastPage) {
@@ -125,7 +127,7 @@ fun OnboardingScreen(
 
                 TextButton(onClick = onNeverShowAgain) {
                     Text(
-                        text = "다시 보지않기",
+                        text = stringResource(R.string.onboarding_never_show),
                         style = MaterialTheme.typography.bodySmall,
                         color = MongleTextHint
                     )
@@ -151,7 +153,7 @@ private fun OnboardingPage1() {
         Spacer(modifier = Modifier.height(44.dp))
 
         Text(
-            text = "몽글에 오신 걸\n환영해요",
+            text = stringResource(R.string.onboarding_welcome_title),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MongleTextPrimary,
             textAlign = TextAlign.Center
@@ -160,7 +162,7 @@ private fun OnboardingPage1() {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "가족, 친구와 매일 마음을 나누는\n따뜻한 소통 공간",
+            text = stringResource(R.string.onboarding_welcome_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MongleTextSecondary,
             textAlign = TextAlign.Center,
@@ -181,12 +183,12 @@ private fun OnboardingPage2() {
         verticalArrangement = Arrangement.Center
     ) {
         // 그룹 카드 미리보기
-        MongleGroupCard(groupName = "우리 가족 🩷")
+        MongleGroupCard(groupName = stringResource(R.string.onboarding_sample_group))
 
         Spacer(modifier = Modifier.height(44.dp))
 
         Text(
-            text = "나만의 공간을\n만들어보세요",
+            text = stringResource(R.string.onboarding_group_title),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MongleTextPrimary,
             textAlign = TextAlign.Center
@@ -195,7 +197,7 @@ private fun OnboardingPage2() {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요",
+            text = stringResource(R.string.onboarding_group_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MongleTextSecondary,
             textAlign = TextAlign.Center,
@@ -216,7 +218,7 @@ private fun OnboardingPage3() {
         verticalArrangement = Arrangement.Center
     ) {
         // 오늘의 질문 카드
-        MongleQuestionCard(question = "오늘 당신을 웃게 한 건 무엇인가요?")
+        MongleQuestionCard(question = stringResource(R.string.onboarding_sample_question))
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -237,7 +239,7 @@ private fun OnboardingPage3() {
         Spacer(modifier = Modifier.height(44.dp))
 
         Text(
-            text = "매일 함께\n마음을 나눠요",
+            text = stringResource(R.string.onboarding_question_title),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MongleTextPrimary,
             textAlign = TextAlign.Center
@@ -246,7 +248,7 @@ private fun OnboardingPage3() {
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요",
+            text = stringResource(R.string.onboarding_question_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MongleTextSecondary,
             textAlign = TextAlign.Center,
@@ -295,7 +297,7 @@ private fun MongleQuestionCard(question: String) {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = "오늘의 질문",
+                text = stringResource(R.string.onboarding_today_question),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MonglePrimary
             )

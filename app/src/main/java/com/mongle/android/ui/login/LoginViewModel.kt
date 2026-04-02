@@ -20,11 +20,7 @@ import javax.inject.Inject
 
 data class LoginUiState(
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val email: String = "",
-    val password: String = "",
-    val name: String = "",
-    val isSignUp: Boolean = false
+    val errorMessage: String? = null
 )
 
 sealed class LoginEvent {
@@ -41,56 +37,6 @@ class LoginViewModel @Inject constructor(
 
     private val _events = MutableSharedFlow<LoginEvent>()
     val events: SharedFlow<LoginEvent> = _events.asSharedFlow()
-
-    fun onEmailChange(email: String) {
-        _uiState.update { it.copy(email = email, errorMessage = null) }
-    }
-
-    fun onPasswordChange(password: String) {
-        _uiState.update { it.copy(password = password, errorMessage = null) }
-    }
-
-    fun onNameChange(name: String) {
-        _uiState.update { it.copy(name = name, errorMessage = null) }
-    }
-
-    fun toggleSignUp() {
-        _uiState.update { it.copy(isSignUp = !it.isSignUp, errorMessage = null) }
-    }
-
-    fun loginWithEmail() {
-        val state = _uiState.value
-        if (state.email.isBlank() || state.password.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "이메일과 비밀번호를 입력해주세요.") }
-            return
-        }
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            try {
-                val user = authRepository.login(state.email, state.password)
-                _events.emit(LoginEvent.LoggedIn(user, null))
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "로그인에 실패했습니다.") }
-            }
-        }
-    }
-
-    fun signupWithEmail() {
-        val state = _uiState.value
-        if (state.name.isBlank() || state.email.isBlank() || state.password.isBlank()) {
-            _uiState.update { it.copy(errorMessage = "모든 항목을 입력해주세요.") }
-            return
-        }
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            try {
-                val user = authRepository.signup(state.name, state.email, state.password, com.mongle.android.domain.model.FamilyRole.OTHER)
-                _events.emit(LoginEvent.LoggedIn(user, null))
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "회원가입에 실패했습니다.") }
-            }
-        }
-    }
 
     fun loginWithSocial(credential: SocialLoginCredential) {
         Log.d("LoginViewModel", "소셜 로그인 시작 | provider=${credential.providerType.value} | fields=${credential.fields.keys}")

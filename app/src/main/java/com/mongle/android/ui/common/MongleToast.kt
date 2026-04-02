@@ -36,8 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mongle.android.R
 import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleError
 import com.mongle.android.ui.theme.MongleHeartRed
@@ -129,6 +131,23 @@ val MongleToastType.defaultMessage: String
         MongleToastType.ERROR -> ""
         MongleToastType.INFO -> ""
     }
+
+@Composable
+fun MongleToastType.localizedMessage(): String = when (this) {
+    MongleToastType.REFRESH_QUESTION -> stringResource(R.string.toast_skip)
+    MongleToastType.WRITE_QUESTION -> stringResource(R.string.toast_write)
+    MongleToastType.NUDGE -> stringResource(R.string.toast_nudge)
+    MongleToastType.EDIT_ANSWER -> stringResource(R.string.toast_edit)
+    MongleToastType.ANSWER_SUBMITTED -> stringResource(R.string.toast_answer)
+    MongleToastType.GROUP_LEFT -> stringResource(R.string.toast_group_left)
+    MongleToastType.INVITE_CODE_COPIED -> stringResource(R.string.toast_code_copied)
+    MongleToastType.MAX_GROUPS_REACHED -> stringResource(R.string.toast_max_groups)
+    MongleToastType.ALREADY_MEMBER -> stringResource(R.string.toast_already_member)
+    MongleToastType.INVALID_INVITE_CODE -> stringResource(R.string.toast_invalid_code)
+    MongleToastType.SUCCESS -> ""
+    MongleToastType.ERROR -> ""
+    MongleToastType.INFO -> ""
+}
 
 // MARK: - MongleToast Component
 // iOS MongleToastView와 동일: 흰 배경 캡슐, 컬러 아이콘 + 어두운 텍스트

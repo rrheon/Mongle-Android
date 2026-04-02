@@ -55,21 +55,28 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-private val DAY_NAMES = listOf("일", "월", "화", "수", "목", "금", "토")
+private val DAY_NAME_RES_IDS = listOf(
+    R.string.history_day_sun, R.string.history_day_mon, R.string.history_day_tue,
+    R.string.history_day_wed, R.string.history_day_thu, R.string.history_day_fri,
+    R.string.history_day_sat
+)
 
-private val moodLabels = listOf("평온", "행복", "사랑", "우울", "지침")
+// Mood labels resolved at composition time via moodLabelResources()
+private val moodLabelKeys = listOf(R.string.mood_calm, R.string.mood_happy, R.string.mood_loved, R.string.mood_sad, R.string.mood_tired)
 private val moodIds = listOf("calm", "happy", "loved", "sad", "tired")
 // iOS monggleColor(for:) 순서: [Green, Yellow, Pink, Blue, Orange]
 private val moodCharacterColors = listOf(
     MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
 )
 
-private val selectedDateFormatter = SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN)
+private val selectedDateFormatter = java.text.DateFormat.getDateInstance(java.text.DateFormat.LONG)
 
 @Composable
 fun HistoryScreen(
@@ -103,7 +110,7 @@ fun HistoryScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "기록",
+                text = stringResource(R.string.history_title),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = MongleTextPrimary
             )
@@ -111,7 +118,7 @@ fun HistoryScreen(
                 IconButton(onClick = viewModel::previousMonth, modifier = Modifier.size(28.dp)) {
                     Icon(
                         imageVector = Icons.Default.ChevronLeft,
-                        contentDescription = "이전 달",
+                        contentDescription = stringResource(R.string.history_prev_month),
                         tint = MongleTextPrimary,
                         modifier = Modifier.size(16.dp)
                     )
@@ -124,7 +131,7 @@ fun HistoryScreen(
                 IconButton(onClick = viewModel::nextMonth, modifier = Modifier.size(28.dp)) {
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
-                        contentDescription = "다음 달",
+                        contentDescription = stringResource(R.string.history_next_month),
                         tint = MongleTextPrimary,
                         modifier = Modifier.size(16.dp)
                     )
@@ -149,9 +156,9 @@ fun HistoryScreen(
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     // 요일 헤더
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        DAY_NAMES.forEachIndexed { idx, day ->
+                        DAY_NAME_RES_IDS.forEachIndexed { idx, resId ->
                             Text(
-                                text = day,
+                                text = stringResource(resId),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(36.dp),
@@ -333,7 +340,7 @@ private fun MoodTimelineSection(
             .padding(16.dp)
     ) {
         Text(
-            text = "최근 14일 기분",
+            text = stringResource(R.string.history_recent_mood),
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
             color = MongleTextPrimary
         )
@@ -348,7 +355,7 @@ private fun MoodTimelineSection(
                     // iOS: ZStack(alignment: .topTrailing) + badge offset(x: 6, y: -6)
                     Box {
                         MongleCharacterAvatar(
-                            name = moodLabels[index],
+                            name = stringResource(moodLabelKeys[index]),
                             index = index,
                             size = 44.dp,
                             color = color
@@ -375,7 +382,7 @@ private fun MoodTimelineSection(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = moodLabels[index],
+                        text = stringResource(moodLabelKeys[index]),
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                         color = MongleTextSecondary
                     )
@@ -456,7 +463,7 @@ private fun HistoryQuestionCard(
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${item.answerCount}/${item.totalMembers}명 답변",
+                text = stringResource(R.string.history_answer_count, item.answerCount, item.totalMembers),
                 style = MaterialTheme.typography.labelSmall,
                 color = MongleTextHint
             )
@@ -486,7 +493,7 @@ private fun EmptyDateCard(selectedDate: Date, modifier: Modifier = Modifier) {
         set(Calendar.SECOND, 0)
     }.time
     val isBeforeQuestionTime = Date() < questionTime
-    val message = if (isToday && isBeforeQuestionTime) "오전 11시에 새로운 질문이 도착해요" else "이 날의 기록이 없어요"
+    val message = if (isToday && isBeforeQuestionTime) stringResource(R.string.home_question_placeholder) else stringResource(R.string.history_no_record)
 
     Column(
         modifier = modifier

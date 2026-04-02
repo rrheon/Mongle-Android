@@ -40,6 +40,8 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -76,7 +78,7 @@ fun PeerAnswerSheet(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "닫기",
+                        contentDescription = stringResource(R.string.common_close),
                         tint = MongleTextHint
                     )
                 }
@@ -97,7 +99,7 @@ fun PeerAnswerSheet(
                         .padding(MongleSpacing.md)
                 ) {
                     Text(
-                        text = "오늘의 질문",
+                        text = stringResource(R.string.home_today_question),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MonglePrimary
                     )

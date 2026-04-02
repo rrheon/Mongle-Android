@@ -40,7 +40,8 @@ data class HomeUiState(
     /** 각 멤버 ID별 답변 여부 (userId → hasAnswered) */
     val memberAnswerStatus: Map<UUID, Boolean> = emptyMap(),
     /** 각 멤버 ID별 답변 내용 (userId → Answer) */
-    val memberAnswers: Map<UUID, Answer> = emptyMap()
+    val memberAnswers: Map<UUID, Answer> = emptyMap(),
+    val hasUnreadNotifications: Boolean = false
 ) {
     val hasFamily: Boolean get() = family != null
 }
@@ -58,7 +59,8 @@ class HomeViewModel @Inject constructor(
     private val questionRepository: QuestionRepository,
     private val mongleRepository: MongleRepository,
     private val treeRepository: TreeRepository,
-    private val answerRepository: AnswerRepository
+    private val answerRepository: AnswerRepository,
+    private val notificationRepository: com.mongle.android.data.remote.ApiNotificationRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -99,6 +101,17 @@ class HomeViewModel @Inject constructor(
         }
         // 오늘의 질문이 있으면 가족 답변 상태 로드
         todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it) }
+        // 미읽은 알림 확인
+        checkUnreadNotifications()
+    }
+
+    private fun checkUnreadNotifications() {
+        viewModelScope.launch {
+            val hasUnread = runCatching {
+                notificationRepository.getNotifications(limit = 20).any { !it.isRead }
+            }.getOrElse { false }
+            _uiState.update { it.copy(hasUnreadNotifications = hasUnread) }
+        }
     }
 
     private fun loadFamilyAnswers(dailyQuestionId: String) {

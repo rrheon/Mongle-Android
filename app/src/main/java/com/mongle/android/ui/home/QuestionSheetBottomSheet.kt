@@ -45,6 +45,8 @@ import com.mongle.android.ui.theme.MongleRadius
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,12 +79,12 @@ fun QuestionSheetBottomSheet(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "오늘의 질문",
+                        text = stringResource(R.string.sheet_title),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MonglePrimary
                     )
                     Text(
-                        text = "무엇을 할까요?",
+                        text = stringResource(R.string.sheet_subtitle),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MongleTextPrimary
                     )
@@ -90,7 +92,7 @@ fun QuestionSheetBottomSheet(
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "닫기",
+                        contentDescription = stringResource(R.string.common_close),
                         tint = MongleTextHint
                     )
                 }
@@ -119,7 +121,7 @@ fun QuestionSheetBottomSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "오늘의 질문",
+                        text = stringResource(R.string.sheet_title),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MonglePrimary
                     )
@@ -133,7 +135,7 @@ fun QuestionSheetBottomSheet(
                         )
                         Spacer(modifier = Modifier.width(2.dp))
                         Text(
-                            text = "답변 완료",
+                            text = stringResource(R.string.home_answer_complete),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MonglePrimary
                         )
@@ -165,7 +167,7 @@ fun QuestionSheetBottomSheet(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (hasAnswered) "답변 수정하기" else "답변하기",
+                    text = if (hasAnswered) stringResource(R.string.sheet_answer_edit) else stringResource(R.string.sheet_answer),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = Color.White
                 )
@@ -180,8 +182,8 @@ fun QuestionSheetBottomSheet(
             // ── 나만의 질문 작성하기 ──
             QuestionSheetActionRow(
                 icon = Icons.Default.Edit,
-                title = "나만의 질문 작성하기",
-                subtitle = "하트 3개 소모",
+                title = stringResource(R.string.sheet_write_question),
+                subtitle = stringResource(R.string.sheet_heart_cost_3),
                 onClick = onWriteQuestionTap
             )
 
@@ -190,8 +192,8 @@ fun QuestionSheetBottomSheet(
             // ── 질문 넘기기 ──
             QuestionSheetActionRow(
                 icon = Icons.Default.Forward,
-                title = "질문 넘기기",
-                subtitle = "하트 3개 소모 · 다른 가족 답변 열람 가능",
+                title = stringResource(R.string.sheet_skip),
+                subtitle = stringResource(R.string.sheet_skip_desc),
                 onClick = onSkipTapped
             )
         }

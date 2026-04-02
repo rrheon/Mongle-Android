@@ -69,21 +69,27 @@ import com.mongle.android.ui.theme.MongleMonggleGreenLight
 import com.mongle.android.ui.theme.MongleMonggleOrange
 import com.mongle.android.ui.theme.MongleMongglePink
 import com.mongle.android.ui.theme.MongleMonggleYellow
+import com.mongle.android.ui.theme.MongleBorder
 import com.mongle.android.ui.theme.MonglePrimary
+import com.mongle.android.ui.theme.MonglePrimaryGradientEnd
+import com.mongle.android.ui.theme.MonglePrimaryGradientStart
 import com.mongle.android.ui.theme.MonglePrimaryLight
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
+import com.mongle.android.util.AdManager
 
-private data class MoodOption(val id: String, val label: String, val color: Color)
+private data class MoodOption(val id: String, val labelResId: Int, val color: Color)
 
 private val moodOptions = listOf(
-    MoodOption("happy",  "행복",  MongleMonggleYellow),
-    MoodOption("calm",   "평온",  MongleMonggleGreenLight),
-    MoodOption("loved",  "사랑",  MongleMongglePink),
-    MoodOption("sad",    "슬픔",  MongleMonggleBlue),
-    MoodOption("tired",  "피곤",  MongleMonggleOrange)
+    MoodOption("happy",  R.string.mood_happy,  MongleMonggleYellow),
+    MoodOption("calm",   R.string.mood_calm,   MongleMonggleGreenLight),
+    MoodOption("loved",  R.string.mood_loved,  MongleMongglePink),
+    MoodOption("sad",    R.string.mood_sad,    MongleMonggleBlue),
+    MoodOption("tired",  R.string.mood_tired,  MongleMonggleOrange)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,6 +98,8 @@ fun QuestionDetailScreen(
     question: Question,
     currentUser: User?,
     familyMembers: List<User> = emptyList(),
+    currentUserHearts: Int = 0,
+    adManager: AdManager? = null,
     onAnswerSubmitted: (Answer, Boolean) -> Unit,
     onClose: () -> Unit,
     viewModel: QuestionDetailViewModel = hiltViewModel()
@@ -100,7 +108,7 @@ fun QuestionDetailScreen(
     var toastData by remember { mutableStateOf<MongleToastData?>(null) }
 
     LaunchedEffect(question, currentUser) {
-        viewModel.initialize(question, currentUser, familyMembers)
+        viewModel.initialize(question, currentUser, familyMembers, currentUserHearts)
     }
 
     LaunchedEffect(Unit) {
@@ -124,13 +132,13 @@ fun QuestionDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "마음 남기기",
+                        text = stringResource(R.string.detail_title),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
@@ -199,9 +207,9 @@ fun QuestionDetailScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "오늘의 몽글을 선택해주세요",
-                description = "지금 기분과 가장 비슷한 몽글 캐릭터를 골라보세요",
-                primaryLabel = "확인",
+                title = stringResource(R.string.detail_mood_required_title),
+                description = stringResource(R.string.detail_mood_required_desc),
+                primaryLabel = stringResource(R.string.common_confirm),
                 onPrimary = viewModel::dismissMoodRequiredAlert
             )
         }
@@ -214,12 +222,32 @@ fun QuestionDetailScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "답변을 수정할까요?",
-                description = "답변을 수정하면 하트 1개가 소모돼요.",
-                primaryLabel = "수정하기",
+                title = stringResource(R.string.detail_edit_confirm_title),
+                description = stringResource(R.string.detail_edit_confirm_desc),
+                primaryLabel = stringResource(R.string.detail_edit_btn),
                 onPrimary = viewModel::confirmEditAnswer,
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = viewModel::dismissEditConfirmDialog
+            )
+        }
+    }
+
+    // 하트 부족 시 광고 보고 수정하기 팝업
+    if (uiState.showEditAdDialog) {
+        Dialog(
+            onDismissRequest = viewModel::dismissEditAdDialog,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.detail_edit_ad_title),
+                description = stringResource(R.string.detail_edit_ad_desc),
+                primaryLabel = stringResource(R.string.detail_edit_ad_btn),
+                onPrimary = {
+                    adManager?.let { viewModel.watchAdForEdit(it) }
+                        ?: viewModel.dismissEditAdDialog()
+                },
+                secondaryLabel = stringResource(R.string.common_cancel),
+                onSecondary = viewModel::dismissEditAdDialog
             )
         }
     }
@@ -237,11 +265,12 @@ private fun QuestionCard(question: Question) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(16.dp))
+            .background(Color.White, RoundedCornerShape(MongleSpacing.xl))
+            .border(1.dp, MongleBorder, RoundedCornerShape(MongleSpacing.xl))
             .padding(MongleSpacing.lg)
     ) {
         Text(
-            text = "오늘의 질문",
+            text = stringResource(R.string.detail_today_question),
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MonglePrimary
         )
@@ -276,13 +305,13 @@ private fun MoodPickerCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "오늘의 몽글",
+                text = stringResource(R.string.detail_today_mongle),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MongleTextSecondary
             )
             if (selectedIndex == null) {
                 Text(
-                    text = "하나를 선택해주세요",
+                    text = stringResource(R.string.detail_select_mood),
                     style = MaterialTheme.typography.labelSmall,
                     color = MongleTextHint
                 )
@@ -381,7 +410,7 @@ private fun MoodCell(
 
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = mood.label,
+            text = stringResource(mood.labelResId),
             style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
             color = MongleTextPrimary.copy(alpha = alpha),
             textAlign = TextAlign.Center
@@ -412,7 +441,7 @@ private fun AnswerInputCard(
         MongleTextField(
             value = answerText,
             onValueChange = onTextChange,
-            placeholder = "오늘의 감정을 자유롭게 적어보세요.\n어떤 이야기든 좋아요.",
+            placeholder = stringResource(R.string.detail_answer_placeholder),
             modifier = Modifier.fillMaxWidth(),
             maxLines = 10,
             minLines = 5
@@ -436,7 +465,7 @@ private fun FamilyAnswersSection(familyAnswers: List<FamilyAnswer>) {
         verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
     ) {
         Text(
-            text = "가족의 답변 (${familyAnswers.size})",
+            text = stringResource(R.string.detail_family_answers, familyAnswers.size),
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MongleTextPrimary
         )
@@ -495,9 +524,9 @@ private fun AnswerCtaButton(
                 .clip(CircleShape)
                 .background(
                     if (enabled) Brush.linearGradient(
-                        colors = listOf(Color(0xFF8FD5A6), Color(0xFF7CC8A0))
+                        colors = listOf(MonglePrimaryGradientStart, MonglePrimaryGradientEnd)
                     ) else Brush.linearGradient(
-                        colors = listOf(Color(0xFFC5DFC8), Color(0xFFB8D8BB))
+                        colors = listOf(MonglePrimaryGradientStart.copy(alpha = 0.5f), MonglePrimaryGradientEnd.copy(alpha = 0.5f))
                     )
                 )
                 .clickable(enabled = enabled && !isSubmitting) { onClick() },
@@ -512,7 +541,7 @@ private fun AnswerCtaButton(
                 ) {
                     Icon(Icons.Default.Send, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                     Text(
-                        text = if (hasMyAnswer) "답변 수정하기" else "답변 남기기",
+                        text = stringResource(if (hasMyAnswer) R.string.detail_edit_submit else R.string.detail_submit),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = Color.White
                     )
