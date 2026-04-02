@@ -1,4 +1,321 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">몽글</string>
+    <!-- App -->
+    <string name="app_name">Mongle</string>
+
+    <!-- Common -->
+    <string name="common_confirm">OK</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_back">Back</string>
+    <string name="common_next">Next</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_close">Close</string>
+    <string name="common_copy">Copy</string>
+    <string name="common_copied">Copied</string>
+    <string name="common_share">Share</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_loading">Loading…</string>
+
+    <!-- Login -->
+    <string name="login_title">Mongle</string>
+    <string name="login_subtitle">What color is your heart today?</string>
+    <string name="login_kakao">Continue with Kakao</string>
+    <string name="login_google">Continue with Google</string>
+    <string name="login_apple">Continue with Apple</string>
+    <string name="login_browse">Browse</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Welcome to\nMongle</string>
+    <string name="onboarding_welcome_desc">A warm space to share\nyour feelings with family and friends</string>
+    <string name="onboarding_group_title">Create your\nown space</string>
+    <string name="onboarding_group_desc">Invite family, friends, couples\nand anyone you want</string>
+    <string name="onboarding_question_title">Share your\nfeelings daily</string>
+    <string name="onboarding_question_desc">Answer new questions daily\nand peek into each other\'s hearts</string>
+    <string name="onboarding_sample_group">My Family 🩷</string>
+    <string name="onboarding_sample_question">What made you smile today?</string>
+    <string name="onboarding_today_question">Today\'s Question</string>
+    <string name="onboarding_start">Get Started</string>
+    <string name="onboarding_get_started">Start Mongle</string>
+    <string name="onboarding_never_show">Don\'t show again</string>
+
+    <!-- Home -->
+    <string name="home_default_group">Mongle</string>
+    <string name="home_today_question">Today\'s Question</string>
+    <string name="home_question_placeholder">A new question arrives at 11 AM</string>
+    <string name="home_answer_complete">Answered</string>
+    <string name="home_notifications">Notifications</string>
+    <string name="home_heart_count">%d hearts remaining</string>
+    <string name="home_heart_replace">Replace question</string>
+    <string name="home_heart_write">Write my question</string>
+    <string name="home_heart_nudge">Nudge</string>
+    <string name="home_heart_earn_rate">Daily +1 · Answer +3</string>
+    <string name="home_group_manage">Manage Groups</string>
+    <string name="home_answer_first_title">Please answer first</string>
+    <string name="home_answer_first_view_desc">To see %s\'s answer,\nyou need to answer today\'s question first</string>
+    <string name="home_answer_first_nudge_desc">To nudge %s,\nyou need to answer today\'s question first</string>
+    <string name="home_answer_btn">Answer</string>
+    <string name="home_write_question_title">Write your own question?</string>
+    <string name="home_write_question_desc">Spend 3 hearts to register your own question\nas today\'s question.</string>
+    <string name="home_write_btn">Write</string>
+    <string name="home_skip_question_title">Skip this question?</string>
+    <string name="home_skip_question_desc">Spend 3 hearts to get a new question.\nAfter skipping, you can view\nother members\' answers.</string>
+    <string name="home_skip_btn">Skip</string>
+    <string name="home_hearts_insufficient_title">Not enough hearts</string>
+    <string name="home_hearts_insufficient_write">You need 3 hearts to write a question.\nCurrent hearts: %d</string>
+    <string name="home_hearts_insufficient_skip">You need 3 hearts to skip.\nCurrent hearts: %d</string>
+
+    <!-- Question Sheet -->
+    <string name="sheet_title">Today\'s Question</string>
+    <string name="sheet_subtitle">What would you like to do?</string>
+    <string name="sheet_answer_edit">Edit Answer</string>
+    <string name="sheet_answer">Answer</string>
+    <string name="sheet_write_question">Write my own question</string>
+    <string name="sheet_heart_cost_3">3 hearts</string>
+    <string name="sheet_skip">Skip Question</string>
+    <string name="sheet_skip_desc">3 hearts · Can view others\' answers</string>
+
+    <!-- Question Detail -->
+    <string name="detail_title">Leave Your Heart</string>
+    <string name="detail_today_question">Today\'s Question</string>
+    <string name="detail_today_mongle">Today\'s Mongle</string>
+    <string name="detail_select_mood">Please select one</string>
+    <string name="detail_answer_placeholder">Write about your feelings today.\nAnything is welcome.</string>
+    <string name="detail_submit">Submit Answer</string>
+    <string name="detail_edit_submit">Edit Answer</string>
+    <string name="detail_family_answers">Family Answers (%d)</string>
+    <string name="detail_mood_required_title">Please select today\'s Mongle</string>
+    <string name="detail_mood_required_desc">Choose the Mongle character closest to your current mood</string>
+    <string name="detail_edit_confirm_title">Edit your answer?</string>
+    <string name="detail_edit_confirm_desc">Editing costs 1 heart.</string>
+    <string name="detail_edit_btn">Edit</string>
+    <string name="detail_edit_ad_title">Not enough hearts</string>
+    <string name="detail_edit_ad_desc">You need 1 heart to edit.\nWatch an ad to get hearts.</string>
+    <string name="detail_edit_ad_btn">Watch ad and edit</string>
+
+    <!-- Write Question -->
+    <string name="write_title">Write Question</string>
+    <string name="write_section_title">Write your own question</string>
+    <string name="write_section_desc">Your question will be today\'s question.</string>
+    <string name="write_field_label">Question</string>
+    <string name="write_placeholder">e.g.) What was the most memorable moment today?</string>
+    <string name="write_submit">Submit Question</string>
+    <string name="write_submitting">Submitting…</string>
+    <string name="write_char_count">%d chars</string>
+
+    <!-- Search -->
+    <string name="search_placeholder">Search answers or questions</string>
+    <string name="search_clear">Clear</string>
+    <string name="search_min_length">Please enter at least 2 characters</string>
+    <string name="search_no_results">No records matching \"%s\"</string>
+    <string name="search_result_count">Found %d records</string>
+    <string name="search_empty">Search your family\'s precious records</string>
+
+    <!-- Notifications -->
+    <string name="notif_title">Notifications</string>
+    <string name="notif_mark_all_read">Mark all read</string>
+    <string name="notif_delete_all">Delete all</string>
+    <string name="notif_loading">Loading notifications…</string>
+    <string name="notif_empty_title">No notifications</string>
+    <string name="notif_empty_desc">We\'ll notify you when there\'s news</string>
+    <string name="notif_time_now">Just now</string>
+    <string name="notif_time_min">%d min ago</string>
+    <string name="notif_time_hour">%d hours ago</string>
+    <string name="notif_time_day">%d days ago</string>
+
+    <!-- Nudge -->
+    <string name="nudge_title">Nudge</string>
+    <string name="nudge_today_question">Today\'s Question</string>
+    <string name="nudge_not_answered">%s hasn\'t answered yet</string>
+    <string name="nudge_hint">You can check the answer here</string>
+    <string name="nudge_prompt">Send a nudge?</string>
+    <string name="nudge_desc">Send a reminder to %s. Costs 1 heart.</string>
+    <string name="nudge_hearts">Hearts: %d</string>
+    <string name="nudge_sent">Nudge sent!</string>
+    <string name="nudge_insufficient">Not enough hearts.</string>
+    <string name="nudge_watch_ad">Watch ad and nudge</string>
+    <string name="nudge_send">Nudge</string>
+
+    <!-- Group Select -->
+    <string name="group_color_green">Green</string>
+    <string name="group_color_yellow">Yellow</string>
+    <string name="group_color_pink">Pink</string>
+    <string name="group_color_blue">Blue</string>
+    <string name="group_color_orange">Orange</string>
+    <string name="group_max_title">Group limit reached</string>
+    <string name="group_max_desc">You can join up to 3 groups.</string>
+    <string name="group_empty">No groups yet.\nCreate a space or join with an invite code.</string>
+    <string name="group_create">Create New Space</string>
+    <string name="group_join">Join with Code</string>
+    <string name="group_what_to_do">What would you like to do?</string>
+    <string name="group_create_desc">Create your own space</string>
+    <string name="group_join_desc">Join with your invite code</string>
+    <string name="group_create_title">Create New Space</string>
+    <string name="group_create_headline">Create our Mongle space</string>
+    <string name="group_create_subtitle">Share feelings with family and friends</string>
+    <string name="group_name_label">Space Name</string>
+    <string name="group_name_placeholder">Kim Family</string>
+    <string name="group_name_error">Please enter a space name</string>
+    <string name="group_name_hint">Family, friends, couples, etc.! (max 10)</string>
+    <string name="group_nickname_label">My Nickname</string>
+    <string name="group_nickname_placeholder">Mom</string>
+    <string name="group_nickname_error">Please enter a nickname</string>
+    <string name="group_nickname_hint">This name is visible to other members</string>
+    <string name="group_color_label">My Mongle Color</string>
+    <string name="group_color_hint">Your Mongle character color visible to others</string>
+    <string name="group_create_btn">Create Space</string>
+    <string name="group_join_title">Join with Code</string>
+    <string name="group_join_headline">Enter your invite code.</string>
+    <string name="group_join_subtitle">Enter the code from your friend or family\nto join the space</string>
+    <string name="group_code_label">Invite Code</string>
+    <string name="group_code_placeholder">Enter invite code</string>
+    <string name="group_code_hint">Code consists of uppercase letters and numbers</string>
+    <string name="group_join_btn">Join</string>
+    <string name="group_created_title">Space created! 🎉</string>
+    <string name="group_created_desc">Invite friends with the code or link below</string>
+    <string name="group_invite_code">Invite Code</string>
+    <string name="group_invite_link">Invite Link</string>
+    <string name="group_share_text">Join me on Mongle!\nInvite code: %1$s\nLink: %2$s</string>
+    <string name="group_go_home">Go to Home</string>
+    <string name="group_code_error">Please enter the invite code</string>
+    <string name="group_mongle_title">Mongle</string>
+
+    <!-- Notification Permission -->
+    <string name="perm_notif_title">Allow notifications 🔔</string>
+    <string name="perm_notif_desc">Don\'t miss updates from your family</string>
+    <string name="perm_notif_answer">When a member answers</string>
+    <string name="perm_notif_nudge">When you receive a nudge</string>
+    <string name="perm_notif_question">New question notification</string>
+    <string name="perm_notif_allow">Allow</string>
+    <string name="perm_notif_later">Later</string>
+    <string name="perm_dnd_title">Do Not Disturb 🌙</string>
+    <string name="perm_dnd_desc">No notifications during bedtime</string>
+    <string name="perm_dnd_time">10:00 PM - 8:00 AM</string>
+    <string name="perm_dnd_use">Enable</string>
+    <string name="perm_dnd_skip">Skip</string>
+
+    <!-- Mood Labels -->
+    <string name="mood_happy">Happy</string>
+    <string name="mood_calm">Calm</string>
+    <string name="mood_loved">Loved</string>
+    <string name="mood_sad">Sad</string>
+    <string name="mood_tired">Tired</string>
+    <string name="mood_angry">Angry</string>
+    <string name="mood_anxious">Anxious</string>
+    <string name="mood_excited">Excited</string>
+
+    <!-- Settings/MY -->
+    <string name="settings_my">MY</string>
+    <string name="settings_profile">Profile</string>
+    <string name="settings_profile_edit">Edit Profile</string>
+    <string name="settings_profile_edit_desc">You can change your name</string>
+    <string name="settings_mood_history">Mood History</string>
+    <string name="settings_mood_history_desc">Look back on my emotions</string>
+    <string name="settings_mongle_card">Edit Mongle Card</string>
+    <string name="settings_mongle_card_desc">Change character name and mood</string>
+    <string name="settings_app_settings">App Settings</string>
+    <string name="settings_notifications">Notification Settings</string>
+    <string name="settings_notifications_desc">Answer notifications, reminders</string>
+    <string name="settings_group">Group Management</string>
+    <string name="settings_group_desc">Invite members, group settings</string>
+    <string name="settings_account">Account Management</string>
+    <string name="settings_account_desc">Logout, delete account</string>
+    <string name="settings_version">Mongle v%s</string>
+    <string name="settings_name_label">Name</string>
+    <string name="settings_name_placeholder">Enter name</string>
+    <string name="settings_name_hint">This name is visible to other members</string>
+    <string name="settings_name_cooldown">Name can only be changed once a week (%d days left)</string>
+    <string name="settings_mood_hint">You can change the color when editing an answer.</string>
+    <string name="settings_logout">Logout</string>
+    <string name="settings_logout_desc">Log out from this device</string>
+    <string name="settings_logout_confirm">Are you sure you want to log out?</string>
+    <string name="settings_delete_account">Delete Account</string>
+    <string name="settings_delete_account_desc">All data will be deleted permanently</string>
+    <string name="settings_delete_confirm">All data will be deleted.\nThis cannot be undone.</string>
+    <string name="settings_delete_btn">Delete Account</string>
+    <string name="settings_account_section">Account</string>
+    <string name="settings_preparing">Coming Soon</string>
+    <string name="settings_preparing_desc">Mood history is coming soon</string>
+    <string name="settings_no_group">You are not in any group.</string>
+    <string name="settings_login_required_title">Login Required</string>
+    <string name="settings_login_required_desc">You need to log in to use this feature.</string>
+    <string name="settings_login_btn">Log In</string>
+
+    <!-- Group Management -->
+    <string name="mgmt_title">Group Management</string>
+    <string name="mgmt_invite_section">Group Invite</string>
+    <string name="mgmt_invite_desc">Share invite code or link</string>
+    <string name="mgmt_leave">Leave Group</string>
+    <string name="mgmt_leave_title">Leave Group</string>
+    <string name="mgmt_leave_desc">Leaving will disconnect all answer records.</string>
+    <string name="mgmt_leave_btn">Leave</string>
+    <string name="mgmt_kick_title">Remove %s?</string>
+    <string name="mgmt_kick_desc">This member will be removed from the group.</string>
+    <string name="mgmt_kick_btn">Remove</string>
+    <string name="mgmt_transfer_title">Transfer Admin</string>
+    <string name="mgmt_transfer_desc">Select a member to transfer admin rights before leaving.</string>
+    <string name="mgmt_transfer_btn">Transfer and Leave</string>
+    <string name="mgmt_owner">Admin</string>
+    <string name="mgmt_member_me">%s (me)</string>
+    <string name="mgmt_members_title">Members</string>
+    <string name="mgmt_members_desc">People connected in this space</string>
+    <string name="mgmt_kick_fallback_title">Remove Member</string>
+    <string name="mgmt_share_invite">I created a group on Mongle! Join via the link below.\nhttps://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/%s</string>
+
+    <!-- Notification Settings -->
+    <string name="notif_settings_title">Notification Settings</string>
+    <string name="notif_settings_answer">Answer Notifications</string>
+    <string name="notif_settings_answer_desc">When a member answers</string>
+    <string name="notif_settings_answer_detail">Notify when a group member answers</string>
+    <string name="notif_settings_nudge">Nudge Notifications</string>
+    <string name="notif_settings_nudge_desc">When you receive a nudge</string>
+    <string name="notif_settings_nudge_detail">Notify when you receive a nudge</string>
+    <string name="notif_settings_question">System Notifications</string>
+    <string name="notif_settings_question_desc">New question notification</string>
+    <string name="notif_settings_question_detail">Notify when new daily question arrives</string>
+    <string name="notif_settings_dnd">Do Not Disturb</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_skip">Question skipped. Check other family answers!</string>
+    <string name="toast_write">Your question has been registered!</string>
+    <string name="toast_nudge">Nudge sent!</string>
+    <string name="toast_edit">Answer edited!</string>
+    <string name="toast_answer">Heart left!</string>
+    <string name="toast_group_left">Left the group</string>
+    <string name="toast_code_copied">Invite code copied</string>
+    <string name="toast_max_groups">You can create up to 3 groups</string>
+    <string name="toast_already_member">Already a member of this group</string>
+    <string name="toast_invalid_code">Please check the invite code</string>
+
+    <!-- Error Messages -->
+    <string name="error_offline">Please check your internet connection</string>
+    <string name="error_timeout">Server is taking too long</string>
+    <string name="error_unauthorized">Login required</string>
+    <string name="error_not_found">Data not found</string>
+    <string name="error_server">Server error (%d)</string>
+    <string name="error_network">Network error</string>
+    <string name="error_decoding">Error reading data</string>
+    <string name="error_unknown">Unknown error</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_prev_month">Previous month</string>
+    <string name="history_next_month">Next month</string>
+    <string name="history_recent_mood">Mood in last 14 days</string>
+    <string name="history_answer_count">%1$d/%2$d answered</string>
+    <string name="history_no_record">No records for this day</string>
+    <string name="history_day_sun">Sun</string>
+    <string name="history_day_mon">Mon</string>
+    <string name="history_day_tue">Tue</string>
+    <string name="history_day_wed">Wed</string>
+    <string name="history_day_thu">Thu</string>
+    <string name="history_day_fri">Fri</string>
+    <string name="history_day_sat">Sat</string>
+
+    <!-- Demo Characters -->
+    <string name="demo_char_1">Mongle</string>
+    <string name="demo_char_2">Dajeong</string>
+    <string name="demo_char_3">Pogeun</string>
+    <string name="demo_char_4">Ttatteut</string>
+    <string name="demo_char_5">Neukkim</string>
 </resources>

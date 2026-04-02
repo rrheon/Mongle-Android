@@ -90,6 +90,7 @@ import com.mongle.android.ui.common.MongleButtonStyle
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.common.MongleTextField
+import com.mongle.android.ui.theme.MongleBgNeutral
 import com.mongle.android.ui.theme.MongleBorder
 import com.mongle.android.ui.theme.MongleError
 import com.mongle.android.ui.theme.MongleMonggleBlue
@@ -104,18 +105,24 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import java.util.UUID
 
 // ─── Color data ──────────────────────────────────────────────────────────────
 
-private data class MonggleColorOption(val id: String, val color: Color, val label: String)
+private data class MonggleColorOption(val id: String, val color: Color, val labelResId: Int)
 
 private val monggleColorOptions = listOf(
-    MonggleColorOption("calm",  MongleMonggleGreenLight, "초록"),
-    MonggleColorOption("happy", MongleMonggleYellow,     "노랑"),
-    MonggleColorOption("loved", MongleMongglePink,       "분홍"),
-    MonggleColorOption("sad",   MongleMonggleBlue,       "파랑"),
-    MonggleColorOption("tired", MongleMonggleOrange,     "주황"),
+    MonggleColorOption("calm",  MongleMonggleGreenLight, R.string.group_color_green),
+    MonggleColorOption("happy", MongleMonggleYellow,     R.string.group_color_yellow),
+    MonggleColorOption("loved", MongleMongglePink,       R.string.group_color_pink),
+    MonggleColorOption("sad",   MongleMonggleBlue,       R.string.group_color_blue),
+    MonggleColorOption("tired", MongleMonggleOrange,     R.string.group_color_orange),
 )
 
 private val fallbackMonggleColors = listOf(
@@ -185,9 +192,9 @@ fun GroupSelectScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "그룹 한도 초과",
-                description = "그룹은 최대 3개까지 참여할 수 있어요.",
-                primaryLabel = "확인",
+                title = stringResource(R.string.group_max_title),
+                description = stringResource(R.string.group_max_desc),
+                primaryLabel = stringResource(R.string.common_confirm),
                 onPrimary = { viewModel.dismissMaxGroupsAlert() }
             )
         }
@@ -215,6 +222,14 @@ fun GroupSelectScreen(
                 onColorChanged = viewModel::onColorChanged,
                 onCreateClick = { viewModel.createGroup(onCreatedOrJoined) },
                 onBack = { viewModel.goBack() }
+            )
+            GroupSelectStep.NOTIFICATION_PERMISSION -> NotificationPermissionStep(
+                onAllow = { viewModel.onNotificationPermissionAllowed() },
+                onSkip = { viewModel.onNotificationPermissionSkipped() }
+            )
+            GroupSelectStep.QUIET_HOURS -> QuietHoursStep(
+                onAccept = { viewModel.onQuietHoursAccepted() },
+                onSkip = { viewModel.onQuietHoursSkipped() }
             )
             GroupSelectStep.CREATED -> CreatedStep(
                 inviteCode = uiState.inviteCode,
@@ -315,7 +330,7 @@ private fun MonggleColorPicker(selectedId: String, onSelected: (String) -> Unit)
         verticalArrangement = Arrangement.spacedBy(MongleSpacing.xs)
     ) {
         Text(
-            text = "내 몽글 색상",
+            text = stringResource(R.string.group_color_label),
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MongleTextSecondary
         )
@@ -353,7 +368,7 @@ private fun MonggleColorPicker(selectedId: String, onSelected: (String) -> Unit)
             }
         }
         Text(
-            text = "다른 멤버에게 보여지는 몽글 캐릭터 색상이에요",
+            text = stringResource(R.string.group_color_hint),
             style = MaterialTheme.typography.labelSmall,
             color = MongleTextHint
         )
@@ -392,12 +407,12 @@ private fun SelectStep(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "몽글",
+                text = stringResource(R.string.group_mongle_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = MonglePrimary
             )
             IconButton(onClick = {}) {
-                Icon(Icons.Default.Notifications, contentDescription = "알림", tint = MongleTextPrimary)
+                Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.home_notifications), tint = MongleTextPrimary)
             }
         }
 
@@ -419,7 +434,7 @@ private fun SelectStep(
                 }
             } else if (groups.isEmpty()) {
                 Text(
-                    text = "참여 중인 그룹이 없어요.\n새 공간을 만들거나 초대코드로 참여해보세요.",
+                    text = stringResource(R.string.group_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary,
                     textAlign = TextAlign.Center,
@@ -456,12 +471,12 @@ private fun SelectStep(
                 Spacer(modifier = Modifier.width(MongleSpacing.md))
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        text = "새 공간 만들기",
+                        text = stringResource(R.string.group_create),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MongleTextPrimary
                     )
                     Text(
-                        text = "초대코드로 참여하기",
+                        text = stringResource(R.string.group_join),
                         style = MaterialTheme.typography.labelSmall,
                         color = MongleTextSecondary
                     )
@@ -481,7 +496,7 @@ private fun SelectStep(
         ) {
             Column(modifier = Modifier.padding(bottom = MongleSpacing.xl)) {
                 Text(
-                    text = "무엇을 하시겠어요?",
+                    text = stringResource(R.string.group_what_to_do),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = MongleTextPrimary,
                     modifier = Modifier.padding(
@@ -498,8 +513,8 @@ private fun SelectStep(
                 ) {
                     ActionSheetRow(
                         icon = Icons.Default.Star,
-                        title = "새 공간 만들기",
-                        subtitle = "우리만의 공간을 직접 만들어요",
+                        title = stringResource(R.string.group_create),
+                        subtitle = stringResource(R.string.group_create_desc),
                         onClick = { showActionSheet = false; onCreateClick() }
                     )
                     HorizontalDivider(
@@ -508,8 +523,8 @@ private fun SelectStep(
                     )
                     ActionSheetRow(
                         icon = Icons.Default.PersonAdd,
-                        title = "초대코드로 참여하기",
-                        subtitle = "받은 초대코드로 참여하세요",
+                        title = stringResource(R.string.group_join),
+                        subtitle = stringResource(R.string.group_join_desc),
                         onClick = { showActionSheet = false; onJoinClick() }
                     )
                 }
@@ -650,10 +665,10 @@ private fun CreateStep(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "뒤로", tint = MongleTextPrimary)
+                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = MongleTextPrimary)
             }
             Text(
-                text = "새 공간 만들기",
+                text = stringResource(R.string.group_create_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MongleTextPrimary
             )
@@ -694,12 +709,12 @@ private fun CreateStep(
 
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "우리만의 몽글 공간을 만들어요",
+                    text = stringResource(R.string.group_create_headline),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     color = MongleTextPrimary
                 )
                 Text(
-                    text = "가족이나 친구와 함께 마음을 나눠보세요",
+                    text = stringResource(R.string.group_create_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary
                 )
@@ -712,7 +727,7 @@ private fun CreateStep(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "공간 이름",
+                        text = stringResource(R.string.group_name_label),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MongleTextSecondary
                     )
@@ -726,15 +741,15 @@ private fun CreateStep(
                     value = groupName,
                     onValueChange = { if (it.length <= 10) onGroupNameChanged(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = "김씨네 가족",
+                    placeholder = stringResource(R.string.group_name_placeholder),
                     isError = groupNameError,
-                    errorMessage = if (groupNameError) "공간 이름을 입력해주세요" else null,
+                    errorMessage = if (groupNameError) stringResource(R.string.group_name_error) else null,
                     keyboardOptions = KbOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
                 if (!groupNameError) {
                     Text(
-                        text = "가족, 친한 친구, 커플 등 자유롭게! (최대 10자)",
+                        text = stringResource(R.string.group_name_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MongleTextHint
                     )
@@ -744,7 +759,7 @@ private fun CreateStep(
             // 닉네임
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "내 닉네임",
+                    text = stringResource(R.string.group_nickname_label),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextSecondary
                 )
@@ -752,15 +767,15 @@ private fun CreateStep(
                     value = nickname,
                     onValueChange = onNicknameChanged,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = "엄마",
+                    placeholder = stringResource(R.string.group_nickname_placeholder),
                     isError = nicknameError,
-                    errorMessage = if (nicknameError) "닉네임을 입력해주세요" else null,
+                    errorMessage = if (nicknameError) stringResource(R.string.group_nickname_error) else null,
                     keyboardOptions = KbOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
                 )
                 if (!nicknameError) {
                     Text(
-                        text = "다른 멤버에게 보여지는 이름이에요",
+                        text = stringResource(R.string.group_nickname_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MongleTextHint
                     )
@@ -781,7 +796,7 @@ private fun CreateStep(
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md)
         ) {
             MongleButton(
-                text = "공간 만들기",
+                text = stringResource(R.string.group_create_btn),
                 onClick = onCreateClick,
                 isLoading = isLoading,
                 enabled = !isLoading,
@@ -825,10 +840,10 @@ private fun JoinStep(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "뒤로", tint = MongleTextPrimary)
+                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back), tint = MongleTextPrimary)
             }
             Text(
-                text = "초대코드로 참여하기",
+                text = stringResource(R.string.group_join_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MongleTextPrimary
             )
@@ -851,12 +866,12 @@ private fun JoinStep(
 
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "초대코드를 입력해주세요.",
+                    text = stringResource(R.string.group_join_headline),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     color = MongleTextPrimary
                 )
                 Text(
-                    text = "친구나 가족에게 받은 코드를 입력하면\n함께 공간에 참여할 수 있어요",
+                    text = stringResource(R.string.group_join_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary
                 )
@@ -865,7 +880,7 @@ private fun JoinStep(
             // 초대코드
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "초대 코드",
+                    text = stringResource(R.string.group_code_label),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextSecondary
                 )
@@ -873,15 +888,15 @@ private fun JoinStep(
                     value = joinCode,
                     onValueChange = { onJoinCodeChanged(it.uppercase()) },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = "MONG-4729",
+                    placeholder = stringResource(R.string.group_code_placeholder),
                     isError = joinCodeError,
-                    errorMessage = if (joinCodeError) "초대 코드를 입력해주세요" else null,
+                    errorMessage = if (joinCodeError) stringResource(R.string.group_code_error) else null,
                     keyboardOptions = KbOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
                 )
                 if (!joinCodeError) {
                     Text(
-                        text = "대문자와 숫자로 이루어진 코드에요",
+                        text = stringResource(R.string.group_code_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MongleTextHint
                     )
@@ -891,7 +906,7 @@ private fun JoinStep(
             // 닉네임
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "내 닉네임",
+                    text = stringResource(R.string.group_nickname_label),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextSecondary
                 )
@@ -899,15 +914,15 @@ private fun JoinStep(
                     value = nickname,
                     onValueChange = onNicknameChanged,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = "엄마",
+                    placeholder = stringResource(R.string.group_nickname_placeholder),
                     isError = nicknameError,
-                    errorMessage = if (nicknameError) "닉네임을 입력해주세요" else null,
+                    errorMessage = if (nicknameError) stringResource(R.string.group_nickname_error) else null,
                     keyboardOptions = KbOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
                 )
                 if (!nicknameError) {
                     Text(
-                        text = "다른 멤버에게 보여지는 이름이에요",
+                        text = stringResource(R.string.group_nickname_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MongleTextHint
                     )
@@ -928,7 +943,7 @@ private fun JoinStep(
                 .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md)
         ) {
             MongleButton(
-                text = "참여하기",
+                text = stringResource(R.string.group_join_btn),
                 onClick = onJoinClick,
                 isLoading = isLoading,
                 enabled = !isLoading,
@@ -948,8 +963,8 @@ private fun CreatedStep(
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    val inviteLink = "https://monggle.app/join/${inviteCode.lowercase()}"
-    val shareText = "몽글에서 함께해요!\n초대코드: $inviteCode\n링크: $inviteLink"
+    val inviteLink = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/${inviteCode}"
+    val shareText = context.getString(R.string.group_share_text, inviteCode, inviteLink)
     var codeCopied by remember { mutableStateOf(false) }
     var linkCopied by remember { mutableStateOf(false) }
 
@@ -969,7 +984,7 @@ private fun CreatedStep(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "새 공간 만들기",
+                text = stringResource(R.string.group_create_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MongleTextPrimary
             )
@@ -1003,12 +1018,12 @@ private fun CreatedStep(
 
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "공간이 만들어졌어요! 🎉",
+                    text = stringResource(R.string.group_created_title),
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     color = MongleTextPrimary
                 )
                 Text(
-                    text = "아래 코드나 링크로 친구를 초대해보세요",
+                    text = stringResource(R.string.group_created_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MongleTextSecondary
                 )
@@ -1017,7 +1032,7 @@ private fun CreatedStep(
             // Invite code row card
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "초대 코드",
+                    text = stringResource(R.string.group_invite_code),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextSecondary
                 )
@@ -1050,7 +1065,7 @@ private fun CreatedStep(
             // Invite link row card
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
                 Text(
-                    text = "초대 링크",
+                    text = stringResource(R.string.group_invite_link),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextSecondary
                 )
@@ -1106,7 +1121,7 @@ private fun CreatedStep(
                             putExtra(android.content.Intent.EXTRA_TEXT, shareText)
                         }
                         context.startActivity(
-                            android.content.Intent.createChooser(intent, "공유하기")
+                            android.content.Intent.createChooser(intent, context.getString(R.string.common_share))
                         )
                     }
                     .padding(vertical = 14.dp),
@@ -1121,13 +1136,13 @@ private fun CreatedStep(
                         tint = MonglePrimary, modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "공유하기",
+                        text = stringResource(R.string.common_share),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MonglePrimary
                     )
                 }
             }
-            MongleButton(text = "홈으로 가기", onClick = onContinue, style = MongleButtonStyle.PRIMARY)
+            MongleButton(text = stringResource(R.string.group_go_home), onClick = onContinue, style = MongleButtonStyle.PRIMARY)
         }
     }
 }
@@ -1150,9 +1165,195 @@ private fun CopyPillButton(isCopied: Boolean, onClick: () -> Unit) {
             modifier = Modifier.size(14.dp)
         )
         Text(
-            text = if (isCopied) "복사됨" else "복사",
+            text = if (isCopied) stringResource(R.string.common_copied) else stringResource(R.string.common_copy),
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MonglePrimary
         )
+    }
+}
+
+// ─── Notification Permission Step ────────────────────────────────────────────
+
+@Composable
+private fun NotificationPermissionStep(
+    onAllow: () -> Unit,
+    onSkip: () -> Unit
+) {
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // 허용/거부 상관없이 다음 단계로 이동
+        onAllow()
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = MongleSpacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(80.dp))
+
+        Text(
+            text = stringResource(R.string.perm_notif_title),
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            color = MongleTextPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.perm_notif_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MongleTextSecondary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Notification reason rows
+        NotificationReasonRow(emoji = "\uD83D\uDCAC", text = stringResource(R.string.perm_notif_answer))
+        Spacer(modifier = Modifier.height(16.dp))
+        NotificationReasonRow(emoji = "\uD83D\uDC4B", text = stringResource(R.string.perm_notif_nudge))
+        Spacer(modifier = Modifier.height(16.dp))
+        NotificationReasonRow(emoji = "\u2753", text = stringResource(R.string.perm_notif_question))
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        MongleButton(
+            text = stringResource(R.string.perm_notif_allow),
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                } else {
+                    // Android 12 이하에서는 권한 요청 필요 없음
+                    onAllow()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            style = MongleButtonStyle.PRIMARY
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        MongleButton(
+            text = stringResource(R.string.perm_notif_later),
+            onClick = onSkip,
+            modifier = Modifier.fillMaxWidth(),
+            style = MongleButtonStyle.SECONDARY
+        )
+
+        Spacer(modifier = Modifier.height(MongleSpacing.xl))
+    }
+}
+
+@Composable
+private fun NotificationReasonRow(emoji: String, text: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MongleBgNeutral,
+                shape = RoundedCornerShape(MongleRadius.md)
+            )
+            .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm + 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = emoji,
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MongleTextPrimary
+        )
+    }
+}
+
+// ─── Quiet Hours Step ────────────────────────────────────────────────────────
+
+@Composable
+private fun QuietHoursStep(
+    onAccept: () -> Unit,
+    onSkip: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = MongleSpacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(80.dp))
+
+        Text(
+            text = stringResource(R.string.perm_dnd_title),
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            color = MongleTextPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.perm_dnd_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MongleTextSecondary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        // Moon icon
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    color = MongleBgNeutral,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "\uD83C\uDF19",
+                fontSize = 56.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Time display
+        Text(
+            text = stringResource(R.string.perm_dnd_time),
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = MongleTextPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        MongleButton(
+            text = stringResource(R.string.perm_dnd_use),
+            onClick = onAccept,
+            modifier = Modifier.fillMaxWidth(),
+            style = MongleButtonStyle.PRIMARY
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        MongleButton(
+            text = stringResource(R.string.perm_dnd_skip),
+            onClick = onSkip,
+            modifier = Modifier.fillMaxWidth(),
+            style = MongleButtonStyle.SECONDARY
+        )
+
+        Spacer(modifier = Modifier.height(MongleSpacing.xl))
     }
 }

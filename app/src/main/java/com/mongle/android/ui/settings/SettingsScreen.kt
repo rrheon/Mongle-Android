@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import com.mongle.android.ui.common.AdBannerSection
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,18 +40,18 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import com.mongle.android.ui.common.MongleToastData
 import com.mongle.android.ui.common.MongleToastHost
@@ -60,7 +61,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -98,6 +98,8 @@ import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
+import androidx.compose.ui.res.stringResource
+import com.mongle.android.R
 import java.util.UUID
 
 // ── 진입점 ──────────────────────────────────────────────────────────────────
@@ -169,6 +171,8 @@ fun SettingsScreen(
                         viewModel.onEditProfileTapped()
                         navController.navigate("profile_edit")
                     },
+                    onMoodHistoryTapped = { navController.navigate("mood_history") },
+                    onMongleCardEditTapped = { navController.navigate("mongle_card_edit") },
                     onNotificationsTapped = { navController.navigate("notifications") },
                     onGroupManagementTapped = { navController.navigate("group_management") },
                     onAccountManagementTapped = { navController.navigate("account_management") }
@@ -198,6 +202,11 @@ fun SettingsScreen(
                 )
             }
             composable("group_management") {
+                LaunchedEffect(uiState.showTransferSheet) {
+                    if (uiState.showTransferSheet) {
+                        navController.navigate("transfer_admin")
+                    }
+                }
                 GroupManagementScreen(
                     uiState = uiState,
                     onBack = { navController.popBackStack() },
@@ -207,10 +216,18 @@ fun SettingsScreen(
                     onKickMemberCancelled = viewModel::onKickMemberCancelled,
                     onLeaveGroupTapped = viewModel::onLeaveGroupTapped,
                     onLeaveGroupConfirmed = viewModel::onLeaveGroupConfirmed,
-                    onLeaveGroupCancelled = viewModel::onLeaveGroupCancelled,
+                    onLeaveGroupCancelled = viewModel::onLeaveGroupCancelled
+                )
+            }
+            composable("transfer_admin") {
+                TransferAdminScreen(
+                    uiState = uiState,
+                    onBack = {
+                        viewModel.onDismissTransferSheet()
+                        navController.popBackStack()
+                    },
                     onTransferMemberSelected = viewModel::onTransferMemberSelected,
-                    onConfirmTransferAndLeave = viewModel::onConfirmTransferAndLeave,
-                    onDismissTransferSheet = viewModel::onDismissTransferSheet
+                    onConfirmTransferAndLeave = viewModel::onConfirmTransferAndLeave
                 )
             }
             composable("account_management") {
@@ -223,6 +240,16 @@ fun SettingsScreen(
                     onDeleteAccountTapped = viewModel::onDeleteAccountTapped,
                     onDeleteAccountConfirmed = viewModel::onDeleteAccountConfirmed,
                     onDeleteAccountCancelled = viewModel::onDeleteAccountCancelled
+                )
+            }
+            composable("mood_history") {
+                MoodHistoryScreen(onBack = { navController.popBackStack() })
+            }
+            composable("mongle_card_edit") {
+                MongleCardEditScreen(
+                    uiState = uiState,
+                    onBack = { navController.popBackStack() },
+                    onSave = { navController.popBackStack() }
                 )
             }
         }
@@ -240,6 +267,8 @@ fun SettingsScreen(
 private fun MyScreen(
     uiState: SettingsUiState,
     onProfileEditTapped: () -> Unit,
+    onMoodHistoryTapped: () -> Unit,
+    onMongleCardEditTapped: () -> Unit,
     onNotificationsTapped: () -> Unit,
     onGroupManagementTapped: () -> Unit,
     onAccountManagementTapped: () -> Unit
@@ -259,7 +288,7 @@ private fun MyScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "MY",
+                text = stringResource(R.string.settings_my),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = MongleTextPrimary
             )
@@ -279,47 +308,66 @@ private fun MyScreen(
                 MyProfileCard(user = user)
             }
 
+            // 광고 배너
+            AdBannerSection(modifier = Modifier.padding(horizontal = 4.dp))
+
             // 프로필 섹션
             SettingsSection(
-                title = "프로필",
+                title = stringResource(R.string.settings_profile),
                 rows = listOf(
                     SettingsRowData(
                         icon = Icons.Default.Person,
                         iconBgColor = MonglePrimaryLight,
                         iconTint = MonglePrimary,
-                        title = "프로필 편집",
-                        subtitle = "이름을 변경할 수 있어요",
+                        title = stringResource(R.string.settings_profile_edit),
+                        subtitle = stringResource(R.string.settings_profile_edit_desc),
                         onClick = onProfileEditTapped
+                    ),
+                    SettingsRowData(
+                        icon = Icons.Default.Timeline,
+                        iconBgColor = MonglePrimaryLight,
+                        iconTint = MonglePrimary,
+                        title = stringResource(R.string.settings_mood_history),
+                        subtitle = stringResource(R.string.settings_mood_history_desc),
+                        onClick = onMoodHistoryTapped
+                    ),
+                    SettingsRowData(
+                        icon = Icons.Default.Edit,
+                        iconBgColor = MonglePrimaryLight,
+                        iconTint = MonglePrimary,
+                        title = stringResource(R.string.settings_mongle_card),
+                        subtitle = stringResource(R.string.settings_mongle_card_desc),
+                        onClick = onMongleCardEditTapped
                     )
                 )
             )
 
             // 앱 설정 섹션
             SettingsSection(
-                title = "앱 설정",
+                title = stringResource(R.string.settings_app_settings),
                 rows = listOf(
                     SettingsRowData(
                         icon = Icons.Default.Notifications,
                         iconBgColor = MonglePrimaryLight,
                         iconTint = MonglePrimary,
-                        title = "알림 설정",
-                        subtitle = "답변 알림, 리마인더",
+                        title = stringResource(R.string.settings_notifications),
+                        subtitle = stringResource(R.string.settings_notifications_desc),
                         onClick = onNotificationsTapped
                     ),
                     SettingsRowData(
                         icon = Icons.Default.Group,
                         iconBgColor = MonglePrimaryLight,
                         iconTint = MonglePrimary,
-                        title = "그룹 관리",
-                        subtitle = "멤버 초대, 그룹 설정",
+                        title = stringResource(R.string.settings_group),
+                        subtitle = stringResource(R.string.settings_group_desc),
                         onClick = onGroupManagementTapped
                     ),
                     SettingsRowData(
                         icon = Icons.Default.Settings,
                         iconBgColor = MonglePrimaryLight,
                         iconTint = MonglePrimary,
-                        title = "계정 관리",
-                        subtitle = "로그아웃, 탈퇴",
+                        title = stringResource(R.string.settings_account),
+                        subtitle = stringResource(R.string.settings_account_desc),
                         onClick = onAccountManagementTapped
                     )
                 )
@@ -327,7 +375,7 @@ private fun MyScreen(
 
             // 버전
             Text(
-                text = "몽글 v${uiState.appVersion}",
+                text = stringResource(R.string.settings_version, uiState.appVersion),
                 style = MaterialTheme.typography.bodySmall,
                 color = MongleTextHint,
                 modifier = Modifier
@@ -353,7 +401,7 @@ private fun ProfileEditScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         SettingsNavigationHeader(
-            title = "프로필 편집",
+            title = stringResource(R.string.settings_profile_edit),
             onBack = onBack,
             rightContent = {
                 TextButton(
@@ -361,7 +409,7 @@ private fun ProfileEditScreen(
                     enabled = uiState.editName.isNotBlank()
                 ) {
                     Text(
-                        text = "저장",
+                        text = stringResource(R.string.common_save),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = if (uiState.editName.isNotBlank()) MonglePrimary else MongleTextHint
                     )
@@ -386,7 +434,7 @@ private fun ProfileEditScreen(
             ) {
                 MoodCircle(color = moodColorFor(uiState.currentUser?.moodId, uiState.currentUser?.role?.ordinal ?: 0), size = 80.dp)
                 Text(
-                    text = "답변 수정 시 색상을 변경할 수 있어요.",
+                    text = stringResource(R.string.settings_mood_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MongleTextHint
                 )
@@ -398,7 +446,7 @@ private fun ProfileEditScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "이름",
+                    text = stringResource(R.string.settings_name_label),
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = MongleTextPrimary
                 )
@@ -406,12 +454,12 @@ private fun ProfileEditScreen(
                     value = uiState.editName,
                     onValueChange = if (uiState.canChangeName) onNameChanged else { _ -> },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = "이름 입력",
+                    placeholder = stringResource(R.string.settings_name_placeholder),
                     enabled = uiState.canChangeName
                 )
                 Text(
-                    text = if (uiState.canChangeName) "다른 멤버에게 보여지는 이름이에요"
-                           else "이름은 일주일에 한 번만 변경 가능해요 (${uiState.daysUntilNameChange}일 후 변경 가능)",
+                    text = if (uiState.canChangeName) stringResource(R.string.settings_name_hint)
+                           else stringResource(R.string.settings_name_cooldown, uiState.daysUntilNameChange),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (uiState.canChangeName) MongleTextHint else Color(0xFFFF6B6B)
                 )
@@ -433,7 +481,7 @@ private fun NotificationSettingsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        SettingsNavigationHeader(title = "알림 설정", onBack = onBack)
+        SettingsNavigationHeader(title = stringResource(R.string.notif_settings_title), onBack = onBack)
 
         Column(
             modifier = Modifier
@@ -445,23 +493,23 @@ private fun NotificationSettingsScreen(
         ) {
             // 각 토글 섹션 (iOS settingsSection 패턴 동일)
             NotifToggleSection(
-                sectionTitle = "답변 알림",
-                title = "멤버가 답변했을 때",
-                subtitle = "가족이 오늘의 질문에 답변하면 알려드려요",
+                sectionTitle = stringResource(R.string.notif_settings_answer),
+                title = stringResource(R.string.notif_settings_answer_desc),
+                subtitle = stringResource(R.string.notif_settings_answer_detail),
                 checked = uiState.notificationsEnabled,
                 onCheckedChange = onNotificationsToggled
             )
             NotifToggleSection(
-                sectionTitle = "재촉 알림",
-                title = "재촉 알림을 받았을 때",
-                subtitle = "가족이 답변을 재촉하면 알려드려요",
+                sectionTitle = stringResource(R.string.notif_settings_nudge),
+                title = stringResource(R.string.notif_settings_nudge_desc),
+                subtitle = stringResource(R.string.notif_settings_nudge_detail),
                 checked = uiState.notificationsEnabled,
                 onCheckedChange = onNotificationsToggled
             )
             NotifToggleSection(
-                sectionTitle = "시스템 알림",
-                title = "새 질문 알림",
-                subtitle = "새로운 오늘의 질문이 도착하면 알려드려요",
+                sectionTitle = stringResource(R.string.notif_settings_question),
+                title = stringResource(R.string.notif_settings_question_desc),
+                subtitle = stringResource(R.string.notif_settings_question_detail),
                 checked = uiState.notificationsEnabled,
                 onCheckedChange = onNotificationsToggled
             )
@@ -479,12 +527,12 @@ private fun NotificationSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
-                            text = "방해 금지 시간",
+                            text = stringResource(R.string.notif_settings_dnd),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = MongleTextPrimary
                         )
                         Text(
-                            text = "오후 10:00 - 오전 8:00",
+                            text = stringResource(R.string.perm_dnd_time),
                             style = MaterialTheme.typography.bodySmall,
                             color = MongleTextSecondary
                         )
@@ -556,7 +604,92 @@ private fun NotifToggleSection(
 
 // ── 그룹 관리 화면 ────────────────────────────────────────────────────────────
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ── 방장 위임 화면 (Push) ────────────────────────────────────────────────────
+
+@Composable
+private fun TransferAdminScreen(
+    uiState: SettingsUiState,
+    onBack: () -> Unit,
+    onTransferMemberSelected: (UUID) -> Unit,
+    onConfirmTransferAndLeave: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        SettingsNavigationHeader(
+            title = stringResource(R.string.mgmt_transfer_title),
+            onBack = onBack
+        )
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(MongleSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(MongleSpacing.md)
+        ) {
+            Text(
+                text = stringResource(R.string.mgmt_transfer_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MongleTextSecondary
+            )
+            val monggleColors = listOf(
+                MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
+            )
+            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                itemsIndexed(uiState.transferCandidates) { index, member ->
+                    val selected = uiState.selectedTransferMemberId == member.id
+                    val bgColor = if (selected) MonglePrimaryLight else Color.White
+                    val borderColor = if (selected) MonglePrimary else Color(0xFFE0D8D0)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = MongleSpacing.sm)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(bgColor)
+                            .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                            .selectable(
+                                selected = selected,
+                                onClick = { onTransferMemberSelected(member.id) }
+                            )
+                            .padding(MongleSpacing.md),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md)
+                    ) {
+                        MoodCircle(
+                            color = monggleColors[(index + 1) % monggleColors.size],
+                            size = 40.dp
+                        )
+                        Text(
+                            text = member.name,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            modifier = Modifier.weight(1f),
+                            color = MongleTextPrimary
+                        )
+                        if (selected) {
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = MonglePrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+            MongleButton(
+                text = stringResource(R.string.mgmt_transfer_btn),
+                onClick = onConfirmTransferAndLeave,
+                enabled = uiState.selectedTransferMemberId != null,
+                style = MongleButtonStyle.PRIMARY
+            )
+        }
+    }
+}
+
+// ── 그룹 관리 화면 ──────────────────────────────────────────────────────────
+
 @Composable
 private fun GroupManagementScreen(
     uiState: SettingsUiState,
@@ -567,10 +700,7 @@ private fun GroupManagementScreen(
     onKickMemberCancelled: () -> Unit,
     onLeaveGroupTapped: () -> Unit,
     onLeaveGroupConfirmed: () -> Unit,
-    onLeaveGroupCancelled: () -> Unit,
-    onTransferMemberSelected: (UUID) -> Unit,
-    onConfirmTransferAndLeave: () -> Unit,
-    onDismissTransferSheet: () -> Unit
+    onLeaveGroupCancelled: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -581,11 +711,11 @@ private fun GroupManagementScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = uiState.kickTargetMember?.let { "${it.name}님을 내보낼까요?" } ?: "멤버 내보내기",
-                description = "해당 멤버는 그룹에서 제외됩니다.",
-                primaryLabel = "내보내기",
+                title = uiState.kickTargetMember?.let { stringResource(R.string.mgmt_kick_title, it.name) } ?: stringResource(R.string.mgmt_kick_fallback_title),
+                description = stringResource(R.string.mgmt_kick_desc),
+                primaryLabel = stringResource(R.string.mgmt_kick_btn),
                 onPrimary = onKickMemberConfirmed,
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = onKickMemberCancelled,
                 isDestructive = true
             )
@@ -599,95 +729,23 @@ private fun GroupManagementScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "그룹 나가기",
-                description = "그룹을 나가면 모든 가족과의 답변 기록이 연결 해제됩니다.",
-                primaryLabel = "나가기",
+                title = stringResource(R.string.mgmt_leave_title),
+                description = stringResource(R.string.mgmt_leave_desc),
+                primaryLabel = stringResource(R.string.mgmt_leave_btn),
                 onPrimary = onLeaveGroupConfirmed,
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = onLeaveGroupCancelled,
                 isDestructive = true
             )
         }
     }
 
-    // 방장 위임 시트
-    if (uiState.showTransferSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(
-            onDismissRequest = onDismissTransferSheet,
-            sheetState = sheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(MongleSpacing.md)
-                    .padding(bottom = MongleSpacing.xl),
-                verticalArrangement = Arrangement.spacedBy(MongleSpacing.md)
-            ) {
-                Text(
-                    text = "그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MongleTextSecondary
-                )
-                val monggleColors = listOf(
-                    MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
-                )
-                LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                    itemsIndexed(uiState.transferCandidates) { index, member ->
-                        val selected = uiState.selectedTransferMemberId == member.id
-                        val bgColor = if (selected) MonglePrimaryLight else Color.White
-                        val borderColor = if (selected) MonglePrimary else Color(0xFFE0D8D0)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = MongleSpacing.sm)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(bgColor)
-                                .border(1.dp, borderColor, RoundedCornerShape(16.dp))
-                                .selectable(
-                                    selected = selected,
-                                    onClick = { onTransferMemberSelected(member.id) }
-                                )
-                                .padding(MongleSpacing.md),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md)
-                        ) {
-                            MoodCircle(
-                                color = monggleColors[(index + 1) % monggleColors.size],
-                                size = 40.dp
-                            )
-                            Text(
-                                text = member.name,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                                modifier = Modifier.weight(1f),
-                                color = MongleTextPrimary
-                            )
-                            if (selected) {
-                                Icon(
-                                    imageVector = Icons.Default.ChevronRight,
-                                    contentDescription = null,
-                                    tint = MonglePrimary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-                MongleButton(
-                    text = "위임하고 나가기",
-                    onClick = onConfirmTransferAndLeave,
-                    enabled = uiState.selectedTransferMemberId != null,
-                    style = MongleButtonStyle.PRIMARY
-                )
-            }
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.White)
     ) {
-        SettingsNavigationHeader(title = "그룹 관리", onBack = onBack)
+        SettingsNavigationHeader(title = stringResource(R.string.mgmt_title), onBack = onBack)
 
         Column(
             modifier = Modifier
@@ -705,7 +763,7 @@ private fun GroupManagementScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "현재 참여 중인 그룹이 없어요.",
+                        text = stringResource(R.string.settings_no_group),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MongleTextHint
                     )
@@ -716,13 +774,11 @@ private fun GroupManagementScreen(
                     inviteCode = uiState.family.inviteCode,
                     onCopyCode = onCopyInviteCode,
                     onShareLink = {
+                        val shareText = context.getString(R.string.mgmt_share_invite, uiState.family.inviteCode)
                         val shareIntent = Intent.createChooser(
                             Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "몽글에서 그룹을 만들었어요! 아래 링크로 들어오세요.\nhttps://mongle.app/invite/${uiState.family.inviteCode}"
-                                )
+                                putExtra(Intent.EXTRA_TEXT, shareText)
                             }, null
                         )
                         context.startActivity(shareIntent)
@@ -742,7 +798,7 @@ private fun GroupManagementScreen(
         // 그룹 나가기 버튼 — 하단 고정
         if (uiState.family != null) {
             MongleButton(
-                text = "그룹 나가기",
+                text = stringResource(R.string.mgmt_leave),
                 onClick = onLeaveGroupTapped,
                 style = MongleButtonStyle.SECONDARY,
                 modifier = Modifier.padding(MongleSpacing.md)
@@ -762,7 +818,7 @@ private fun GroupInfoSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
     ) {
-        SectionHeader(title = "그룹 초대", subtitle = "초대 코드나 링크를 공유해 가족을 초대하세요")
+        SectionHeader(title = stringResource(R.string.mgmt_invite_section), subtitle = stringResource(R.string.mgmt_invite_desc))
 
         // iOS: 두 InviteRow가 하나의 monglePanel 안에 VStack(spacing: sm)
         MonglePanel {
@@ -771,17 +827,17 @@ private fun GroupInfoSection(
                 verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
             ) {
                 InviteRow(
-                    title = "초대 코드",
+                    title = stringResource(R.string.group_invite_code),
                     value = inviteCode,
                     buttonIcon = Icons.Default.ContentCopy,
-                    buttonLabel = "복사",
+                    buttonLabel = stringResource(R.string.common_copy),
                     onClick = onCopyCode
                 )
                 InviteRow(
-                    title = "초대 링크",
-                    value = "https://mongle.app/invite/$inviteCode",
+                    title = stringResource(R.string.group_invite_link),
+                    value = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/$inviteCode",
                     buttonIcon = Icons.Default.Share,
-                    buttonLabel = "공유",
+                    buttonLabel = stringResource(R.string.common_share),
                     onClick = onShareLink
                 )
             }
@@ -862,7 +918,7 @@ private fun MembersSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
     ) {
-        SectionHeader(title = "멤버", subtitle = "현재 이 공간에 연결된 사람들")
+        SectionHeader(title = stringResource(R.string.mgmt_members_title), subtitle = stringResource(R.string.mgmt_members_desc))
 
         // iOS: 각 멤버가 개별 monglePanel
         members.forEachIndexed { index, member ->
@@ -887,7 +943,7 @@ private fun MembersSection(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = if (isCurrentUser) "${member.name} (나)" else member.name,
+                            text = if (isCurrentUser) stringResource(R.string.mgmt_member_me, member.name) else member.name,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = MongleTextPrimary
                         )
@@ -900,7 +956,7 @@ private fun MembersSection(
                                     .padding(horizontal = MongleSpacing.xs, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "방장",
+                                    text = stringResource(R.string.mgmt_owner),
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                     color = Color.White
                                 )
@@ -924,7 +980,7 @@ private fun MembersSection(
                                 .padding(horizontal = MongleSpacing.sm, vertical = MongleSpacing.xxs)
                         ) {
                             Text(
-                                text = "내보내기",
+                                text = stringResource(R.string.mgmt_kick_btn),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -956,11 +1012,11 @@ private fun AccountManagementScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "로그아웃",
-                description = "정말 로그아웃할까요?",
-                primaryLabel = "로그아웃",
+                title = stringResource(R.string.settings_logout),
+                description = stringResource(R.string.settings_logout_confirm),
+                primaryLabel = stringResource(R.string.settings_logout),
                 onPrimary = onLogoutConfirmed,
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = onLogoutCancelled,
                 isDestructive = true
             )
@@ -974,11 +1030,11 @@ private fun AccountManagementScreen(
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             MonglePopup(
-                title = "계정 탈퇴",
-                description = "탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.",
-                primaryLabel = "탈퇴하기",
+                title = stringResource(R.string.settings_delete_account),
+                description = stringResource(R.string.settings_delete_confirm),
+                primaryLabel = stringResource(R.string.settings_delete_btn),
                 onPrimary = onDeleteAccountConfirmed,
-                secondaryLabel = "취소",
+                secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = onDeleteAccountCancelled,
                 isDestructive = true
             )
@@ -990,7 +1046,7 @@ private fun AccountManagementScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        SettingsNavigationHeader(title = "계정 관리", onBack = onBack)
+        SettingsNavigationHeader(title = stringResource(R.string.settings_account), onBack = onBack)
 
         Column(
             modifier = Modifier
@@ -1003,7 +1059,7 @@ private fun AccountManagementScreen(
             // iOS AccountManagementView accountSection 구조 동일
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)) {
                 Text(
-                    text = "계정",
+                    text = stringResource(R.string.settings_account_section),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = MongleTextSecondary,
                     modifier = Modifier.padding(horizontal = MongleSpacing.xxs)
@@ -1016,8 +1072,8 @@ private fun AccountManagementScreen(
                             icon = Icons.Default.Logout,
                             iconBgColor = MonglePrimaryLight,
                             iconTint = MonglePrimary,
-                            title = "로그아웃",
-                            subtitle = "기기에서 로그아웃해요",
+                            title = stringResource(R.string.settings_logout),
+                            subtitle = stringResource(R.string.settings_logout_desc),
                             onClick = onLogoutTapped
                         )
                         HorizontalDivider(
@@ -1028,8 +1084,8 @@ private fun AccountManagementScreen(
                             icon = Icons.Default.Delete,
                             iconBgColor = MonglePrimaryLight,
                             iconTint = MonglePrimary,
-                            title = "계정 탈퇴",
-                            subtitle = "모든 데이터가 삭제되며 복구할 수 없어요",
+                            title = stringResource(R.string.settings_delete_account),
+                            subtitle = stringResource(R.string.settings_delete_account_desc),
                             onClick = onDeleteAccountTapped
                         )
                     }
@@ -1095,6 +1151,114 @@ private fun AccountRow(
     }
 }
 
+// ── 기분 히스토리 화면 ───────────────────────────────────────────────────────
+
+@Composable
+private fun MoodHistoryScreen(onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        SettingsNavigationHeader(title = stringResource(R.string.settings_mood_history), onBack = onBack)
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = stringResource(R.string.settings_preparing),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MongleTextPrimary
+            )
+            Spacer(modifier = Modifier.height(MongleSpacing.xs))
+            Text(
+                text = stringResource(R.string.settings_preparing_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MongleTextHint
+            )
+        }
+    }
+}
+
+// ── 몽글 카드 편집 화면 ──────────────────────────────────────────────────────
+
+@Composable
+private fun MongleCardEditScreen(
+    uiState: SettingsUiState,
+    onBack: () -> Unit,
+    onSave: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        SettingsNavigationHeader(
+            title = stringResource(R.string.settings_mongle_card),
+            onBack = onBack,
+            rightContent = {
+                TextButton(onClick = onSave) {
+                    Text(
+                        text = stringResource(R.string.common_save),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MonglePrimary
+                    )
+                }
+            }
+        )
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .padding(top = 28.dp, bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(28.dp)
+        ) {
+            // 아바타 미리보기
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                MoodCircle(
+                    color = moodColorFor(uiState.currentUser?.moodId, uiState.currentUser?.role?.ordinal ?: 0),
+                    size = 80.dp
+                )
+                Text(
+                    text = stringResource(R.string.settings_mood_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MongleTextHint
+                )
+            }
+
+            // 이름 입력
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_name_label),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MongleTextPrimary
+                )
+                MongleTextField(
+                    value = uiState.currentUser?.name ?: "",
+                    onValueChange = { /* 편집 기능은 향후 구현 */ },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = stringResource(R.string.settings_name_placeholder),
+                    enabled = false
+                )
+            }
+        }
+    }
+}
+
 // ── 공통 컴포넌트 ─────────────────────────────────────────────────────────────
 
 // iOS monglePanel 스타일: 흰 배경 + 테두리 + 둥근 모서리 (elevation 없음)
@@ -1149,7 +1313,7 @@ private fun SettingsNavigationHeader(
         IconButton(onClick = onBack) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
-                contentDescription = "뒤로",
+                contentDescription = stringResource(R.string.common_back),
                 tint = MongleTextPrimary
             )
         }
@@ -1163,13 +1327,13 @@ private fun SettingsNavigationHeader(
     }
 }
 
-// 기분 색상 매핑
-private fun moodLabelFor(moodId: String?) = when (moodId) {
-    "happy" -> "행복"
-    "calm"  -> "평온"
-    "loved" -> "사랑"
-    "sad"   -> "슬픔"
-    "tired" -> "피곤"
+// 기분 라벨 리소스 매핑
+private fun moodLabelResIdFor(moodId: String?): Int? = when (moodId) {
+    "happy" -> R.string.mood_happy
+    "calm"  -> R.string.mood_calm
+    "loved" -> R.string.mood_loved
+    "sad"   -> R.string.mood_sad
+    "tired" -> R.string.mood_tired
     else    -> null
 }
 
@@ -1228,7 +1392,7 @@ private fun MoodCircle(color: Color, size: Dp) {
 @Composable
 private fun MyProfileCard(user: User) {
     val moodColor = moodColorFor(user.moodId, user.role.ordinal)
-    val moodLabel = moodLabelFor(user.moodId)
+    val moodLabelResId = moodLabelResIdFor(user.moodId)
 
     MonglePanel(padding = MongleSpacing.md) {
         Row(
@@ -1244,9 +1408,9 @@ private fun MyProfileCard(user: User) {
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                     color = MongleTextPrimary
                 )
-                if (moodLabel != null) {
+                if (moodLabelResId != null) {
                     Text(
-                        text = moodLabel,
+                        text = stringResource(moodLabelResId),
                         style = MaterialTheme.typography.bodySmall,
                         color = MongleTextSecondary
                     )

@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">モングル</string>
+
+    <!-- Common -->
+    <string name="common_confirm">確認</string>
+    <string name="common_cancel">キャンセル</string>
+    <string name="common_back">戻る</string>
+    <string name="common_next">次へ</string>
+    <string name="common_save">保存</string>
+    <string name="common_delete">削除</string>
+    <string name="common_close">閉じる</string>
+    <string name="common_copy">コピー</string>
+    <string name="common_copied">コピー済み</string>
+    <string name="common_share">シェアする</string>
+    <string name="common_retry">再試行</string>
+    <string name="common_loading">読み込み中…</string>
+
+    <!-- Login -->
+    <string name="login_title">モングル</string>
+    <string name="login_subtitle">今日の気持ちは何色ですか？</string>
+    <string name="login_kakao">カカオで続ける</string>
+    <string name="login_google">Googleで続ける</string>
+    <string name="login_apple">Appleで続ける</string>
+    <string name="login_browse">見てみる</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">モングルへ\nようこそ</string>
+    <string name="onboarding_welcome_desc">家族や友達と毎日気持ちを分かち合う\n温かいコミュニケーション空間</string>
+    <string name="onboarding_group_title">自分だけの空間を\n作ってみましょう</string>
+    <string name="onboarding_group_desc">家族、友達、カップルなど\n一緒にしたい人を招待しましょう</string>
+    <string name="onboarding_question_title">毎日一緒に\n気持ちを分かち合おう</string>
+    <string name="onboarding_question_desc">毎日新しい質問に答えて\nお互いの気持ちを覗いてみましょう</string>
+    <string name="onboarding_sample_group">私たちの家族 🩷</string>
+    <string name="onboarding_sample_question">今日あなたを笑顔にしたものは何ですか？</string>
+    <string name="onboarding_today_question">今日の質問</string>
+    <string name="onboarding_start">はじめる</string>
+    <string name="onboarding_get_started">モングルをはじめる</string>
+    <string name="onboarding_never_show">再表示しない</string>
+
+    <!-- Home -->
+    <string name="home_default_group">モングル</string>
+    <string name="home_today_question">今日の質問</string>
+    <string name="home_question_placeholder">午前11時に新しい質問が届きます</string>
+    <string name="home_answer_complete">回答済み</string>
+    <string name="home_notifications">お知らせ</string>
+    <string name="home_heart_count">現在 %d個保有</string>
+    <string name="home_heart_replace">質問をもらい直す</string>
+    <string name="home_heart_write">自分だけの質問作成</string>
+    <string name="home_heart_nudge">催促する</string>
+    <string name="home_heart_earn_rate">毎朝 +1 · 回答完了 +3</string>
+    <string name="home_group_manage">グループ管理</string>
+    <string name="home_answer_first_title">まず回答を完了してください</string>
+    <string name="home_answer_first_view_desc">%sの回答を見るには\nまず今日の質問に答えてください</string>
+    <string name="home_answer_first_nudge_desc">%sに催促するには\nまず今日の質問に答えてください</string>
+    <string name="home_answer_btn">回答する</string>
+    <string name="home_write_question_title">自分だけの質問を作成しますか？</string>
+    <string name="home_write_question_desc">ハート3個を消費して自分だけの質問を\n今日の質問として登録します。</string>
+    <string name="home_write_btn">作成する</string>
+    <string name="home_skip_question_title">質問をスキップしますか？</string>
+    <string name="home_skip_question_desc">ハート3個を消費して新しい質問に\n変更されます。スキップ後は他の家族の\n回答を閲覧できます。</string>
+    <string name="home_skip_btn">スキップ</string>
+    <string name="home_hearts_insufficient_title">ハートが足りません</string>
+    <string name="home_hearts_insufficient_write">質問を作成するにはハート3個が必要です。\n現在のハート: %d個</string>
+    <string name="home_hearts_insufficient_skip">質問をスキップするにはハート3個が必要です。\n現在のハート: %d個</string>
+
+    <!-- Question Sheet -->
+    <string name="sheet_title">今日の質問</string>
+    <string name="sheet_subtitle">何をしますか？</string>
+    <string name="sheet_answer_edit">回答を修正する</string>
+    <string name="sheet_answer">回答する</string>
+    <string name="sheet_write_question">自分だけの質問を作成する</string>
+    <string name="sheet_heart_cost_3">ハート3個消費</string>
+    <string name="sheet_skip">質問をスキップ</string>
+    <string name="sheet_skip_desc">ハート3個消費 · 他の家族の回答閲覧可能</string>
+
+    <!-- Question Detail -->
+    <string name="detail_title">気持ちを残す</string>
+    <string name="detail_today_question">今日の質問</string>
+    <string name="detail_today_mongle">今日のモングル</string>
+    <string name="detail_select_mood">一つ選んでください</string>
+    <string name="detail_answer_placeholder">今日の感情を自由に書いてみてください。\nどんな話でも大丈夫です。</string>
+    <string name="detail_submit">回答を残す</string>
+    <string name="detail_edit_submit">回答を修正する</string>
+    <string name="detail_family_answers">家族の回答 (%d)</string>
+    <string name="detail_mood_required_title">今日のモングルを選んでください</string>
+    <string name="detail_mood_required_desc">今の気分に最も近いモングルキャラクターを選んでください</string>
+    <string name="detail_edit_confirm_title">回答を修正しますか？</string>
+    <string name="detail_edit_confirm_desc">回答を修正するとハート1個消費されます。</string>
+    <string name="detail_edit_btn">修正する</string>
+    <string name="detail_edit_ad_title">ハートが足りません</string>
+    <string name="detail_edit_ad_desc">回答を修正するにはハート1個が必要です。\n広告を見るとハートがもらえます。</string>
+    <string name="detail_edit_ad_btn">広告を見て修正する</string>
+
+    <!-- Write Question -->
+    <string name="write_title">質問を作成する</string>
+    <string name="write_section_title">自分だけの質問を作成しましょう</string>
+    <string name="write_section_desc">作成した質問は今日の質問として登録されます。</string>
+    <string name="write_field_label">質問</string>
+    <string name="write_placeholder">例）今日一番印象に残った瞬間は何ですか？</string>
+    <string name="write_submit">質問を登録する</string>
+    <string name="write_submitting">登録中…</string>
+    <string name="write_char_count">%d 文字</string>
+
+    <!-- Search -->
+    <string name="search_placeholder">回答や質問を検索</string>
+    <string name="search_clear">クリア</string>
+    <string name="search_min_length">2文字以上入力してください</string>
+    <string name="search_no_results">「%s」に一致する記録がありません</string>
+    <string name="search_result_count">%d件の記録が見つかりました</string>
+    <string name="search_empty">家族の大切な記録を検索してみましょう</string>
+
+    <!-- Notifications -->
+    <string name="notif_title">お知らせ</string>
+    <string name="notif_mark_all_read">すべて既読</string>
+    <string name="notif_delete_all">すべて削除</string>
+    <string name="notif_loading">お知らせを読み込み中…</string>
+    <string name="notif_empty_title">お知らせはありません</string>
+    <string name="notif_empty_desc">新しいニュースがあればお知らせします</string>
+    <string name="notif_time_now">たった今</string>
+    <string name="notif_time_min">%d分前</string>
+    <string name="notif_time_hour">%d時間前</string>
+    <string name="notif_time_day">%d日前</string>
+
+    <!-- Nudge -->
+    <string name="nudge_title">催促する</string>
+    <string name="nudge_today_question">今日の質問</string>
+    <string name="nudge_not_answered">%sがまだ回答していません</string>
+    <string name="nudge_hint">回答すればここですぐ確認できます</string>
+    <string name="nudge_prompt">回答を催促しましょうか？</string>
+    <string name="nudge_desc">%sに通知を送って回答を催促できます。ハート1個消費されます。</string>
+    <string name="nudge_hearts">保有ハート: %d個</string>
+    <string name="nudge_sent">催促メッセージを送りました！</string>
+    <string name="nudge_insufficient">ハートが足りません。</string>
+    <string name="nudge_watch_ad">広告を見て催促する</string>
+    <string name="nudge_send">催促する</string>
+
+    <!-- Group Select -->
+    <string name="group_color_green">緑</string>
+    <string name="group_color_yellow">黄色</string>
+    <string name="group_color_pink">ピンク</string>
+    <string name="group_color_blue">青</string>
+    <string name="group_color_orange">オレンジ</string>
+    <string name="group_max_title">グループ上限超過</string>
+    <string name="group_max_desc">グループは最大3つまで参加できます。</string>
+    <string name="group_empty">参加中のグループがありません。\n新しいスペースを作るか招待コードで参加してみましょう。</string>
+    <string name="group_create">新しいスペースを作る</string>
+    <string name="group_join">招待コードで参加する</string>
+    <string name="group_what_to_do">何をしますか？</string>
+    <string name="group_create_desc">自分だけのスペースを作りましょう</string>
+    <string name="group_join_desc">受け取った招待コードで参加してください</string>
+    <string name="group_create_title">新しいスペースを作る</string>
+    <string name="group_create_headline">私たちのモングルスペースを作りましょう</string>
+    <string name="group_create_subtitle">家族や友達と気持ちを分かち合いましょう</string>
+    <string name="group_name_label">スペース名</string>
+    <string name="group_name_placeholder">田中家</string>
+    <string name="group_name_error">スペース名を入力してください</string>
+    <string name="group_name_hint">家族、親友、カップルなど自由に！（最大10文字）</string>
+    <string name="group_nickname_label">ニックネーム</string>
+    <string name="group_nickname_placeholder">ママ</string>
+    <string name="group_nickname_error">ニックネームを入力してください</string>
+    <string name="group_nickname_hint">他のメンバーに表示される名前です</string>
+    <string name="group_color_label">モングルの色</string>
+    <string name="group_color_hint">他のメンバーに表示されるモングルキャラクターの色です</string>
+    <string name="group_create_btn">スペースを作成</string>
+    <string name="group_join_title">招待コードで参加する</string>
+    <string name="group_join_headline">招待コードを入力してください。</string>
+    <string name="group_join_subtitle">友達や家族からもらったコードを入力すると\n一緒にスペースに参加できます</string>
+    <string name="group_code_label">招待コード</string>
+    <string name="group_code_placeholder">招待コードを入力してください</string>
+    <string name="group_code_hint">大文字と数字で構成されたコードです</string>
+    <string name="group_join_btn">参加する</string>
+    <string name="group_created_title">スペースが作成されました！🎉</string>
+    <string name="group_created_desc">下のコードやリンクで友達を招待してみましょう</string>
+    <string name="group_invite_code">招待コード</string>
+    <string name="group_invite_link">招待リンク</string>
+    <string name="group_share_text">モングルで一緒に！\n招待コード: %1$s\nリンク: %2$s</string>
+    <string name="group_go_home">ホームへ</string>
+    <string name="group_code_error">招待コードを入力してください</string>
+    <string name="group_mongle_title">モングル</string>
+
+    <!-- Notification Permission -->
+    <string name="perm_notif_title">通知を許可してください 🔔</string>
+    <string name="perm_notif_desc">家族のニュースを見逃さないようにしましょう</string>
+    <string name="perm_notif_answer">メンバーが回答した時</string>
+    <string name="perm_notif_nudge">催促通知を受けた時</string>
+    <string name="perm_notif_question">新しい質問通知</string>
+    <string name="perm_notif_allow">許可する</string>
+    <string name="perm_notif_later">あとで</string>
+    <string name="perm_dnd_title">おやすみ時間 🌙</string>
+    <string name="perm_dnd_desc">就寝時間には通知を受けません</string>
+    <string name="perm_dnd_time">午後10:00 - 午前8:00</string>
+    <string name="perm_dnd_use">使用する</string>
+    <string name="perm_dnd_skip">スキップ</string>
+
+    <!-- Mood Labels -->
+    <string name="mood_happy">幸せ</string>
+    <string name="mood_calm">穏やか</string>
+    <string name="mood_loved">愛</string>
+    <string name="mood_sad">悲しみ</string>
+    <string name="mood_tired">疲れ</string>
+    <string name="mood_angry">怒り</string>
+    <string name="mood_anxious">不安</string>
+    <string name="mood_excited">ワクワク</string>
+
+    <!-- Settings/MY -->
+    <string name="settings_my">MY</string>
+    <string name="settings_profile">プロフィール</string>
+    <string name="settings_profile_edit">プロフィール編集</string>
+    <string name="settings_profile_edit_desc">名前を変更できます</string>
+    <string name="settings_mood_history">気分ヒストリー</string>
+    <string name="settings_mood_history_desc">自分の感情記録を振り返る</string>
+    <string name="settings_mongle_card">モングルカード編集</string>
+    <string name="settings_mongle_card_desc">キャラクターの名前と感情を変更できます</string>
+    <string name="settings_app_settings">アプリ設定</string>
+    <string name="settings_notifications">通知設定</string>
+    <string name="settings_notifications_desc">回答通知、リマインダー</string>
+    <string name="settings_group">グループ管理</string>
+    <string name="settings_group_desc">メンバー招待、グループ設定</string>
+    <string name="settings_account">アカウント管理</string>
+    <string name="settings_account_desc">ログアウト、退会</string>
+    <string name="settings_version">モングル v%s</string>
+    <string name="settings_name_label">名前</string>
+    <string name="settings_name_placeholder">名前入力</string>
+    <string name="settings_name_hint">他のメンバーに表示される名前です</string>
+    <string name="settings_name_cooldown">名前は週に一度だけ変更可能です（%d日後に変更可能）</string>
+    <string name="settings_mood_hint">回答修正時に色を変更できます。</string>
+    <string name="settings_logout">ログアウト</string>
+    <string name="settings_logout_desc">デバイスからログアウトします</string>
+    <string name="settings_logout_confirm">本当にログアウトしますか？</string>
+    <string name="settings_delete_account">アカウント退会</string>
+    <string name="settings_delete_account_desc">すべてのデータが削除され、復元できません</string>
+    <string name="settings_delete_confirm">退会するとすべてのデータが削除されます。\nこの操作は元に戻せません。</string>
+    <string name="settings_delete_btn">退会する</string>
+    <string name="settings_account_section">アカウント</string>
+    <string name="settings_preparing">準備中です</string>
+    <string name="settings_preparing_desc">もうすぐ気分ヒストリーを確認できます</string>
+    <string name="settings_no_group">参加中のグループはありません。</string>
+    <string name="settings_login_required_title">ログインが必要です</string>
+    <string name="settings_login_required_desc">この機能を利用するにはログインが必要です。</string>
+    <string name="settings_login_btn">ログインする</string>
+
+    <!-- Group Management -->
+    <string name="mgmt_title">グループ管理</string>
+    <string name="mgmt_invite_section">グループ招待</string>
+    <string name="mgmt_invite_desc">招待コードやリンクを共有して家族を招待しましょう</string>
+    <string name="mgmt_leave">グループを退出</string>
+    <string name="mgmt_leave_title">グループ退出</string>
+    <string name="mgmt_leave_desc">グループを退出すると全ての回答記録の接続が解除されます。</string>
+    <string name="mgmt_leave_btn">退出する</string>
+    <string name="mgmt_kick_title">%sさんを退出させますか？</string>
+    <string name="mgmt_kick_desc">このメンバーはグループから除外されます。</string>
+    <string name="mgmt_kick_btn">退出させる</string>
+    <string name="mgmt_transfer_title">管理者委任</string>
+    <string name="mgmt_transfer_desc">グループを退出する前に管理者を委任するメンバーを選択してください。</string>
+    <string name="mgmt_transfer_btn">委任して退出</string>
+    <string name="mgmt_owner">管理者</string>
+    <string name="mgmt_member_me">%s (自分)</string>
+    <string name="mgmt_members_title">メンバー</string>
+    <string name="mgmt_members_desc">このスペースに接続している人</string>
+    <string name="mgmt_kick_fallback_title">メンバー退出</string>
+    <string name="mgmt_share_invite">モングルでグループを作りました！下のリンクから参加してください。\nhttps://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/%s</string>
+
+    <!-- Notification Settings -->
+    <string name="notif_settings_title">通知設定</string>
+    <string name="notif_settings_answer">回答通知</string>
+    <string name="notif_settings_answer_desc">メンバーが回答した時</string>
+    <string name="notif_settings_answer_detail">グループメンバーが今日の質問に回答したら通知</string>
+    <string name="notif_settings_nudge">催促通知</string>
+    <string name="notif_settings_nudge_desc">催促通知を受けた時</string>
+    <string name="notif_settings_nudge_detail">メンバーから回答催促通知を受けたら通知</string>
+    <string name="notif_settings_question">システム通知</string>
+    <string name="notif_settings_question_desc">新しい質問通知</string>
+    <string name="notif_settings_question_detail">毎朝新しい質問が登録されたら通知</string>
+    <string name="notif_settings_dnd">おやすみ時間</string>
+
+    <!-- Toast Messages -->
+    <string name="toast_skip">質問をスキップしました。他の家族の回答を確認してみましょう！</string>
+    <string name="toast_write">自分だけの質問を登録しました！</string>
+    <string name="toast_nudge">催促メッセージを送りました！</string>
+    <string name="toast_edit">回答を修正しました！</string>
+    <string name="toast_answer">気持ちを残しました！</string>
+    <string name="toast_group_left">グループを退出しました</string>
+    <string name="toast_code_copied">招待コードがコピーされました</string>
+    <string name="toast_max_groups">グループは最大3つまで作成できます</string>
+    <string name="toast_already_member">すでに参加しているグループです</string>
+    <string name="toast_invalid_code">招待コードを再確認してください</string>
+
+    <!-- Error Messages -->
+    <string name="error_offline">インターネット接続を確認してください</string>
+    <string name="error_timeout">サーバーの応答に時間がかかっています</string>
+    <string name="error_unauthorized">ログインが必要です</string>
+    <string name="error_not_found">リクエストしたデータが見つかりません</string>
+    <string name="error_server">サーバーエラーが発生しました (%d)</string>
+    <string name="error_network">ネットワークエラーが発生しました</string>
+    <string name="error_decoding">データの読み込み中にエラーが発生しました</string>
+    <string name="error_unknown">不明なエラーが発生しました</string>
+
+    <!-- History -->
+    <string name="history_title">記録</string>
+    <string name="history_prev_month">前月</string>
+    <string name="history_next_month">翌月</string>
+    <string name="history_recent_mood">最近14日間の気分</string>
+    <string name="history_answer_count">%1$d/%2$d人回答</string>
+    <string name="history_no_record">この日の記録はありません</string>
+
+    <!-- Demo Characters -->
+    <string name="demo_char_1">モングルちゃん</string>
+    <string name="demo_char_2">やさしさん</string>
+    <string name="demo_char_3">ほっこりさん</string>
+    <string name="demo_char_4">あったかさん</string>
+    <string name="demo_char_5">きもちさん</string>
+</resources>
