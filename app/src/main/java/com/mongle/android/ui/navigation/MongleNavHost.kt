@@ -258,7 +258,8 @@ fun MongleNavHost(
                                 groupLeftToast = true
                                 rootViewModel.loadHomeData()
                             },
-                            answerSubmittedCount = answerSubmittedCount
+                            answerSubmittedCount = answerSubmittedCount,
+                            adManager = adManager
                         )
                     }
                 }

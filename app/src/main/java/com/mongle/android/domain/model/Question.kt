@@ -11,6 +11,7 @@ data class Question(
     val createdAt: Date = Date(),
     val dailyQuestionId: String? = null,
     val hasMyAnswer: Boolean = false,
+    val hasMySkipped: Boolean = false,
     val familyAnswerCount: Int = 0
 )
 

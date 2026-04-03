@@ -31,6 +31,7 @@ import com.mongle.android.ui.home.HomeViewModel
 import com.mongle.android.ui.root.RootUiState
 import com.mongle.android.ui.search.SearchScreen
 import com.mongle.android.ui.settings.SettingsScreen
+import com.mongle.android.util.AdManager
 
 enum class MainTab(val label: String) {
     HOME("HOME"),
@@ -51,7 +52,8 @@ fun MainTabScreen(
     onQuestionSkipped: (Int) -> Unit = {},
     onLogout: () -> Unit = {},
     onGroupLeft: () -> Unit = {},
-    answerSubmittedCount: Int = 0
+    answerSubmittedCount: Int = 0,
+    adManager: AdManager? = null
 ) {
     var selectedTab by remember { mutableStateOf(MainTab.HOME) }
     val homeViewModel: HomeViewModel = hiltViewModel()
@@ -140,7 +142,8 @@ fun MainTabScreen(
                     onNavigateToWriteQuestion = onNavigateToWriteQuestion,
                     onNavigateToGroupSelect = onNavigateToGroupSelect,
                     onGroupSelected = onGroupSelected,
-                    viewModel = homeViewModel
+                    viewModel = homeViewModel,
+                    adManager = adManager
                 )
                 MainTab.HISTORY -> HistoryScreen(
                     onNavigateToQuestionDetail = onNavigateToQuestionDetail,

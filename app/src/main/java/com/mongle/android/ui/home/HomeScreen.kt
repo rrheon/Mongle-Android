@@ -119,7 +119,8 @@ fun HomeScreen(
     onNavigateToWriteQuestion: () -> Unit,
     onNavigateToGroupSelect: () -> Unit = {},
     onGroupSelected: (java.util.UUID) -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    adManager: com.mongle.android.util.AdManager? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -445,8 +446,15 @@ fun HomeScreen(
                 MonglePopup(
                     title = stringResource(R.string.home_hearts_insufficient_title),
                     description = stringResource(R.string.home_hearts_insufficient_skip, currentHearts),
-                    primaryLabel = stringResource(R.string.common_confirm),
-                    onPrimary = { showSkipConfirmDialog = false }
+                    primaryLabel = if (adManager != null) "광고 보고 넘기기" else stringResource(R.string.common_confirm),
+                    onPrimary = {
+                        showSkipConfirmDialog = false
+                        if (adManager != null) {
+                            viewModel.watchAdForSkip(adManager)
+                        }
+                    },
+                    secondaryLabel = stringResource(R.string.common_cancel),
+                    onSecondary = { showSkipConfirmDialog = false }
                 )
             }
         }
