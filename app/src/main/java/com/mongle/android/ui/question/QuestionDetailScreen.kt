@@ -477,7 +477,14 @@ private fun FamilyAnswersSection(familyAnswers: List<FamilyAnswer>) {
 
 @Composable
 private fun FamilyAnswerItem(familyAnswer: FamilyAnswer) {
-    val index = familyAnswer.user.role.ordinal
+    val moodColor = when (familyAnswer.answer.moodId) {
+        "happy" -> MongleMonggleYellow
+        "calm" -> MongleMonggleGreenLight
+        "loved" -> MongleMongglePink
+        "sad" -> MongleMonggleBlue
+        "tired" -> MongleMonggleOrange
+        else -> MongleMongglePink
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -485,7 +492,7 @@ private fun FamilyAnswerItem(familyAnswer: FamilyAnswer) {
             .padding(MongleSpacing.md)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            MongleCharacterAvatar(name = familyAnswer.user.name, index = index, size = 36.dp)
+            MongleCharacterAvatar(name = familyAnswer.user.name, index = 0, size = 36.dp, color = moodColor)
             Spacer(modifier = Modifier.width(MongleSpacing.sm))
             Text(
                 text = familyAnswer.user.name,

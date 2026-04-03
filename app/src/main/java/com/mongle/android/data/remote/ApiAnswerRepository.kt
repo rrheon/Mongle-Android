@@ -29,6 +29,11 @@ class ApiAnswerRepository @Inject constructor(
         api.getFamilyAnswers(dailyQuestionId.toString()).answers.map { it.toDomain() }
     }
 
+    /** 가족 답변 + 각 멤버의 답변/스킵/미답변 상태 반환 */
+    suspend fun getFamilyAnswersWithStatuses(dailyQuestionId: UUID): FamilyAnswersResponse = safeCall {
+        api.getFamilyAnswers(dailyQuestionId.toString())
+    }
+
     override suspend fun getByUserAndDailyQuestion(dailyQuestionId: UUID, userId: UUID): Answer? = safeCall {
         runCatching { api.getMyAnswer(dailyQuestionId.toString()).toDomain() }.getOrNull()
     }

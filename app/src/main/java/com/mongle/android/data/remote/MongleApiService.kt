@@ -96,7 +96,6 @@ data class QuestionDto(
 )
 
 @JsonClass(generateAdapter = true)
-@JsonClass(generateAdapter = true)
 data class MemberAnswerStatusDto(
     val userId: String,
     val userName: String,
@@ -104,6 +103,7 @@ data class MemberAnswerStatusDto(
     val status: String = "not_answered" // "answered" | "skipped" | "not_answered"
 )
 
+@JsonClass(generateAdapter = true)
 data class DailyQuestionResponse(
     val id: String,
     val question: QuestionDto,
@@ -135,8 +135,10 @@ data class DailyQuestionHistoryResponse(
     val familyId: String,
     val isSkipped: Boolean = false,
     val hasMyAnswer: Boolean = false,
+    val hasMySkipped: Boolean = false,
     val familyAnswerCount: Int = 0,
-    val answers: List<HistoryAnswerSummaryDto> = emptyList()
+    val answers: List<HistoryAnswerSummaryDto> = emptyList(),
+    val memberAnswerStatuses: List<MemberAnswerStatusDto> = emptyList()
 )
 
 @JsonClass(generateAdapter = true)
@@ -222,7 +224,8 @@ data class AnswerResponse(
 data class FamilyAnswersResponse(
     val answers: List<AnswerResponse>,
     val totalCount: Int,
-    val myAnswer: AnswerResponse? = null
+    val myAnswer: AnswerResponse? = null,
+    val memberStatuses: List<MemberAnswerStatusDto> = emptyList()
 )
 
 @JsonClass(generateAdapter = true)

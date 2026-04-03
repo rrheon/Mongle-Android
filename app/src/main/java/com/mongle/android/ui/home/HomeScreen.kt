@@ -160,14 +160,20 @@ fun HomeScreen(
             val answer = uiState.memberAnswers[user.id]
             val isCurrentUser = user.id == uiState.currentUser?.id
             val hasAnswered = if (isCurrentUser) uiState.hasAnsweredToday else uiState.memberAnswerStatus[user.id] == true
+            val hasSkipped = if (isCurrentUser) uiState.hasSkippedToday else uiState.memberSkipStatus[user.id] == true
+            val memberColor = if (hasAnswered) {
+                val moodId = answer?.moodId ?: user.moodId
+                moodColor(moodId, fallbackColor)
+            } else {
+                // 미답변 시에도 user.moodId 기반 색상 사용 (그룹선택 화면과 일치)
+                moodColor(user.moodId, fallbackColor)
+            }
             SceneMemberInfo(
                 id = user.id,
                 name = user.name,
-                color = if (hasAnswered) {
-                    val moodId = answer?.moodId ?: user.moodId
-                    moodColor(moodId, fallbackColor)
-                } else fallbackColor,
-                hasAnswered = hasAnswered
+                color = memberColor,
+                hasAnswered = hasAnswered,
+                hasSkipped = hasSkipped
             )
         }
     } else {

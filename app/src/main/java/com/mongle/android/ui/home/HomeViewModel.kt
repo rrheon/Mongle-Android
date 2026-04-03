@@ -43,6 +43,8 @@ data class HomeUiState(
     val memberAnswerStatus: Map<UUID, Boolean> = emptyMap(),
     /** 각 멤버 ID별 답변 내용 (userId → Answer) */
     val memberAnswers: Map<UUID, Answer> = emptyMap(),
+    /** 각 멤버 ID별 스킵 여부 (userId → hasSkipped) */
+    val memberSkipStatus: Map<UUID, Boolean> = emptyMap(),
     val hasUnreadNotifications: Boolean = false
 ) {
     val hasFamily: Boolean get() = family != null
@@ -121,20 +123,53 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 val dailyQId = UUID.fromString(dailyQuestionId)
-                val familyAnswers = answerRepository.getByDailyQuestion(dailyQId)
-                // getFamilyAnswers API는 가족 답변만 반환하므로 현재 사용자의 답변도 별도 로드
-                val currentUserId = _uiState.value.currentUser?.id
-                val myAnswer = currentUserId?.let {
-                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
-                }
-                val allAnswers = if (myAnswer != null) familyAnswers + myAnswer else familyAnswers
-                val statusMap = allAnswers.associate { it.userId to true }
-                val answersMap = allAnswers.associateBy { it.userId }
-                _uiState.update {
-                    it.copy(
-                        memberAnswerStatus = statusMap,
-                        memberAnswers = answersMap
-                    )
+                val response = (answerRepository as? com.mongle.android.data.remote.ApiAnswerRepository)
+                    ?.getFamilyAnswersWithStatuses(dailyQId)
+
+                if (response != null) {
+                    // memberStatuses로 답변/스킵/미답변 상태 구분
+                    val statusMap = response.memberStatuses.associate { ms ->
+                        UUID.fromString(ms.userId) to (ms.status == "answered")
+                    }
+                    val skipMap = response.memberStatuses.associate { ms ->
+                        UUID.fromString(ms.userId) to (ms.status == "skipped")
+                    }
+                    val answersMap = response.answers.associateBy { UUID.fromString(it.user.id) }
+                        .mapValues { (_, ar) ->
+                            com.mongle.android.domain.model.Answer(
+                                id = UUID.fromString(ar.id),
+                                dailyQuestionId = UUID.fromString(ar.questionId),
+                                userId = UUID.fromString(ar.user.id),
+                                content = ar.content,
+                                imageUrl = ar.imageUrl,
+                                moodId = ar.moodId,
+                                createdAt = java.util.Date(),
+                                updatedAt = java.util.Date()
+                            )
+                        }
+                    _uiState.update {
+                        it.copy(
+                            memberAnswerStatus = statusMap,
+                            memberAnswers = answersMap,
+                            memberSkipStatus = skipMap
+                        )
+                    }
+                } else {
+                    // fallback: 기존 방식
+                    val familyAnswers = answerRepository.getByDailyQuestion(dailyQId)
+                    val currentUserId = _uiState.value.currentUser?.id
+                    val myAnswer = currentUserId?.let {
+                        runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
+                    }
+                    val allAnswers = if (myAnswer != null) familyAnswers + myAnswer else familyAnswers
+                    val statusMap = allAnswers.associate { it.userId to true }
+                    val answersMap = allAnswers.associateBy { it.userId }
+                    _uiState.update {
+                        it.copy(
+                            memberAnswerStatus = statusMap,
+                            memberAnswers = answersMap
+                        )
+                    }
                 }
             }
         }
@@ -179,6 +214,8 @@ class HomeViewModel @Inject constructor(
 
     fun onAnswerSubmitted() {
         _uiState.update { it.copy(hasAnsweredToday = true) }
+        // 답변 제출 후 가족 답변 목록 새로고침
+        _uiState.value.todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it) }
     }
 
     fun onMemberTapped(member: User) {

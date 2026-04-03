@@ -209,7 +209,8 @@ data class SceneMemberInfo(
     val id: UUID,
     val name: String,
     val color: Color,
-    val hasAnswered: Boolean
+    val hasAnswered: Boolean,
+    val hasSkipped: Boolean = false
 )
 
 /** 씬 내부 상태 (mutable) */
@@ -507,6 +508,7 @@ private fun AnimatedSceneMemberBox(
             name = member.name,
             color = member.color,
             hasAnswered = member.hasAnswered,
+            hasSkipped = member.hasSkipped,
             isCurrentUser = member.id == currentUserId,
             hasCurrentUserAnswered = hasCurrentUserAnswered,
             hasCurrentUserSkipped = hasCurrentUserSkipped
@@ -519,6 +521,7 @@ private fun SceneMongleItem(
     name: String,
     color: Color,
     hasAnswered: Boolean,
+    hasSkipped: Boolean = false,
     isCurrentUser: Boolean,
     hasCurrentUserAnswered: Boolean,
     hasCurrentUserSkipped: Boolean = false
@@ -594,43 +597,66 @@ private fun SceneMongleItem(
                 }
             }
         } else {
-            if (hasAnswered) {
-                Row(
-                    modifier = Modifier
-                        .background(Color(0xFF7CC8A0).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(10.dp)
-                    )
-                    Text(
-                        text = " 답변완료",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White
-                    )
+            when {
+                hasAnswered -> {
+                    Row(
+                        modifier = Modifier
+                            .background(Color(0xFF7CC8A0).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = " 답변완료",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
                 }
-            } else {
-                Row(
-                    modifier = Modifier
-                        .background(Color.Gray.copy(alpha = 0.4f), RoundedCornerShape(50.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(10.dp)
-                    )
-                    Text(
-                        text = " 미답변",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White
-                    )
+                hasSkipped -> {
+                    Row(
+                        modifier = Modifier
+                            .background(Color(0xFF9C27B0).copy(alpha = 0.7f), RoundedCornerShape(50.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = " 질문 넘김",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
+                }
+                else -> {
+                    Row(
+                        modifier = Modifier
+                            .background(Color.Gray.copy(alpha = 0.4f), RoundedCornerShape(50.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Text(
+                            text = " 미답변",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
