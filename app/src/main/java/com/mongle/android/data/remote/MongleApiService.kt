@@ -253,7 +253,8 @@ data class NotificationDto(
     val title: String,
     val body: String,
     val isRead: Boolean,
-    val createdAt: String
+    val createdAt: String,
+    val colorId: String? = null
 )
 
 @JsonClass(generateAdapter = true)

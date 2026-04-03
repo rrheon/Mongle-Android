@@ -66,6 +66,11 @@ import com.mongle.android.ui.theme.MongleAccentCoralLight
 import com.mongle.android.ui.theme.MongleInfo
 import com.mongle.android.ui.theme.MongleMoodHappy
 import com.mongle.android.ui.theme.MongleMoodHappyLight
+import com.mongle.android.ui.theme.MongleMonggleBlue
+import com.mongle.android.ui.theme.MongleMonggleGreenLight
+import com.mongle.android.ui.theme.MongleMonggleOrange
+import com.mongle.android.ui.theme.MongleMongglePink
+import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MongleMoodLovedLight
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MonglePrimaryLight
@@ -257,7 +262,7 @@ private fun NotificationCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 타입별 아이콘 (iOS 동일)
-        NotificationTypeIcon(type = notification.type)
+        NotificationTypeIcon(type = notification.type, colorId = notification.colorId)
 
         Spacer(modifier = Modifier.width(12.dp))
 
@@ -290,19 +295,30 @@ private fun NotificationCard(
     }
 }
 
+// colorId(moodId)에 따른 몽글 캐릭터 색상
+private fun moodColorForNotification(colorId: String?): Color = when (colorId) {
+    "happy" -> MongleMonggleYellow
+    "calm" -> MongleMonggleGreenLight
+    "loved" -> MongleMongglePink
+    "sad" -> MongleMonggleBlue
+    "tired" -> MongleMonggleOrange
+    else -> MongleMoodHappy // 기본값
+}
+
 // iOS 기준: 타입별 아이콘 + 배경색 분리
 @Composable
-private fun NotificationTypeIcon(type: String) {
+private fun NotificationTypeIcon(type: String, colorId: String? = null) {
     when (type) {
         "member_answered" -> {
-            // iOS: 노란 그라데이션 + 눈 2개 (몽글 캐릭터)
+            // 몽글 캐릭터 — 답변자의 colorId(moodId)에 따른 색상
+            val characterColor = moodColorForNotification(colorId)
             val eyeSize = 44.dp * 0.18f
             val eyeOffset = 44.dp * 0.14f
             Box(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(MongleMoodHappy),
+                    .background(characterColor),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
