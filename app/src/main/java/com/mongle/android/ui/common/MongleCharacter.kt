@@ -219,6 +219,7 @@ private data class SceneMember(
     val name: String,
     val color: Color,
     var hasAnswered: Boolean,
+    var hasSkipped: Boolean = false,
     var x: Float,
     var y: Float,
     var targetX: Float,
@@ -255,6 +256,7 @@ private fun initSceneMembers(
             name = info.name,
             color = info.color,
             hasAnswered = info.hasAnswered,
+            hasSkipped = info.hasSkipped,
             x = px, y = py,
             targetX = randomInRange(wallPadding, width - wallPadding),
             targetY = randomInRange(minY, height - wallPadding)
