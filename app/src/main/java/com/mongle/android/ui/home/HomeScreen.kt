@@ -622,7 +622,7 @@ private fun HomeTopBar(
                     if (hasNotification) {
                         Box(
                             modifier = Modifier
-                                .size(8.dp)
+                                .size(6.dp)
                                 .background(Color.Red, CircleShape)
                                 .align(Alignment.TopEnd)
                         )

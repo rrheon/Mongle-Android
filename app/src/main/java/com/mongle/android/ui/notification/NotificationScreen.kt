@@ -308,7 +308,7 @@ private fun moodColorForNotification(colorId: String?): Color = when (colorId) {
 // iOS 기준: 타입별 아이콘 + 배경색 분리
 @Composable
 private fun NotificationTypeIcon(type: String, colorId: String? = null) {
-    when (type) {
+    when (type.lowercase()) {
         "member_answered" -> {
             // 몽글 캐릭터 — 답변자의 colorId(moodId)에 따른 색상
             val characterColor = moodColorForNotification(colorId)
@@ -359,7 +359,7 @@ private fun NotificationTypeIcon(type: String, colorId: String? = null) {
 
 private data class NotifStyle(val bg: Color, val icon: ImageVector, val tint: Color)
 
-private fun notificationTypeStyle(type: String): NotifStyle = when (type) {
+private fun notificationTypeStyle(type: String): NotifStyle = when (type.lowercase()) {
     "new_question" -> NotifStyle(Color(0xFFE3F2FD), Icons.Default.QuestionMark, MongleInfo)
     "all_answered" -> NotifStyle(Color(0xFFEDF7F0), Icons.Default.CheckCircle, MongleSuccessLight)
     "answer_request" -> NotifStyle(Color(0xFFFFF3E0), Icons.Default.Campaign, MongleWarning)

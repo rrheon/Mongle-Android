@@ -127,7 +127,7 @@ fun MongleNavHost(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(MongleSpacing.lg)
                 ) {
-                    MongleLogo(size = MongleLogoSize.LARGE)
+                    MongleLogo(size = MongleLogoSize.MEDIUM)
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
@@ -143,19 +143,24 @@ fun MongleNavHost(
         }
 
         AppState.GroupSelection -> {
-            GroupSelectScreen(
-                pendingInviteCode = uiState.pendingInviteCode,
-                showGroupLeftToast = groupLeftToast,
-                onGroupSelected = { familyId ->
-                    groupLeftToast = false
-                    rootViewModel.onGroupSelected(familyId)
-                },
-                onCreatedOrJoined = {
-                    groupLeftToast = false
-                    rootViewModel.onGroupCreatedOrJoined()
-                },
-                onPendingCodeConsumed = { rootViewModel.clearPendingInviteCode() }
-            )
+            if (showNotifications) {
+                NotificationScreen(onBack = { showNotifications = false })
+            } else {
+                GroupSelectScreen(
+                    pendingInviteCode = uiState.pendingInviteCode,
+                    showGroupLeftToast = groupLeftToast,
+                    onGroupSelected = { familyId ->
+                        groupLeftToast = false
+                        rootViewModel.onGroupSelected(familyId)
+                    },
+                    onCreatedOrJoined = {
+                        groupLeftToast = false
+                        rootViewModel.onGroupCreatedOrJoined()
+                    },
+                    onPendingCodeConsumed = { rootViewModel.clearPendingInviteCode() },
+                    onNotificationClick = { showNotifications = true }
+                )
+            }
         }
 
         AppState.Authenticated -> {

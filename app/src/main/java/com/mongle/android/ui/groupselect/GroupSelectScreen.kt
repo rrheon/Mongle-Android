@@ -143,6 +143,7 @@ fun GroupSelectScreen(
     onGroupSelected: (UUID) -> Unit,
     onCreatedOrJoined: () -> Unit,
     onPendingCodeConsumed: () -> Unit = {},
+    onNotificationClick: () -> Unit = {},
     viewModel: GroupSelectViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -208,7 +209,8 @@ fun GroupSelectScreen(
                 onBack = onBack,
                 onGroupSelected = onGroupSelected,
                 onCreateClick = { viewModel.goToCreate() },
-                onJoinClick = { viewModel.goToJoin() }
+                onJoinClick = { viewModel.goToJoin() },
+                onNotificationClick = onNotificationClick
             )
             GroupSelectStep.CREATE -> CreateStep(
                 groupName = uiState.groupName,
@@ -385,7 +387,8 @@ private fun SelectStep(
     onBack: (() -> Unit)? = null,
     onGroupSelected: (UUID) -> Unit,
     onCreateClick: () -> Unit,
-    onJoinClick: () -> Unit
+    onJoinClick: () -> Unit,
+    onNotificationClick: () -> Unit = {}
 ) {
     var showActionSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
@@ -402,16 +405,17 @@ private fun SelectStep(
                 .fillMaxWidth()
                 .height(56.dp)
                 .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = MongleSpacing.md),
+                .padding(horizontal = MongleSpacing.md)
+                .padding(top = MongleSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = stringResource(R.string.group_mongle_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MonglePrimary
+                color = MongleTextPrimary
             )
-            IconButton(onClick = {}) {
+            IconButton(onClick = onNotificationClick) {
                 Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.home_notifications), tint = MongleTextPrimary)
             }
         }
