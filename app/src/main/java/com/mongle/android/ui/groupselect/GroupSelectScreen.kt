@@ -466,11 +466,11 @@ private fun SelectStep(
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(MonglePrimaryLight, CircleShape),
+                        .background(MonglePrimary, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null,
-                        tint = MonglePrimary, modifier = Modifier.size(18.dp))
+                        tint = Color.White, modifier = Modifier.size(18.dp))
                 }
                 Spacer(modifier = Modifier.width(MongleSpacing.md))
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

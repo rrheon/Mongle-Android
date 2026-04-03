@@ -324,14 +324,14 @@ private fun NotificationTypeIcon(type: String, colorId: String? = null) {
                 Box(
                     modifier = Modifier
                         .size(eyeSize + 2.dp)
-                        .offset(x = -eyeOffset, y = -(eyeSize * 0.3f))
+                        .offset(x = -eyeOffset, y = eyeSize * 0.2f)
                         .background(Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) { Box(Modifier.size(eyeSize).background(Color.Black, CircleShape)) }
                 Box(
                     modifier = Modifier
                         .size(eyeSize + 2.dp)
-                        .offset(x = eyeOffset, y = -(eyeSize * 0.3f))
+                        .offset(x = eyeOffset, y = eyeSize * 0.2f)
                         .background(Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) { Box(Modifier.size(eyeSize).background(Color.Black, CircleShape)) }

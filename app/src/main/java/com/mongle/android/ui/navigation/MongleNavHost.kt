@@ -242,7 +242,8 @@ fun MongleNavHost(
                             onCreatedOrJoined = {
                                 showGroupSelect = false
                                 rootViewModel.onGroupCreatedOrJoined()
-                            }
+                            },
+                            onNotificationClick = { showNotifications = true }
                         )
                     }
                     else -> {
