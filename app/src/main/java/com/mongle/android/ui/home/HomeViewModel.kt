@@ -7,10 +7,12 @@ import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
+import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.repository.AnswerRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
+import com.mongle.android.util.AdManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +62,7 @@ class HomeViewModel @Inject constructor(
     private val mongleRepository: MongleRepository,
     private val treeRepository: TreeRepository,
     private val answerRepository: AnswerRepository,
+    private val userRepository: ApiUserRepository,
     private val notificationRepository: com.mongle.android.data.remote.ApiNotificationRepository
 ) : ViewModel() {
 
@@ -236,6 +239,28 @@ class HomeViewModel @Inject constructor(
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "질문 넘기기에 실패했습니다.") }
                 }
         }
+    }
+
+    fun watchAdForSkip(adManager: AdManager) {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        adManager.showRewardedAd(
+            onRewarded = {
+                viewModelScope.launch {
+                    try {
+                        val heartsAfterAd = userRepository.grantAdHearts(3)
+                        _uiState.update {
+                            it.copy(currentUser = it.currentUser?.copy(hearts = heartsAfterAd))
+                        }
+                        skipQuestion()
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = "광고 보상 지급에 실패했습니다.") }
+                    }
+                }
+            },
+            onFailed = {
+                _uiState.update { it.copy(isLoading = false, errorMessage = "광고를 불러올 수 없습니다.") }
+            }
+        )
     }
 
     fun updateHearts(hearts: Int) {

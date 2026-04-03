@@ -181,6 +181,7 @@ class RootViewModel @Inject constructor(
                             familyMembers = members,
                             allFamilies = allFamilies,
                             hasAnsweredToday = question?.hasMyAnswer ?: false,
+                            hasSkippedToday = question?.hasMySkipped ?: false,
                             dailyHeartGranted = dailyHeart?.heartsGranted ?: 0,
                             currentUser = syncedUser
                         )

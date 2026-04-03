@@ -28,6 +28,7 @@ class ApiQuestionRepository @Inject constructor(
     private fun QuestionDto.toDomain(
         dailyQuestionId: String? = null,
         hasMyAnswer: Boolean = false,
+        hasMySkipped: Boolean = false,
         familyAnswerCount: Int = 0
     ): Question = Question(
         id = runCatching { UUID.fromString(id) }.getOrElse { UUID.randomUUID() },
@@ -37,6 +38,7 @@ class ApiQuestionRepository @Inject constructor(
         createdAt = Date(),
         dailyQuestionId = dailyQuestionId,
         hasMyAnswer = hasMyAnswer,
+        hasMySkipped = hasMySkipped,
         familyAnswerCount = familyAnswerCount
     )
 
@@ -54,6 +56,7 @@ class ApiQuestionRepository @Inject constructor(
         response.question.toDomain(
             dailyQuestionId = response.id,
             hasMyAnswer = response.hasMyAnswer,
+            hasMySkipped = response.hasMySkipped,
             familyAnswerCount = response.familyAnswerCount
         )
     }
