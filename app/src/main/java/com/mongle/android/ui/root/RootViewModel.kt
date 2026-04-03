@@ -334,4 +334,22 @@ class RootViewModel @Inject constructor(
     fun refreshData() {
         loadHomeData()
     }
+
+    /** 그룹 탈퇴 후 즉시 GroupSelection 화면으로 전환 */
+    fun onGroupLeft() {
+        viewModelScope.launch {
+            val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
+            _uiState.update {
+                it.copy(
+                    appState = AppState.GroupSelection,
+                    family = null,
+                    familyMembers = emptyList(),
+                    allFamilies = allFamilies,
+                    todayQuestion = null,
+                    hasAnsweredToday = false,
+                    hasSkippedToday = false
+                )
+            }
+        }
+    }
 }

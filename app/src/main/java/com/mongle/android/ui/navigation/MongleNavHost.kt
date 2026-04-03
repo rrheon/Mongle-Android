@@ -256,7 +256,7 @@ fun MongleNavHost(
                             onLogout = { rootViewModel.logout() },
                             onGroupLeft = {
                                 groupLeftToast = true
-                                rootViewModel.loadHomeData()
+                                rootViewModel.onGroupLeft()
                             },
                             answerSubmittedCount = answerSubmittedCount,
                             adManager = adManager
