@@ -554,10 +554,10 @@ private fun ActionSheetRow(
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .background(MonglePrimaryLight, CircleShape),
+                .background(MonglePrimary, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = MonglePrimary, modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
         }
         Spacer(modifier = Modifier.width(MongleSpacing.md))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -1156,7 +1156,7 @@ private fun CopyPillButton(isCopied: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(MongleRadius.full))
-            .background(if (isCopied) MonglePrimary.copy(alpha = 0.12f) else MonglePrimaryLight)
+            .background(if (isCopied) MonglePrimary.copy(alpha = 0.8f) else MonglePrimary)
             .clickable(onClick = onClick)
             .padding(horizontal = MongleSpacing.sm, vertical = MongleSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
@@ -1165,13 +1165,13 @@ private fun CopyPillButton(isCopied: Boolean, onClick: () -> Unit) {
         Icon(
             imageVector = if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
             contentDescription = null,
-            tint = MonglePrimary,
+            tint = Color.White,
             modifier = Modifier.size(14.dp)
         )
         Text(
             text = if (isCopied) stringResource(R.string.common_copied) else stringResource(R.string.common_copy),
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = MonglePrimary
+            color = Color.White
         )
     }
 }
