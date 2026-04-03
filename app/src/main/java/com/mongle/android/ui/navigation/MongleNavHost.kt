@@ -144,7 +144,18 @@ fun MongleNavHost(
 
         AppState.GroupSelection -> {
             if (showNotifications) {
-                NotificationScreen(onBack = { showNotifications = false })
+                NotificationScreen(
+                    onBack = { showNotifications = false },
+                    allFamilies = uiState.allFamilies,
+                    currentFamilyId = null,
+                    onNotificationTap = { notification ->
+                        showNotifications = false
+                        val familyId = notification.familyId
+                        if (familyId != null) {
+                            rootViewModel.onGroupSelected(java.util.UUID.fromString(familyId))
+                        }
+                    }
+                )
             } else {
                 GroupSelectScreen(
                     pendingInviteCode = uiState.pendingInviteCode,
@@ -208,7 +219,22 @@ fun MongleNavHost(
                         )
                     }
                     showNotifications -> {
-                        NotificationScreen(onBack = { showNotifications = false })
+                        NotificationScreen(
+                            onBack = { showNotifications = false },
+                            allFamilies = uiState.allFamilies,
+                            currentFamilyId = uiState.family?.id,
+                            onNotificationTap = { notification ->
+                                showNotifications = false
+                                when (notification.type.lowercase()) {
+                                    "answer_request", "new_question" -> {
+                                        uiState.todayQuestion?.let { showQuestionDetail = it }
+                                    }
+                                    "member_answered" -> {
+                                        uiState.todayQuestion?.let { showQuestionDetail = it }
+                                    }
+                                }
+                            }
+                        )
                     }
                     showNudgeTarget != null && adManager != null -> {
                         PeerNudgeScreen(

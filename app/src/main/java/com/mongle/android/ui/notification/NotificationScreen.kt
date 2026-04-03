@@ -90,6 +90,9 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun NotificationScreen(
     onBack: () -> Unit,
+    allFamilies: List<com.mongle.android.domain.model.MongleGroup> = emptyList(),
+    currentFamilyId: java.util.UUID? = null,
+    onNotificationTap: (AppNotification) -> Unit = {},
     viewModel: NotificationViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -187,64 +190,138 @@ fun NotificationScreen(
                 }
             }
             else -> {
-                PullToRefreshBox(
-                    isRefreshing = uiState.isLoading,
-                    onRefresh = { viewModel.loadNotifications() },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(uiState.notifications, key = { it.id }) { notification ->
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { value ->
-                                    if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        viewModel.onDeleteNotification(notification.id)
-                                        true
-                                    } else false
-                                }
+                // 현재 그룹 필터 적용
+                val filtered = if (currentFamilyId != null) {
+                    uiState.notifications.filter { it.familyId == currentFamilyId.toString() }
+                } else {
+                    uiState.notifications
+                }
+
+                if (filtered.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.NotificationsOff,
+                                contentDescription = null,
+                                modifier = Modifier.size(56.dp),
+                                tint = MongleTextHint
                             )
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                enableDismissFromStartToEnd = false,
-                                backgroundContent = {
-                                    val color by animateColorAsState(
-                                        if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart)
-                                            MaterialTheme.colorScheme.error
-                                        else Color.Transparent,
-                                        label = "swipe_bg"
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(color)
-                                            .padding(end = 20.dp),
-                                        contentAlignment = Alignment.CenterEnd
-                                    ) {
+                            Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                            Text(
+                                text = stringResource(R.string.notif_empty_title),
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = MongleTextPrimary
+                            )
+                        }
+                    }
+                } else {
+                    PullToRefreshBox(
+                        isRefreshing = uiState.isLoading,
+                        onRefresh = { viewModel.loadNotifications() },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            if (currentFamilyId == null && allFamilies.isNotEmpty()) {
+                                // 그룹별 섹션으로 표시
+                                val grouped = filtered.groupBy { it.familyId }
+                                for (family in allFamilies) {
+                                    val familyNotifs = grouped[family.id.toString()] ?: continue
+                                    if (familyNotifs.isEmpty()) continue
+                                    // 섹션 헤더
+                                    item(key = "header_${family.id}") {
                                         Text(
-                                            text = stringResource(R.string.common_delete),
-                                            color = Color.White,
-                                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                                            text = family.name,
+                                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                            color = MongleTextSecondary,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFFF2F2F2))
+                                                .padding(horizontal = 20.dp, vertical = 8.dp)
                                         )
                                     }
-                                },
-                                content = {
-                                    NotificationCard(
-                                        notification = notification,
-                                        onClick = { viewModel.onMarkAsRead(notification.id) }
-                                    )
+                                    items(familyNotifs, key = { it.id }) { notification ->
+                                        NotificationSwipeItem(notification, viewModel, onNotificationTap)
+                                    }
                                 }
-                            )
-                            HorizontalDivider(
-                                modifier = Modifier.padding(start = 76.dp),
-                                color = Color(0xFFE0E0E0)
-                            )
+                                // familyId가 null인 알림
+                                val ungrouped = grouped[null]
+                                if (!ungrouped.isNullOrEmpty()) {
+                                    items(ungrouped, key = { it.id }) { notification ->
+                                        NotificationSwipeItem(notification, viewModel, onNotificationTap)
+                                    }
+                                }
+                            } else {
+                                // 단일 그룹 또는 그룹 정보 없을 때 플랫 리스트
+                                items(filtered, key = { it.id }) { notification ->
+                                    NotificationSwipeItem(notification, viewModel, onNotificationTap)
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotificationSwipeItem(
+    notification: AppNotification,
+    viewModel: NotificationViewModel,
+    onNotificationTap: (AppNotification) -> Unit
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                viewModel.onDeleteNotification(notification.id)
+                true
+            } else false
+        }
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            val color by animateColorAsState(
+                if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart)
+                    MaterialTheme.colorScheme.error
+                else Color.Transparent,
+                label = "swipe_bg"
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(end = 20.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Text(
+                    text = stringResource(R.string.common_delete),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                )
+            }
+        },
+        content = {
+            NotificationCard(
+                notification = notification,
+                onClick = {
+                    viewModel.onMarkAsRead(notification.id)
+                    onNotificationTap(notification)
+                }
+            )
+        }
+    )
+    HorizontalDivider(
+        modifier = Modifier.padding(start = 76.dp),
+        color = Color(0xFFE0E0E0)
+    )
 }
 
 @Composable

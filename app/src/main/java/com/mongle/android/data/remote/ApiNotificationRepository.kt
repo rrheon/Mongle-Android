@@ -11,7 +11,8 @@ data class AppNotification(
     val body: String,
     val isRead: Boolean,
     val createdAt: String,
-    val colorId: String? = null
+    val colorId: String? = null,
+    val familyId: String? = null
 )
 
 @Singleton
@@ -50,6 +51,7 @@ class ApiNotificationRepository @Inject constructor(
         body = body,
         isRead = isRead,
         createdAt = createdAt,
-        colorId = colorId
+        colorId = colorId,
+        familyId = familyId
     )
 }
