@@ -56,6 +56,7 @@ sealed class HomeEvent {
     data class ShowPeerAnswer(val member: User, val memberIndex: Int, val answer: Answer) : HomeEvent()
     data class ShowAnswerFirstToView(val memberName: String) : HomeEvent()
     data class ShowNudgeUnavailable(val memberName: String) : HomeEvent()
+    data class ShowError(val message: String) : HomeEvent()
 }
 
 @HiltViewModel
@@ -89,6 +90,7 @@ class HomeViewModel @Inject constructor(
         hasAnsweredToday: Boolean,
         hasSkippedToday: Boolean = false
     ) {
+        val questionChanged = _uiState.value.todayQuestion?.dailyQuestionId != todayQuestion?.dailyQuestionId
         _uiState.update {
             it.copy(
                 todayQuestion = todayQuestion,
@@ -100,8 +102,9 @@ class HomeViewModel @Inject constructor(
                 currentUser = currentUser,
                 hasAnsweredToday = hasAnsweredToday,
                 hasSkippedToday = hasSkippedToday,
-                memberAnswerStatus = emptyMap(),
-                memberAnswers = emptyMap()
+                // 질문이 바뀐 경우에만 리셋, 아니면 기존 답변 상태 유지
+                memberAnswerStatus = if (questionChanged) emptyMap() else it.memberAnswerStatus,
+                memberAnswers = if (questionChanged) emptyMap() else it.memberAnswers
             )
         }
         // 오늘의 질문이 있으면 가족 답변 상태 로드
@@ -195,11 +198,15 @@ class HomeViewModel @Inject constructor(
                     it.copy(
                         isRefreshing = false,
                         todayQuestion = question,
+                        hasAnsweredToday = question?.hasMyAnswer ?: false,
+                        hasSkippedToday = question?.hasMySkipped ?: false,
                         familyTree = tree ?: TreeProgress(),
                         family = familyResult?.first,
                         familyMembers = familyResult?.second ?: emptyList()
                     )
                 }
+                // 답변 상태도 함께 새로고침
+                question?.dailyQuestionId?.let { loadFamilyAnswers(it) }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isRefreshing = false, errorMessage = e.message)
@@ -273,13 +280,14 @@ class HomeViewModel @Inject constructor(
                     _skipEvents.emit(heartsRemaining)
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "질문 넘기기에 실패했습니다.") }
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.emit(HomeEvent.ShowError(e.message ?: ""))
                 }
         }
     }
 
     fun watchAdForSkip(adManager: AdManager) {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        _uiState.update { it.copy(isLoading = true) }
         adManager.showRewardedAd(
             onRewarded = {
                 viewModelScope.launch {
@@ -290,12 +298,16 @@ class HomeViewModel @Inject constructor(
                         }
                         skipQuestion()
                     } catch (e: Exception) {
-                        _uiState.update { it.copy(isLoading = false, errorMessage = "광고 보상 지급에 실패했습니다.") }
+                        _uiState.update { it.copy(isLoading = false) }
+                        _events.emit(HomeEvent.ShowError(e.message ?: "ad_reward_failed"))
                     }
                 }
             },
             onFailed = {
-                _uiState.update { it.copy(isLoading = false, errorMessage = "광고를 불러올 수 없습니다.") }
+                viewModelScope.launch {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.emit(HomeEvent.ShowError("ad_load_failed"))
+                }
             }
         )
     }

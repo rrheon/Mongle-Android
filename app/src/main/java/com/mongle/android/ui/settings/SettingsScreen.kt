@@ -136,6 +136,10 @@ fun SettingsScreen(
                 SettingsEvent.AccountDeleted -> onAccountDeleted()
                 SettingsEvent.LeftGroup -> {
                     navController.popBackStack("my", inclusive = false)
+                    toastData = MongleToastData(
+                        message = MongleToastType.GROUP_LEFT.defaultMessage,
+                        type = MongleToastType.GROUP_LEFT
+                    )
                     onGroupLeft()
                 }
                 is SettingsEvent.CopiedInviteCode -> {
@@ -171,8 +175,6 @@ fun SettingsScreen(
                         viewModel.onEditProfileTapped()
                         navController.navigate("profile_edit")
                     },
-                    onMoodHistoryTapped = { navController.navigate("mood_history") },
-                    onMongleCardEditTapped = { navController.navigate("mongle_card_edit") },
                     onNotificationsTapped = { navController.navigate("notifications") },
                     onGroupManagementTapped = { navController.navigate("group_management") },
                     onAccountManagementTapped = { navController.navigate("account_management") }
@@ -242,16 +244,6 @@ fun SettingsScreen(
                     onDeleteAccountCancelled = viewModel::onDeleteAccountCancelled
                 )
             }
-            composable("mood_history") {
-                MoodHistoryScreen(onBack = { navController.popBackStack() })
-            }
-            composable("mongle_card_edit") {
-                MongleCardEditScreen(
-                    uiState = uiState,
-                    onBack = { navController.popBackStack() },
-                    onSave = { navController.popBackStack() }
-                )
-            }
         }
 
         MongleToastHost(
@@ -267,8 +259,6 @@ fun SettingsScreen(
 private fun MyScreen(
     uiState: SettingsUiState,
     onProfileEditTapped: () -> Unit,
-    onMoodHistoryTapped: () -> Unit,
-    onMongleCardEditTapped: () -> Unit,
     onNotificationsTapped: () -> Unit,
     onGroupManagementTapped: () -> Unit,
     onAccountManagementTapped: () -> Unit
@@ -322,22 +312,6 @@ private fun MyScreen(
                         title = stringResource(R.string.settings_profile_edit),
                         subtitle = stringResource(R.string.settings_profile_edit_desc),
                         onClick = onProfileEditTapped
-                    ),
-                    SettingsRowData(
-                        icon = Icons.Default.Timeline,
-                        iconBgColor = MonglePrimaryLight,
-                        iconTint = MonglePrimary,
-                        title = stringResource(R.string.settings_mood_history),
-                        subtitle = stringResource(R.string.settings_mood_history_desc),
-                        onClick = onMoodHistoryTapped
-                    ),
-                    SettingsRowData(
-                        icon = Icons.Default.Edit,
-                        iconBgColor = MonglePrimaryLight,
-                        iconTint = MonglePrimary,
-                        title = stringResource(R.string.settings_mongle_card),
-                        subtitle = stringResource(R.string.settings_mongle_card_desc),
-                        onClick = onMongleCardEditTapped
                     )
                 )
             )
@@ -658,7 +632,7 @@ private fun TransferAdminScreen(
                         horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md)
                     ) {
                         MoodCircle(
-                            color = monggleColors[(index + 1) % monggleColors.size],
+                            color = moodColorFor(member.moodId, index + 1),
                             size = 40.dp
                         )
                         Text(
@@ -910,10 +884,6 @@ private fun MembersSection(
 ) {
     if (members.isEmpty()) return
 
-    val monggleColors = listOf(
-        MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
-    )
-
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(MongleSpacing.sm)
@@ -934,7 +904,7 @@ private fun MembersSection(
                     horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md)
                 ) {
                     MoodCircle(
-                        color = monggleColors[index % monggleColors.size],
+                        color = moodColorFor(member.moodId, index),
                         size = 40.dp
                     )
 
@@ -1148,114 +1118,6 @@ private fun AccountRow(
             tint = MongleTextHint,
             modifier = Modifier.size(16.dp)
         )
-    }
-}
-
-// ── 기분 히스토리 화면 ───────────────────────────────────────────────────────
-
-@Composable
-private fun MoodHistoryScreen(onBack: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        SettingsNavigationHeader(title = stringResource(R.string.settings_mood_history), onBack = onBack)
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = stringResource(R.string.settings_preparing),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MongleTextPrimary
-            )
-            Spacer(modifier = Modifier.height(MongleSpacing.xs))
-            Text(
-                text = stringResource(R.string.settings_preparing_desc),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MongleTextHint
-            )
-        }
-    }
-}
-
-// ── 몽글 카드 편집 화면 ──────────────────────────────────────────────────────
-
-@Composable
-private fun MongleCardEditScreen(
-    uiState: SettingsUiState,
-    onBack: () -> Unit,
-    onSave: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        SettingsNavigationHeader(
-            title = stringResource(R.string.settings_mongle_card),
-            onBack = onBack,
-            rightContent = {
-                TextButton(onClick = onSave) {
-                    Text(
-                        text = stringResource(R.string.common_save),
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MonglePrimary
-                    )
-                }
-            }
-        )
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
-                .padding(top = 28.dp, bottom = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(28.dp)
-        ) {
-            // 아바타 미리보기
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                MoodCircle(
-                    color = moodColorFor(uiState.currentUser?.moodId, uiState.currentUser?.role?.ordinal ?: 0),
-                    size = 80.dp
-                )
-                Text(
-                    text = stringResource(R.string.settings_mood_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MongleTextHint
-                )
-            }
-
-            // 이름 입력
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_name_label),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MongleTextPrimary
-                )
-                MongleTextField(
-                    value = uiState.currentUser?.name ?: "",
-                    onValueChange = { /* 편집 기능은 향후 구현 */ },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = stringResource(R.string.settings_name_placeholder),
-                    enabled = false
-                )
-            }
-        }
     }
 }
 

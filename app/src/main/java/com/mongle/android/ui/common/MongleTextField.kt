@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
 import com.mongle.android.ui.theme.MongleRadius
+import com.mongle.android.ui.theme.MongleTextHint
 
 @Composable
 fun MongleTextField(
@@ -38,7 +39,7 @@ fun MongleTextField(
             Text(
                 text = placeholder,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MongleTextHint
             )
         },
         label = label?.let { { Text(text = it) } },

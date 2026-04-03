@@ -64,6 +64,10 @@
     <string name="home_hearts_insufficient_title">Not enough hearts</string>
     <string name="home_hearts_insufficient_write">You need 3 hearts to write a question.\nCurrent hearts: %d</string>
     <string name="home_hearts_insufficient_skip">You need 3 hearts to skip.\nCurrent hearts: %d</string>
+    <string name="home_watch_ad_skip">Watch ad and skip</string>
+    <string name="error_already_answered_skip">You cannot skip a question you\'ve already answered</string>
+    <string name="error_already_skipped">You\'ve already skipped this question</string>
+    <string name="error_skip_failed">Failed to skip the question</string>
 
     <!-- Question Sheet -->
     <string name="sheet_title">Today\'s Question</string>

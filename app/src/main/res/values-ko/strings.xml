@@ -64,6 +64,10 @@
     <string name="home_hearts_insufficient_title">하트가 부족해요</string>
     <string name="home_hearts_insufficient_write">질문을 작성하려면 하트 3개가 필요해요.\n현재 하트: %d개</string>
     <string name="home_hearts_insufficient_skip">질문을 넘기려면 하트 3개가 필요해요.\n현재 하트: %d개</string>
+    <string name="home_watch_ad_skip">광고 보고 넘기기</string>
+    <string name="error_already_answered_skip">이미 답변한 질문은 넘길 수 없어요</string>
+    <string name="error_already_skipped">이미 질문을 넘겼어요</string>
+    <string name="error_skip_failed">질문 넘기기에 실패했어요</string>
 
     <!-- Question Sheet -->
     <string name="sheet_title">오늘의 질문</string>

@@ -48,8 +48,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +68,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -88,6 +93,9 @@ import com.mongle.android.ui.theme.MongleMonggleYellow
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleSpacing
 import com.mongle.android.ui.theme.MongleTextHint
+import com.mongle.android.ui.common.MongleToastData
+import com.mongle.android.ui.common.MongleToastOverlay
+import com.mongle.android.ui.common.MongleToastType
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import androidx.compose.ui.res.stringResource
@@ -123,6 +131,7 @@ fun HomeScreen(
     adManager: com.mongle.android.util.AdManager? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     // QuestionSheet / PeerAnswerSheet 상태
     var showQuestionSheet by remember { mutableStateOf(false) }
@@ -133,11 +142,26 @@ fun HomeScreen(
     var topBarHeightPx by remember { mutableIntStateOf(0) }
     var overlayHeightPx by remember { mutableIntStateOf(0) }
 
+    // 토스트 상태
+    var toastData by remember { mutableStateOf<MongleToastData?>(null) }
+
     // 다이얼로그 상태
     var showAnswerFirstDialog by remember { mutableStateOf<String?>(null) }
     var showNudgeUnavailableDialog by remember { mutableStateOf<String?>(null) }
     var showSkipConfirmDialog by remember { mutableStateOf(false) }
     var showWriteConfirmDialog by remember { mutableStateOf(false) }
+
+    // 화면 복귀 시 답변 상태 새로고침
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refresh()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // ViewModel 이벤트 처리
     LaunchedEffect(Unit) {
@@ -149,7 +173,17 @@ fun HomeScreen(
                     peerAnswerData = Triple(event.member, event.memberIndex, event.answer)
                 is HomeEvent.ShowAnswerFirstToView -> showAnswerFirstDialog = event.memberName
                 is HomeEvent.ShowNudgeUnavailable -> showNudgeUnavailableDialog = event.memberName
-            }
+                is HomeEvent.ShowError -> {
+                    val msg = when {
+                        event.message.contains("이미 답변") -> context.getString(R.string.error_already_answered_skip)
+                        event.message.contains("이미 질문") || event.message.contains("이미 패스") -> context.getString(R.string.error_already_skipped)
+                        event.message == "ad_load_failed" || event.message == "ad_reward_failed" -> context.getString(R.string.error_skip_failed)
+                        event.message.contains("하트") -> context.getString(R.string.home_hearts_insufficient_title)
+                        event.message.isNotBlank() -> event.message
+                        else -> context.getString(R.string.error_skip_failed)
+                    }
+                    toastData = MongleToastData(message = msg, type = MongleToastType.ERROR)
+                }
         }
     }
 
@@ -452,7 +486,7 @@ fun HomeScreen(
                 MonglePopup(
                     title = stringResource(R.string.home_hearts_insufficient_title),
                     description = stringResource(R.string.home_hearts_insufficient_skip, currentHearts),
-                    primaryLabel = if (adManager != null) "광고 보고 넘기기" else stringResource(R.string.common_confirm),
+                    primaryLabel = if (adManager != null) stringResource(R.string.home_watch_ad_skip) else stringResource(R.string.common_confirm),
                     onPrimary = {
                         showSkipConfirmDialog = false
                         if (adManager != null) {
@@ -465,6 +499,9 @@ fun HomeScreen(
             }
         }
     }
+
+    // 에러 토스트 오버레이
+    MongleToastOverlay(toastData = toastData, onDismiss = { toastData = null })
 }
 
 // ─── HomeTopBar ──────────────────────────────────────────────────────────────
