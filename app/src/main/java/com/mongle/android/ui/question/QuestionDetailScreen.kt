@@ -49,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -105,6 +106,7 @@ fun QuestionDetailScreen(
     viewModel: QuestionDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
     var toastData by remember { mutableStateOf<MongleToastData?>(null) }
 
     LaunchedEffect(question, currentUser) {
@@ -144,7 +146,11 @@ fun QuestionDetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        containerColor = Color(0xFFF8FAF8)
+        containerColor = Color(0xFFF8FAF8),
+        modifier = Modifier.clickable(
+            indication = null,
+            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+        ) { focusManager.clearFocus() }
     ) { paddingValues ->
         if (uiState.isLoading) {
             Box(
