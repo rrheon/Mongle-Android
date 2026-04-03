@@ -222,15 +222,25 @@ fun MongleNavHost(
                         NotificationScreen(
                             onBack = { showNotifications = false },
                             allFamilies = uiState.allFamilies,
-                            currentFamilyId = uiState.family?.id,
+                            // 그룹선택화면에서 온 경우 전체 그룹별 표시, 아니면 현재 그룹만
+                            currentFamilyId = if (showGroupSelect) null else uiState.family?.id,
                             onNotificationTap = { notification ->
                                 showNotifications = false
-                                when (notification.type.lowercase()) {
-                                    "answer_request", "new_question" -> {
-                                        uiState.todayQuestion?.let { showQuestionDetail = it }
+                                if (showGroupSelect) {
+                                    // 그룹선택 → 알림 탭: 해당 그룹으로 전환
+                                    val familyId = notification.familyId
+                                    if (familyId != null) {
+                                        showGroupSelect = false
+                                        rootViewModel.onGroupSelected(java.util.UUID.fromString(familyId))
                                     }
-                                    "member_answered" -> {
-                                        uiState.todayQuestion?.let { showQuestionDetail = it }
+                                } else {
+                                    when (notification.type.lowercase()) {
+                                        "answer_request", "new_question" -> {
+                                            uiState.todayQuestion?.let { showQuestionDetail = it }
+                                        }
+                                        "member_answered" -> {
+                                            uiState.todayQuestion?.let { showQuestionDetail = it }
+                                        }
                                     }
                                 }
                             }
