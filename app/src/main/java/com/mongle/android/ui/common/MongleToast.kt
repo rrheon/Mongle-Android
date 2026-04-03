@@ -189,8 +189,17 @@ fun MongleToast(
 fun MongleToastOverlay(
     message: String?,
     type: MongleToastType = MongleToastType.ERROR,
+    onDismiss: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    // 3초 후 자동 dismiss
+    LaunchedEffect(message) {
+        if (message != null && onDismiss != null) {
+            delay(3000L)
+            onDismiss()
+        }
+    }
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
@@ -201,7 +210,7 @@ fun MongleToastOverlay(
             exit = fadeOut() + slideOutVertically { it },
             modifier = Modifier
                 .padding(horizontal = MongleSpacing.md)
-                .padding(bottom = 80.dp)
+                .padding(bottom = 20.dp)
                 .navigationBarsPadding()
         ) {
             if (message != null) {

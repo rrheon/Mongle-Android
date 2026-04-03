@@ -124,46 +124,37 @@ class HomeViewModel @Inject constructor(
 
     private fun loadFamilyAnswers(dailyQuestionId: String) {
         viewModelScope.launch {
-            runCatching {
+            try {
                 val dailyQId = UUID.fromString(dailyQuestionId)
 
-                // 1) 가족 답변 로드
-                val response = (answerRepository as? com.mongle.android.data.remote.ApiAnswerRepository)
-                    ?.getFamilyAnswersWithStatuses(dailyQId)
-
-                val answersMap = if (response != null) {
-                    response.answers.associateBy { UUID.fromString(it.user.id) }
-                        .mapValues { (_, ar) ->
-                            com.mongle.android.domain.model.Answer(
-                                id = UUID.fromString(ar.id),
-                                dailyQuestionId = UUID.fromString(ar.questionId),
-                                userId = UUID.fromString(ar.user.id),
-                                content = ar.content,
-                                imageUrl = ar.imageUrl,
-                                moodId = ar.moodId,
-                                createdAt = java.util.Date(),
-                                updatedAt = java.util.Date()
-                            )
-                        }
-                } else {
-                    val familyAnswers = answerRepository.getByDailyQuestion(dailyQId)
-                    val currentUserId = _uiState.value.currentUser?.id
-                    val myAnswer = currentUserId?.let {
-                        runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
-                    }
-                    val allAnswers = if (myAnswer != null) familyAnswers + myAnswer else familyAnswers
-                    allAnswers.associateBy { it.userId }
+                // 1) 가족 답변 로드 (Answer 목록)
+                val familyAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
+                val currentUserId = _uiState.value.currentUser?.id
+                val myAnswer = currentUserId?.let {
+                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
                 }
+                val allAnswers = if (myAnswer != null && familyAnswers.none { it.userId == myAnswer.userId }) {
+                    familyAnswers + myAnswer
+                } else {
+                    familyAnswers
+                }
+                val answersMap = allAnswers.associateBy { it.userId }
 
-                // 2) 멤버별 답변/스킵 상태: FamilyAnswersResponse.memberStatuses 우선, 없으면 DailyQuestionResponse.memberAnswerStatuses 활용
-                val memberStatuses = response?.memberStatuses?.takeIf { it.isNotEmpty() }
-                if (memberStatuses != null) {
-                    val statusMap = memberStatuses.associate { ms ->
-                        UUID.fromString(ms.userId) to (ms.status == "answered")
+                // 2) 멤버별 답변/스킵 상태 조회 (DailyQuestionResponse.memberAnswerStatuses)
+                val todayStatuses = runCatching {
+                    questionRepository.getTodayQuestionMemberStatuses()
+                }.getOrElse { emptyList() }
+
+                android.util.Log.d("HomeVM", "loadFamilyAnswers: answers=${allAnswers.size}, statuses=${todayStatuses.size}, statuses=$todayStatuses")
+
+                if (todayStatuses.isNotEmpty()) {
+                    val statusMap = todayStatuses.associate { (userId, status) ->
+                        UUID.fromString(userId) to (status == "answered")
                     }
-                    val skipMap = memberStatuses.associate { ms ->
-                        UUID.fromString(ms.userId) to (ms.status == "skipped")
+                    val skipMap = todayStatuses.associate { (userId, status) ->
+                        UUID.fromString(userId) to (status == "skipped")
                     }
+                    android.util.Log.d("HomeVM", "statusMap=$statusMap, skipMap=$skipMap")
                     _uiState.update {
                         it.copy(
                             memberAnswerStatus = statusMap,
@@ -172,36 +163,18 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    // FamilyAnswersResponse에 memberStatuses가 없으면 DailyQuestionResponse에서 가져옴
-                    val todayStatuses = runCatching {
-                        questionRepository.getTodayQuestionMemberStatuses()
-                    }.getOrElse { emptyList() }
-
-                    if (todayStatuses.isNotEmpty()) {
-                        val statusMap = todayStatuses.associate { (userId, status) ->
-                            UUID.fromString(userId) to (status == "answered")
-                        }
-                        val skipMap = todayStatuses.associate { (userId, status) ->
-                            UUID.fromString(userId) to (status == "skipped")
-                        }
-                        _uiState.update {
-                            it.copy(
-                                memberAnswerStatus = statusMap,
-                                memberAnswers = answersMap,
-                                memberSkipStatus = skipMap
-                            )
-                        }
-                    } else {
-                        // 최종 fallback: 답변 있는 멤버만 answered로 처리
-                        val statusMap = answersMap.mapValues { true }
-                        _uiState.update {
-                            it.copy(
-                                memberAnswerStatus = statusMap,
-                                memberAnswers = answersMap
-                            )
-                        }
+                    // fallback: 답변 있는 멤버는 answered, 나머지는 상태 없음
+                    val statusMap = answersMap.mapValues { true }
+                    android.util.Log.d("HomeVM", "fallback statusMap=$statusMap")
+                    _uiState.update {
+                        it.copy(
+                            memberAnswerStatus = statusMap,
+                            memberAnswers = answersMap
+                        )
                     }
                 }
+            } catch (e: Exception) {
+                android.util.Log.e("HomeVM", "loadFamilyAnswers failed", e)
             }
         }
     }

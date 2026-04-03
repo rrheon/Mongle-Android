@@ -502,7 +502,7 @@ fun HomeScreen(
     }
 
     // 에러 토스트 오버레이
-    MongleToastOverlay(message = toastData?.message, type = toastData?.type ?: MongleToastType.ERROR)
+    MongleToastOverlay(message = toastData?.message, type = toastData?.type ?: MongleToastType.ERROR, onDismiss = { toastData = null })
 }
 
 // ─── HomeTopBar ──────────────────────────────────────────────────────────────
