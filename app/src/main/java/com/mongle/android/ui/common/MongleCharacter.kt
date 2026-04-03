@@ -83,7 +83,7 @@ fun MongleCharacter(
     val bodyColor = characterColors[index % characterColors.size]
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
-    val eyeVOffset = size * 0.10f
+    val eyeVOffset = size * 0.07f
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -157,7 +157,7 @@ fun MongleCharacterAvatar(
     val bodyColor = color ?: characterColors[index % characterColors.size]
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
-    val eyeVOffset = size * 0.10f
+    val eyeVOffset = size * 0.07f
 
     Box(
         modifier = modifier
@@ -531,7 +531,7 @@ private fun SceneMongleItem(
     val size = 52.dp
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
-    val eyeVOffset = size * 0.10f
+    val eyeVOffset = size * 0.07f
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         // 상태 배지

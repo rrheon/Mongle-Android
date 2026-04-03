@@ -303,7 +303,7 @@ private fun MyScreen(
                 rows = listOf(
                     SettingsRowData(
                         icon = Icons.Default.Person,
-                        iconBgColor = MonglePrimary,
+                        iconBgColor = MongleMonggleGreenLight,
                         iconTint = Color.White,
                         title = stringResource(R.string.settings_profile_edit),
                         subtitle = stringResource(R.string.settings_profile_edit_desc),
@@ -318,7 +318,7 @@ private fun MyScreen(
                 rows = listOf(
                     SettingsRowData(
                         icon = Icons.Default.Notifications,
-                        iconBgColor = MonglePrimary,
+                        iconBgColor = MongleMonggleGreenLight,
                         iconTint = Color.White,
                         title = stringResource(R.string.settings_notifications),
                         subtitle = stringResource(R.string.settings_notifications_desc),
@@ -326,7 +326,7 @@ private fun MyScreen(
                     ),
                     SettingsRowData(
                         icon = Icons.Default.Group,
-                        iconBgColor = MonglePrimary,
+                        iconBgColor = MongleMonggleGreenLight,
                         iconTint = Color.White,
                         title = stringResource(R.string.settings_group),
                         subtitle = stringResource(R.string.settings_group_desc),
@@ -334,7 +334,7 @@ private fun MyScreen(
                     ),
                     SettingsRowData(
                         icon = Icons.Default.Settings,
-                        iconBgColor = MonglePrimary,
+                        iconBgColor = MongleMonggleGreenLight,
                         iconTint = Color.White,
                         title = stringResource(R.string.settings_account),
                         subtitle = stringResource(R.string.settings_account_desc),
@@ -1036,7 +1036,7 @@ private fun AccountManagementScreen(
                     Column {
                         AccountRow(
                             icon = Icons.Default.Logout,
-                            iconBgColor = MonglePrimary,
+                            iconBgColor = MongleMonggleGreenLight,
                             iconTint = Color.White,
                             title = stringResource(R.string.settings_logout),
                             subtitle = stringResource(R.string.settings_logout_desc),
@@ -1048,7 +1048,7 @@ private fun AccountManagementScreen(
                         )
                         AccountRow(
                             icon = Icons.Default.Delete,
-                            iconBgColor = MonglePrimary,
+                            iconBgColor = MongleMonggleGreenLight,
                             iconTint = Color.White,
                             title = stringResource(R.string.settings_delete_account),
                             subtitle = stringResource(R.string.settings_delete_account_desc),

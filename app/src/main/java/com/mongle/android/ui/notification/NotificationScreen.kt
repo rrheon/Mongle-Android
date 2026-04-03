@@ -308,15 +308,17 @@ private fun moodColorForNotification(colorId: String?): Color = when (colorId) {
 // iOS 기준: 타입별 아이콘 + 배경색 분리
 @Composable
 private fun NotificationTypeIcon(type: String, colorId: String? = null) {
+    val size = 44.dp
     when (type.lowercase()) {
         "member_answered" -> {
             // 몽글 캐릭터 — 답변자의 colorId(moodId)에 따른 색상
             val characterColor = moodColorForNotification(colorId)
-            val eyeSize = 44.dp * 0.18f
-            val eyeOffset = 44.dp * 0.14f
+            val eyeSize = size * 0.18f
+            val eyeHOffset = size * 0.14f
+            val eyeVOffset = size * 0.07f
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(size)
                     .clip(CircleShape)
                     .background(characterColor),
                 contentAlignment = Alignment.Center
@@ -324,14 +326,14 @@ private fun NotificationTypeIcon(type: String, colorId: String? = null) {
                 Box(
                     modifier = Modifier
                         .size(eyeSize + 2.dp)
-                        .offset(x = -eyeOffset, y = eyeSize * 0.2f)
+                        .offset(x = -eyeHOffset, y = eyeVOffset)
                         .background(Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) { Box(Modifier.size(eyeSize).background(Color.Black, CircleShape)) }
                 Box(
                     modifier = Modifier
                         .size(eyeSize + 2.dp)
-                        .offset(x = eyeOffset, y = eyeSize * 0.2f)
+                        .offset(x = eyeHOffset, y = eyeVOffset)
                         .background(Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) { Box(Modifier.size(eyeSize).background(Color.Black, CircleShape)) }
@@ -341,7 +343,7 @@ private fun NotificationTypeIcon(type: String, colorId: String? = null) {
             val (bg, icon, tint) = notificationTypeStyle(type)
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(size)
                     .clip(CircleShape)
                     .background(bg),
                 contentAlignment = Alignment.Center
@@ -359,11 +361,12 @@ private fun NotificationTypeIcon(type: String, colorId: String? = null) {
 
 private data class NotifStyle(val bg: Color, val icon: ImageVector, val tint: Color)
 
+// iOS NotificationCard 아이콘 스타일 기준
 private fun notificationTypeStyle(type: String): NotifStyle = when (type.lowercase()) {
-    "new_question" -> NotifStyle(Color(0xFFE3F2FD), Icons.Default.QuestionMark, MongleInfo)
-    "all_answered" -> NotifStyle(Color(0xFFEDF7F0), Icons.Default.CheckCircle, MongleSuccessLight)
-    "answer_request" -> NotifStyle(Color(0xFFFFF3E0), Icons.Default.Campaign, MongleWarning)
-    "badge_earned" -> NotifStyle(MongleMoodLovedLight, Icons.Default.CardGiftcard, MongleAccentCoralLight)
+    "new_question" -> NotifStyle(Color(0xFFE8F2FD), Icons.Default.QuestionMark, Color(0xFF42A5F5))
+    "all_answered" -> NotifStyle(Color(0xFFE8F6EA), Icons.Default.CheckCircle, Color(0xFF4CAF50))
+    "answer_request" -> NotifStyle(Color(0xFFFFF1E2), Icons.Default.Campaign, Color(0xFFFF9800))
+    "badge_earned" -> NotifStyle(Color(0xFFFDDDD8), Icons.Default.CardGiftcard, Color(0xFFFF8A80))
     else -> NotifStyle(Color(0xFFF5F5F5), Icons.Default.QuestionMark, Color(0xFF9E9E9E))
 }
 

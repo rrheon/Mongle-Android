@@ -466,7 +466,7 @@ private fun SelectStep(
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(MonglePrimary, CircleShape),
+                        .background(MongleMonggleGreenLight, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null,
@@ -554,7 +554,7 @@ private fun ActionSheetRow(
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .background(MonglePrimary, CircleShape),
+                .background(MongleMonggleGreenLight, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
@@ -1156,7 +1156,7 @@ private fun CopyPillButton(isCopied: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(MongleRadius.full))
-            .background(if (isCopied) MonglePrimary.copy(alpha = 0.8f) else MonglePrimary)
+            .background(if (isCopied) MongleMonggleGreenLight.copy(alpha = 0.8f) else MongleMonggleGreenLight)
             .clickable(onClick = onClick)
             .padding(horizontal = MongleSpacing.sm, vertical = MongleSpacing.xxs),
         verticalAlignment = Alignment.CenterVertically,
