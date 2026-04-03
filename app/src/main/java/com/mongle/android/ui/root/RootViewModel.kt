@@ -140,8 +140,21 @@ class RootViewModel @Inject constructor(
                     // No active family → go to GroupSelection
                     _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
                 } else {
-                    // 그룹별 일일 접속 하트 지급 (서버에서 그룹별로 체크)
-                    val dailyHeart = runCatching { userRepository.claimDailyHeart() }.getOrNull()
+                    // 하루 첫 접속 하트 팝업 체크 (그룹별, iOS와 동일 로직)
+                    // 서버의 auth middleware recordAccess가 자동으로 하트를 증가시킴
+                    val heartPopupKey = "mongle.lastHeartPopupDate.${family.id}"
+                    val heartPrefs = context.getSharedPreferences("mongle_heart", Context.MODE_PRIVATE)
+                    val todayStart = java.util.Calendar.getInstance().apply {
+                        set(java.util.Calendar.HOUR_OF_DAY, 0)
+                        set(java.util.Calendar.MINUTE, 0)
+                        set(java.util.Calendar.SECOND, 0)
+                        set(java.util.Calendar.MILLISECOND, 0)
+                    }.timeInMillis
+                    val lastPopupTime = heartPrefs.getLong(heartPopupKey, 0L)
+                    val isFirstAccessToday = lastPopupTime < todayStart
+                    if (isFirstAccessToday) {
+                        heartPrefs.edit().putLong(heartPopupKey, todayStart).apply()
+                    }
 
                     // FCM 토큰 서버 등록
                     runCatching {
@@ -161,15 +174,8 @@ class RootViewModel @Inject constructor(
                     } else null
 
                     _uiState.update {
-                        // 서버의 familyMembers에서 현재 유저의 최신 정보를 동기화 (그룹별 닉네임 포함)
                         val serverMe = members.firstOrNull { m -> m.id == it.currentUser?.id }
-                        val syncedUser = if (serverMe != null) {
-                            serverMe.copy(
-                                hearts = if (dailyHeart != null) dailyHeart.heartsRemaining else serverMe.hearts
-                            )
-                        } else {
-                            it.currentUser
-                        }
+                        val syncedUser = serverMe ?: it.currentUser
                         it.copy(
                             appState = AppState.Authenticated,
                             todayQuestion = question,
@@ -180,7 +186,7 @@ class RootViewModel @Inject constructor(
                             allFamilies = allFamilies,
                             hasAnsweredToday = question?.hasMyAnswer ?: false,
                             hasSkippedToday = question?.hasMySkipped ?: false,
-                            dailyHeartGranted = dailyHeart?.heartsGranted ?: 0,
+                            dailyHeartGranted = if (isFirstAccessToday) 1 else 0,
                             currentUser = syncedUser
                         )
                     }
