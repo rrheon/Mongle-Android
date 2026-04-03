@@ -201,12 +201,11 @@ class QuestionDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
-                val dailyQId = question.dailyQuestionId?.let {
-                    runCatching { UUID.fromString(it) }.getOrNull()
-                } ?: question.id
+                // 답변 생성/수정 시에는 question.id (Question UUID)를 사용
+                // 서버의 createAnswer는 Question.id를 기대함
                 val answer = Answer(
                     id = state.myAnswer?.id ?: UUID.randomUUID(),
-                    dailyQuestionId = dailyQId,
+                    dailyQuestionId = question.id,
                     userId = userId,
                     content = state.answerText.trim(),
                     imageUrl = null,

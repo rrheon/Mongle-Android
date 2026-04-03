@@ -97,6 +97,7 @@ class SearchViewModel @Inject constructor(
 
         for (history in allHistory) {
             // 오늘 날짜의 질문은 답변을 완료한 경우에만 검색 결과에 포함
+            // (넘기기 또는 미답변 시에는 다른 사람의 답변이 보이지 않도록)
             val historyCal = Calendar.getInstance().apply { time = history.date }
             val todayCal = Calendar.getInstance()
             val isToday = historyCal.get(Calendar.YEAR) == todayCal.get(Calendar.YEAR) &&
