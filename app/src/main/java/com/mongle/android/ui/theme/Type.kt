@@ -4,8 +4,6 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // iOS DesignSystem의 MongleFont(SUIT 폰트)를 정확히 매핑
@@ -98,24 +96,3 @@ object MongleFontStyle {
     )
 }
 
-// iOS에서 정의된 Spacing 토큰
-object MongleSpacing {
-    val xxs: Dp = 4.dp
-    val xs: Dp = 8.dp
-    val sm: Dp = 12.dp
-    val md: Dp = 16.dp
-    val lg: Dp = 24.dp
-    val xl: Dp = 32.dp
-    val xxl: Dp = 48.dp
-}
-
-// iOS에서 정의된 Corner Radius 토큰
-object MongleRadius {
-    val xs: Dp = 4.dp
-    val small: Dp = 8.dp
-    val medium: Dp = 12.dp
-    val large: Dp = 16.dp
-    val xl: Dp = 20.dp
-    val xxl: Dp = 24.dp
-    val full: Dp = 100.dp
-}

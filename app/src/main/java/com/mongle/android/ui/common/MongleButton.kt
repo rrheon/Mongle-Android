@@ -20,8 +20,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.mongle.android.ui.theme.MongleGradientEnd
-import com.mongle.android.ui.theme.MongleGradientStart
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleRadius
 import com.mongle.android.ui.theme.MongleSpacing

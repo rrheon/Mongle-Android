@@ -1257,7 +1257,7 @@ private fun NotificationReasonRow(emoji: String, text: String) {
             .fillMaxWidth()
             .background(
                 color = MongleBgNeutral,
-                shape = RoundedCornerShape(MongleRadius.md)
+                shape = RoundedCornerShape(MongleRadius.medium)
             )
             .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm + 4.dp),
         verticalAlignment = Alignment.CenterVertically
