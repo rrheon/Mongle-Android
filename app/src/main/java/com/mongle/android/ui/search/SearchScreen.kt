@@ -259,7 +259,7 @@ fun SearchScreen(
             else -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        MongleLogo(size = MongleLogoSize.MEDIUM)
+                        MongleLogo(size = MongleLogoSize.SMALL)
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = stringResource(R.string.search_empty),
