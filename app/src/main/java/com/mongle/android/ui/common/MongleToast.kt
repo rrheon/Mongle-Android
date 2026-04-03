@@ -191,14 +191,22 @@ fun MongleToastOverlay(
     type: MongleToastType = MongleToastType.ERROR,
     modifier: Modifier = Modifier
 ) {
-    AnimatedVisibility(
-        visible = message != null,
-        enter = fadeIn() + slideInVertically { it },
-        exit = fadeOut() + slideOutVertically { it },
-        modifier = modifier
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        if (message != null) {
-            MongleToast(message = message, type = type)
+        AnimatedVisibility(
+            visible = message != null,
+            enter = fadeIn() + slideInVertically { it },
+            exit = fadeOut() + slideOutVertically { it },
+            modifier = Modifier
+                .padding(horizontal = MongleSpacing.md)
+                .padding(bottom = 80.dp)
+                .navigationBarsPadding()
+        ) {
+            if (message != null) {
+                MongleToast(message = message, type = type)
+            }
         }
     }
 }

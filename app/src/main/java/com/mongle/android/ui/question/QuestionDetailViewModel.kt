@@ -82,9 +82,13 @@ class QuestionDetailViewModel @Inject constructor(
     private fun loadAnswers(question: Question, currentUser: User?) {
         viewModelScope.launch {
             try {
-                val allAnswers = answerRepository.getByDailyQuestion(question.id)
+                // dailyQuestionId를 사용하여 답변 조회 (question.id는 질문 자체 ID)
+                val dailyQId = question.dailyQuestionId?.let {
+                    runCatching { UUID.fromString(it) }.getOrNull()
+                } ?: question.id
+                val allAnswers = answerRepository.getByDailyQuestion(dailyQId)
                 val myAnswer = currentUser?.id?.let {
-                    runCatching { answerRepository.getByUserAndDailyQuestion(question.id, it) }.getOrNull()
+                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
                 }
 
                 val members = _uiState.value.familyMembers
@@ -197,9 +201,12 @@ class QuestionDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
+                val dailyQId = question.dailyQuestionId?.let {
+                    runCatching { UUID.fromString(it) }.getOrNull()
+                } ?: question.id
                 val answer = Answer(
                     id = state.myAnswer?.id ?: UUID.randomUUID(),
-                    dailyQuestionId = question.id,
+                    dailyQuestionId = dailyQId,
                     userId = userId,
                     content = state.answerText.trim(),
                     imageUrl = null,
