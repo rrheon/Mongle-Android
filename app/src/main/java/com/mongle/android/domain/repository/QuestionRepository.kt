@@ -24,6 +24,9 @@ interface QuestionRepository {
 
     /** 오늘의 질문 넘기기 (하트 3개 차감). 답변 없이 다른 가족 답변 열람 가능. 차감 후 남은 하트 수 반환. */
     suspend fun skipQuestion(): Int
+
+    /** 오늘의 질문에 대한 각 멤버별 답변/스킵 상태 조회. Pair(userId, status) 목록 반환. */
+    suspend fun getTodayQuestionMemberStatuses(): List<Pair<String, String>>
 }
 
 sealed class QuestionError(message: String) : Exception(message) {

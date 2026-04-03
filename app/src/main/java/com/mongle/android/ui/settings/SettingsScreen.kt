@@ -135,11 +135,7 @@ fun SettingsScreen(
                 SettingsEvent.Logout -> onLogout()
                 SettingsEvent.AccountDeleted -> onAccountDeleted()
                 SettingsEvent.LeftGroup -> {
-                    navController.popBackStack("my", inclusive = false)
-                    toastData = MongleToastData(
-                        message = MongleToastType.GROUP_LEFT.defaultMessage,
-                        type = MongleToastType.GROUP_LEFT
-                    )
+                    // GroupSelectScreen으로 직접 이동 (토스트는 GroupSelectScreen에서 표시)
                     onGroupLeft()
                 }
                 is SettingsEvent.CopiedInviteCode -> {
