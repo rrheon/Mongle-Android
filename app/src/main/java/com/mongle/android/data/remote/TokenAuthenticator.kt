@@ -29,7 +29,7 @@ class TokenAuthenticator @Inject constructor(
     private val sessionExpiredNotifier: SessionExpiredNotifier
 ) : Authenticator {
 
-    private val baseUrl = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/"
+    private val baseUrl = com.mongle.android.BuildConfig.BASE_URL
 
     private val prefs by lazy {
         context.getSharedPreferences(AUTH_PREF_NAME, Context.MODE_PRIVATE)

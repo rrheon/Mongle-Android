@@ -805,7 +805,7 @@ private fun GroupInfoSection(
                 )
                 InviteRow(
                     title = stringResource(R.string.group_invite_link),
-                    value = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/$inviteCode",
+                    value = "${BuildConfig.BASE_URL}invite/$inviteCode",
                     buttonIcon = Icons.Default.Share,
                     buttonLabel = stringResource(R.string.common_share),
                     onClick = onShareLink

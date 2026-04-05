@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/"
+    private val BASE_URL = BuildConfig.BASE_URL
 
     @Provides
     @Singleton

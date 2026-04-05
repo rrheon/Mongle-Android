@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,12 +20,35 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "BASE_URL", "\"https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/\"")
+        buildConfigField("String", "KAKAO_APP_KEY", "\"73b4d3e9a62701280ec877fe441949b3\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com\"")
+        buildConfigField("String", "APPLE_CLIENT_ID", "\"com.mongle.app.signin\"")
+        buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-4718464707406824/9365243021\"")
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-4718464707406824/2974225929\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            val props = Properties()
+            val propsFile = rootProject.file("keystore.properties")
+            if (propsFile.exists()) {
+                propsFile.inputStream().use { stream -> props.load(stream) }
+            }
+            val sf = props.getProperty("storeFile")
+            if (sf != null) storeFile = file(sf)
+            storePassword = props.getProperty("storePassword") ?: ""
+            keyAlias = props.getProperty("keyAlias") ?: ""
+            keyPassword = props.getProperty("keyPassword") ?: ""
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

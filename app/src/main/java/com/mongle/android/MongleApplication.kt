@@ -14,7 +14,7 @@ class MongleApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        KakaoSdk.init(this, "73b4d3e9a62701280ec877fe441949b3")
+        KakaoSdk.init(this, BuildConfig.KAKAO_APP_KEY)
         // AdMob 초기화
         adManager.initialize()
     }

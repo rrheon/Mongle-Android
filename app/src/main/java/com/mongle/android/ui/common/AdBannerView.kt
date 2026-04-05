@@ -14,7 +14,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 
-private const val BANNER_AD_UNIT_ID = "ca-app-pub-4718464707406824/2974225929"
+private val BANNER_AD_UNIT_ID = com.mongle.android.BuildConfig.ADMOB_BANNER_ID
 
 @Composable
 fun AdBannerSection(modifier: Modifier = Modifier) {

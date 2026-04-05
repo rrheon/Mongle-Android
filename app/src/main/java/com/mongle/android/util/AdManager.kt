@@ -13,7 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val REWARDED_AD_UNIT_ID = "ca-app-pub-4718464707406824/9365243021"
+private val REWARDED_AD_UNIT_ID = com.mongle.android.BuildConfig.ADMOB_REWARDED_ID
 
 @Singleton
 class AdManager @Inject constructor(

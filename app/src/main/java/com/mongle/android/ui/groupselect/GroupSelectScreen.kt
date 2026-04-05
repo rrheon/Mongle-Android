@@ -967,7 +967,7 @@ private fun CreatedStep(
 ) {
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
-    val inviteLink = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/invite/${inviteCode}"
+    val inviteLink = "${BuildConfig.BASE_URL}invite/${inviteCode}"
     val shareText = context.getString(R.string.group_share_text, inviteCode, inviteLink)
     var codeCopied by remember { mutableStateOf(false) }
     var linkCopied by remember { mutableStateOf(false) }
