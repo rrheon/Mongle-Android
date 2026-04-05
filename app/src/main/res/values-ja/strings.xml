@@ -308,6 +308,13 @@
     <string name="history_recent_mood">最近14日間の気分</string>
     <string name="history_answer_count">%1$d/%2$d人回答</string>
     <string name="history_no_record">この日の記録はありません</string>
+    <string name="history_day_sun">日</string>
+    <string name="history_day_mon">月</string>
+    <string name="history_day_tue">火</string>
+    <string name="history_day_wed">水</string>
+    <string name="history_day_thu">木</string>
+    <string name="history_day_fri">金</string>
+    <string name="history_day_sat">土</string>
 
     <!-- Demo Characters -->
     <string name="demo_char_1">モングルちゃん</string>
