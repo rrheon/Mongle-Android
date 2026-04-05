@@ -22,13 +22,11 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-internal const val GOOGLE_WEB_CLIENT_ID = "43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com"
+internal val GOOGLE_WEB_CLIENT_ID = com.mongle.android.BuildConfig.GOOGLE_WEB_CLIENT_ID
 
 // Apple Sign-In OAuth 설정
-// client_id: Apple Developer에서 등록한 Services ID
-// redirect_uri: 서버에서 form_post를 받아 monggle://apple-callback 으로 리다이렉트
-internal const val APPLE_CLIENT_ID = "com.mongle.app.signin"
-internal const val APPLE_REDIRECT_URI = "https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/auth/apple/callback"
+internal val APPLE_CLIENT_ID = com.mongle.android.BuildConfig.APPLE_CLIENT_ID
+internal val APPLE_REDIRECT_URI = "${com.mongle.android.BuildConfig.BASE_URL}auth/apple/callback"
 
 // ── 카카오 ─────────────────────────────────────────
 
@@ -39,7 +37,7 @@ suspend fun loginWithKakao(context: Context): KakaoLoginCredential =
                 Log.e("KakaoLogin", "❌ 카카오 로그인 실패: ${error.message}", error)
                 cont.resumeWithException(Exception("카카오 로그인 실패: ${error.message}"))
             } else if (token != null) {
-                Log.d("KakaoLogin", "✅ 카카오 토큰 획득 | token=${token.accessToken.take(20)}...")
+                Log.d("KakaoLogin", "✅ 카카오 토큰 획득")
                 // 사용자 정보 조회
                 UserApiClient.instance.me { user, infoError ->
                     if (infoError != null) {
@@ -98,7 +96,7 @@ fun handleGoogleSignInResult(data: Intent?): GoogleLoginCredential {
         val account: GoogleSignInAccount = task.getResult(ApiException::class.java)
         val idToken = account.idToken
             ?: throw Exception("Google ID Token이 null입니다. Google Cloud Console에 Android OAuth 클라이언트 등록 필요 (패키지: com.mongle.android)")
-        Log.d("GoogleLogin", "✅ 토큰 획득 성공 | email=${account.email} | token=${idToken.take(30)}...")
+        Log.d("GoogleLogin", "✅ 토큰 획득 성공")
         GoogleLoginCredential(
             idToken = idToken,
             name = account.displayName,
@@ -181,7 +179,7 @@ fun handleAppleCallback(uri: Uri): AppleLoginCredential {
     val code = uri.getQueryParameter("code")
         ?: throw Exception("Apple 로그인 실패: authorization_code가 없습니다.")
 
-    Log.d("AppleLogin", "Apple 콜백 수신 | id_token=${idToken.take(30)}... | code=${code.take(20)}...")
+    Log.d("AppleLogin", "Apple 콜백 수신")
 
     return AppleLoginCredential(
         identityToken = idToken,

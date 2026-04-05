@@ -63,7 +63,7 @@ class ApiAuthRepository @Inject constructor(
             block()
         } catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: e.message()
-            Log.e("MongleApi", "❌ HTTP ${e.code()} | body=$body")
+            Log.e("MongleApi", "❌ HTTP ${e.code()}")
             throw Exception(parseServerMessage(body))
         } catch (e: Exception) {
             Log.e("MongleApi", "❌ API 호출 실패: ${e.message}", e)
