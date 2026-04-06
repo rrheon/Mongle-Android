@@ -25,19 +25,6 @@ data class SocialLoginRequest(
 )
 
 @JsonClass(generateAdapter = true)
-data class EmailLoginRequest(
-    val email: String,
-    val password: String
-)
-
-@JsonClass(generateAdapter = true)
-data class EmailSignupRequest(
-    val name: String,
-    val email: String,
-    val password: String
-)
-
-@JsonClass(generateAdapter = true)
 data class RefreshTokenRequest(
     val refresh_token: String
 )
@@ -322,12 +309,6 @@ interface MongleApiService {
     // Auth
     @POST("auth/social")
     suspend fun socialLogin(@Body body: SocialLoginRequest): AuthResponse
-
-    @POST("auth/login")
-    suspend fun emailLogin(@Body body: EmailLoginRequest): AuthResponse
-
-    @POST("auth/signup")
-    suspend fun emailSignup(@Body body: EmailSignupRequest): AuthResponse
 
     @POST("auth/refresh")
     suspend fun refreshToken(@Body body: RefreshTokenRequest): TokenRefreshResponse

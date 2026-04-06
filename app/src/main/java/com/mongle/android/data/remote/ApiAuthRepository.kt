@@ -71,22 +71,6 @@ class ApiAuthRepository @Inject constructor(
         }
     }
 
-    override suspend fun login(email: String, password: String): User {
-        return safeCall {
-            val response = api.emailLogin(EmailLoginRequest(email, password))
-            saveSession(response.user, response.token, response.refresh_token)
-            response.user.toDomain()
-        }
-    }
-
-    override suspend fun signup(name: String, email: String, password: String, role: FamilyRole): User {
-        return safeCall {
-            val response = api.emailSignup(EmailSignupRequest(name, email, password))
-            saveSession(response.user, response.token, response.refresh_token)
-            response.user.toDomain()
-        }
-    }
-
     override suspend fun socialLogin(credential: SocialLoginCredential): User {
         return safeCall {
             val request = when (credential.providerType) {
