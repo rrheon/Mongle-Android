@@ -52,7 +52,8 @@ fun PeerAnswerSheet(
     memberIndex: Int,
     questionText: String,
     answer: Answer,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    characterColor: Color? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
@@ -126,7 +127,8 @@ fun PeerAnswerSheet(
                             user = member,
                             index = memberIndex,
                             size = 36.dp,
-                            showName = false
+                            showName = false,
+                            color = characterColor
                         )
                         Spacer(modifier = Modifier.width(MongleSpacing.sm))
                         Column {
