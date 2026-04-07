@@ -149,7 +149,34 @@ class HomeViewModel @Inject constructor(
                 } else {
                     familyAnswers
                 }
-                val answersMap = allAnswers.associateBy { it.userId }
+                // 1-b) HISTORY 엔드포인트에서 오늘 항목의 답변을 가져와 fallback 으로 병합한다.
+                //      getFamilyAnswers() 가 멤버 답변을 누락하는 백엔드 정합성 케이스가 있어,
+                //      HISTORY 와 동일한 daily-history 응답을 두 번째 소스로 사용한다.
+                //      (HISTORY 화면은 동일 엔드포인트로 동일 답변을 정상 노출하고 있음을 사용자가 확인)
+                val historyAnswersForToday: List<Answer> = runCatching {
+                    questionRepository.getDailyHistory(page = 1, limit = 10)
+                }.getOrElse { emptyList() }
+                    .firstOrNull { it.id == dailyQuestionId }
+                    ?.answers
+                    ?.mapNotNull { summary ->
+                        val uid = runCatching { UUID.fromString(summary.userId) }.getOrNull() ?: return@mapNotNull null
+                        val aid = runCatching { UUID.fromString(summary.id) }.getOrNull() ?: return@mapNotNull null
+                        Answer(
+                            id = aid,
+                            dailyQuestionId = dailyQId,
+                            userId = uid,
+                            content = summary.content,
+                            imageUrl = summary.imageUrl,
+                            moodId = summary.moodId,
+                            createdAt = java.util.Date()
+                        )
+                    } ?: emptyList()
+                // 병합: 기존 allAnswers 우선, 없는 멤버만 history 답변으로 채움.
+                val mergedById = allAnswers.associateBy { it.userId }.toMutableMap()
+                historyAnswersForToday.forEach { hist ->
+                    if (mergedById[hist.userId] == null) mergedById[hist.userId] = hist
+                }
+                val answersMap = mergedById.toMap()
 
                 // 2) 멤버별 답변/스킵 상태 조회 (DailyQuestionResponse.memberAnswerStatuses)
                 val todayStatuses = runCatching {
@@ -283,6 +310,29 @@ class HomeViewModel @Inject constructor(
                 }.getOrNull()
                 if (mine != null) {
                     freshMap = freshMap + (mine.userId to mine)
+                }
+            }
+            // 그래도 없으면 HISTORY 엔드포인트(daily-history)에서 오늘 항목을 찾아 본문을 보충한다.
+            // HISTORY 화면이 동일 응답으로 모든 멤버 답변을 정상 노출하고 있음.
+            if (freshMap[member.id] == null) {
+                val histAnswers = runCatching {
+                    questionRepository.getDailyHistory(page = 1, limit = 10)
+                }.getOrElse { emptyList() }
+                    .firstOrNull { it.id == _uiState.value.todayQuestion?.dailyQuestionId }
+                    ?.answers
+                    .orEmpty()
+                val match = histAnswers.firstOrNull { it.userId == member.id.toString() }
+                if (match != null) {
+                    val converted = Answer(
+                        id = runCatching { UUID.fromString(match.id) }.getOrNull() ?: UUID.randomUUID(),
+                        dailyQuestionId = dailyQId,
+                        userId = member.id,
+                        content = match.content,
+                        imageUrl = match.imageUrl,
+                        moodId = match.moodId,
+                        createdAt = java.util.Date()
+                    )
+                    freshMap = freshMap + (member.id to converted)
                 }
             }
             _uiState.update { it.copy(memberAnswers = it.memberAnswers + freshMap) }
