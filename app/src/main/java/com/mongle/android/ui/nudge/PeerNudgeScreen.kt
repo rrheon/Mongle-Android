@@ -84,10 +84,12 @@ fun PeerNudgeScreen(
         )
     }
 
-    // 재촉 전송 성공 시 하트 잔량을 상위에 알림
-    LaunchedEffect(uiState.isSent, uiState.heartsRemaining) {
-        if (uiState.isSent && uiState.heartsRemaining != null) {
+    // 재촉 전송 성공 시 하트 잔량을 상위에 알리고 토스트 노출
+    val sentToastMessage = stringResource(R.string.nudge_sent)
+    LaunchedEffect(uiState.sentCount) {
+        if (uiState.sentCount > 0 && uiState.heartsRemaining != null) {
             onNudgeSent(uiState.heartsRemaining!!)
+            toastData = MongleToastData(message = sentToastMessage, type = MongleToastType.SUCCESS)
         }
     }
 
@@ -275,22 +277,6 @@ fun PeerNudgeScreen(
 
                         // 버튼 영역
                         when {
-                            uiState.isSent -> {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .background(MonglePrimary.copy(alpha = 0.1f))
-                                        .padding(vertical = 14.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.nudge_sent),
-                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                                        color = MonglePrimary
-                                    )
-                                }
-                            }
                             uiState.hasEnoughHearts -> {
                                 Button(
                                     onClick = { viewModel.sendNudge() },

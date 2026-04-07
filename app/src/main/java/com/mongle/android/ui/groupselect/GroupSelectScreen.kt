@@ -1,5 +1,6 @@
 package com.mongle.android.ui.groupselect
 
+import com.mongle.android.BuildConfig
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background

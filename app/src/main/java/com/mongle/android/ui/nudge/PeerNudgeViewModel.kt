@@ -18,10 +18,10 @@ data class PeerNudgeUiState(
     val targetUserName: String = "",
     val hearts: Int = 0,
     val isLoading: Boolean = false,
-    val isSent: Boolean = false,
     val isWatchingAd: Boolean = false,
     val errorMessage: String? = null,
-    val heartsRemaining: Int? = null
+    val heartsRemaining: Int? = null,
+    val sentCount: Int = 0
 ) {
     val hasEnoughHearts: Boolean get() = hearts >= 1
 }
@@ -37,17 +37,25 @@ class PeerNudgeViewModel @Inject constructor(
 
     fun initialize(targetUserId: String, targetUserName: String, hearts: Int) {
         _uiState.update {
-            it.copy(
-                targetUserId = targetUserId,
-                targetUserName = targetUserName,
-                hearts = hearts
-            )
+            // 타겟 사용자가 바뀌면 재촉 상태를 초기화하여 대상별로 개별화한다
+            if (it.targetUserId != targetUserId) {
+                PeerNudgeUiState(
+                    targetUserId = targetUserId,
+                    targetUserName = targetUserName,
+                    hearts = hearts
+                )
+            } else {
+                it.copy(
+                    targetUserName = targetUserName,
+                    hearts = hearts
+                )
+            }
         }
     }
 
     fun sendNudge() {
         val state = _uiState.value
-        if (state.isLoading || state.isSent || state.targetUserId.isEmpty()) return
+        if (state.isLoading || state.targetUserId.isEmpty()) return
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             try {
@@ -55,9 +63,9 @@ class PeerNudgeViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        isSent = true,
                         hearts = heartsRemaining,
-                        heartsRemaining = heartsRemaining
+                        heartsRemaining = heartsRemaining,
+                        sentCount = it.sentCount + 1
                     )
                 }
             } catch (e: Exception) {
@@ -68,7 +76,7 @@ class PeerNudgeViewModel @Inject constructor(
 
     fun watchAdForNudge(adManager: AdManager) {
         val state = _uiState.value
-        if (state.isWatchingAd || state.isSent) return
+        if (state.isWatchingAd) return
         _uiState.update { it.copy(isWatchingAd = true, errorMessage = null) }
         adManager.showRewardedAd(
             onRewarded = {
@@ -79,9 +87,9 @@ class PeerNudgeViewModel @Inject constructor(
                         val heartsRemaining = nudgeRepository.sendNudge(state.targetUserId)
                         _uiState.update {
                             it.copy(
-                                isSent = true,
                                 hearts = heartsRemaining,
-                                heartsRemaining = heartsRemaining
+                                heartsRemaining = heartsRemaining,
+                                sentCount = it.sentCount + 1
                             )
                         }
                     } catch (e: Exception) {

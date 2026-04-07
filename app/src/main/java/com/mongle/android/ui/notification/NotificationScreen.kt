@@ -100,6 +100,11 @@ fun NotificationScreen(
 
     BackHandler { onBack() }
 
+    // 화면 진입/복귀 시 최신 알림 재로딩 (FCM 푸시 수신 후 즉시 반영)
+    LaunchedEffect(Unit) {
+        viewModel.loadNotifications()
+    }
+
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
             toastData = MongleToastData(message = it, type = MongleToastType.ERROR)
@@ -190,9 +195,11 @@ fun NotificationScreen(
                 }
             }
             else -> {
-                // 현재 그룹 필터 적용
+                // 현재 그룹 필터 적용 (familyId 미지정 알림은 그룹 무관하게 항상 노출)
                 val filtered = if (currentFamilyId != null) {
-                    uiState.notifications.filter { it.familyId == currentFamilyId.toString() }
+                    uiState.notifications.filter {
+                        it.familyId == null || it.familyId == currentFamilyId.toString()
+                    }
                 } else {
                     uiState.notifications
                 }

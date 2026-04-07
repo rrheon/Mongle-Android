@@ -1,5 +1,6 @@
 package com.mongle.android.ui.settings
 
+import com.mongle.android.BuildConfig
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
