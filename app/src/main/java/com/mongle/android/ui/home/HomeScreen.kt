@@ -257,7 +257,17 @@ fun HomeScreen(
                 val user = uiState.familyMembers.find { it.id == info.id }
                 user?.let { viewModel.onNudgeTapped(it) }
             },
-            onSelfTap = { if (uiState.todayQuestion != null) showQuestionSheet = true },
+            onSelfTap = {
+                // 본인이 오늘의 질문에 이미 답변했다면, 본인 답변 내용을 담은 PeerAnswerSheet를 노출한다.
+                // (캐시 → 서버 가족 답변 → /me 엔드포인트 순서로 onViewAnswerTapped가 처리)
+                // 아직 답변 전이라면 기존처럼 질문 바텀시트(답변/수정)를 연다.
+                val me = uiState.currentUser
+                if (me != null && uiState.hasAnsweredToday) {
+                    viewModel.onViewAnswerTapped(me)
+                } else if (uiState.todayQuestion != null) {
+                    showQuestionSheet = true
+                }
+            },
             onAnswerFirstToView = { name -> showAnswerFirstDialog = name },
             onAnswerFirstToNudge = { name -> showNudgeUnavailableDialog = name },
             modifier = Modifier.fillMaxSize()

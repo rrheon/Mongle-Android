@@ -366,12 +366,14 @@ private fun moodColorForSearch(moodId: String?): Color = when (moodId) {
 
 @Composable
 private fun MiniMongleAvatar(bodyColor: Color) {
-    val eyeSize = 36.dp * 0.18f
-    val eyeOffset = 36.dp * 0.14f
+    val size = 36.dp
+    val eyeSize = size * 0.18f
+    val eyeHOffset = size * 0.144f
+    val eyeVOffset = size * 0.07f
 
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(size)
             .shadow(4.dp, CircleShape, ambientColor = bodyColor.copy(0.3f), spotColor = bodyColor.copy(0.3f))
             .background(bodyColor, CircleShape),
         contentAlignment = Alignment.Center
@@ -379,7 +381,7 @@ private fun MiniMongleAvatar(bodyColor: Color) {
         Box(
             modifier = Modifier
                 .size(eyeSize + 2.dp)
-                .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                .offset(x = -eyeHOffset, y = eyeVOffset)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {
@@ -388,7 +390,7 @@ private fun MiniMongleAvatar(bodyColor: Color) {
         Box(
             modifier = Modifier
                 .size(eyeSize + 2.dp)
-                .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                .offset(x = eyeHOffset, y = eyeVOffset)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {

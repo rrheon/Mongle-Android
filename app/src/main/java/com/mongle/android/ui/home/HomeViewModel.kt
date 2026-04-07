@@ -268,7 +268,18 @@ class HomeViewModel @Inject constructor(
                 runCatching { UUID.fromString(it) }.getOrNull()
             } ?: return@launch
             val freshAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
-            val freshMap = freshAnswers.associateBy { it.userId }
+            var freshMap = freshAnswers.associateBy { it.userId }
+            // 본인 답변은 backend에서 family-answers 응답에 포함되지 않을 수 있어
+            // /me 전용 엔드포인트(getByUserAndDailyQuestion)로 한 번 더 시도한다.
+            val isSelf = member.id == state.currentUser?.id
+            if (isSelf && freshMap[member.id] == null) {
+                val mine = runCatching {
+                    answerRepository.getByUserAndDailyQuestion(dailyQId, member.id)
+                }.getOrNull()
+                if (mine != null) {
+                    freshMap = freshMap + (mine.userId to mine)
+                }
+            }
             _uiState.update { it.copy(memberAnswers = it.memberAnswers + freshMap) }
             val answer = freshMap[member.id]
             if (answer != null) {

@@ -1218,7 +1218,8 @@ private fun moodColorFor(moodId: String?, roleIndex: Int = 0) = when (moodId) {
 @Composable
 private fun MoodCircle(color: Color, size: Dp) {
     val eyeSize = size * 0.18f
-    val eyeOffset = size * 0.14f
+    val eyeHOffset = size * 0.144f
+    val eyeVOffset = size * 0.07f
     Box(
         modifier = Modifier
             .size(size)
@@ -1229,7 +1230,7 @@ private fun MoodCircle(color: Color, size: Dp) {
         Box(
             modifier = Modifier
                 .size(eyeSize + 3.dp)
-                .offset(x = -eyeOffset, y = -eyeSize * 0.3f)
+                .offset(x = -eyeHOffset, y = eyeVOffset)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {
@@ -1238,7 +1239,7 @@ private fun MoodCircle(color: Color, size: Dp) {
         Box(
             modifier = Modifier
                 .size(eyeSize + 3.dp)
-                .offset(x = eyeOffset, y = -eyeSize * 0.3f)
+                .offset(x = eyeHOffset, y = eyeVOffset)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {

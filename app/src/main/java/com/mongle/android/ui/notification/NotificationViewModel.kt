@@ -5,11 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.mongle.android.data.remote.AppNotification
 import com.mongle.android.data.remote.ApiNotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class NotificationUiState(
@@ -63,7 +65,9 @@ class NotificationViewModel @Inject constructor(
             state.copy(notifications = state.notifications.map { it.copy(isRead = true) })
         }
         viewModelScope.launch {
-            runCatching { notificationRepository.markAllAsRead() }
+            withContext(NonCancellable) {
+                runCatching { notificationRepository.markAllAsRead() }
+            }
         }
     }
 
@@ -71,8 +75,11 @@ class NotificationViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(notifications = state.notifications.filter { it.id != notificationId })
         }
+        // 화면을 즉시 벗어나도 서버 삭제가 완료되도록 NonCancellable 컨텍스트에서 실행한다.
         viewModelScope.launch {
-            runCatching { notificationRepository.deleteNotification(notificationId) }
+            withContext(NonCancellable) {
+                runCatching { notificationRepository.deleteNotification(notificationId) }
+            }
         }
     }
 
@@ -92,9 +99,14 @@ class NotificationViewModel @Inject constructor(
         if (toDelete.isEmpty()) return
         val remaining = current - toDelete.toSet()
         _uiState.update { it.copy(notifications = remaining) }
+        // 사용자가 모두제거 직후 다른 화면으로 이동하면 viewModelScope가 취소되어
+        // 일부 삭제 API가 실행되지 못해, 재진입 시 서버에서 알림이 다시 내려오는 문제가 있었다.
+        // NonCancellable 컨텍스트로 감싸 모든 삭제 호출이 끝까지 수행되도록 한다.
         viewModelScope.launch {
-            toDelete.forEach { n ->
-                runCatching { notificationRepository.deleteNotification(n.id) }
+            withContext(NonCancellable) {
+                toDelete.forEach { n ->
+                    runCatching { notificationRepository.deleteNotification(n.id) }
+                }
             }
         }
     }
