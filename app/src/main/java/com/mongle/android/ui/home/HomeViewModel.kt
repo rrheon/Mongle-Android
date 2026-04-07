@@ -266,7 +266,12 @@ class HomeViewModel @Inject constructor(
             // 캐시에 없으면 서버에서 최신 가족 답변을 즉시 재조회 후 재시도
             val dailyQId = _uiState.value.todayQuestion?.dailyQuestionId?.let {
                 runCatching { UUID.fromString(it) }.getOrNull()
-            } ?: return@launch
+            }
+            if (dailyQId == null) {
+                android.util.Log.w("HomeVM", "onViewAnswerTapped: dailyQuestionId 없음 member=${member.id}")
+                _events.emit(HomeEvent.ShowError("아직 오늘의 질문 정보가 준비되지 않았어요."))
+                return@launch
+            }
             val freshAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
             var freshMap = freshAnswers.associateBy { it.userId }
             // 본인 답변은 backend에서 family-answers 응답에 포함되지 않을 수 있어
@@ -285,8 +290,13 @@ class HomeViewModel @Inject constructor(
             if (answer != null) {
                 _events.emit(HomeEvent.ShowPeerAnswer(member, memberIndex.coerceAtLeast(0), answer))
             } else {
-                // 서버에도 없으면 에러 토스트 대신 일단 동작 안내 없이 조용히 리턴
-                android.util.Log.w("HomeVM", "onViewAnswerTapped: no answer for ${member.id}")
+                // 캐시·서버 양쪽 모두 답변을 찾지 못한 경우 — 과거에는 silent return 으로
+                // "터치 무반응" 회귀가 있었다. 최소한 토스트로 사용자에게 피드백을 준다.
+                android.util.Log.w(
+                    "HomeVM",
+                    "onViewAnswerTapped: 답변 없음 member=${member.id} freshAnswersSize=${freshAnswers.size} statusBadgeAnswered=${state.memberAnswerStatus[member.id]}"
+                )
+                _events.emit(HomeEvent.ShowError("아직 ${member.name}님의 답변을 불러올 수 없어요."))
             }
         }
     }

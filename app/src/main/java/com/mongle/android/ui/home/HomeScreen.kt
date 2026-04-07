@@ -250,8 +250,25 @@ fun HomeScreen(
             hasCurrentUserSkipped = uiState.hasSkippedToday,
             topInsetPx = overlayHeightPx,
             onViewAnswer = { info ->
+                // 다른 멤버 답변 보기: 캐시 hit 시 동기로 즉시 PeerAnswerSheet 노출.
+                // viewModel.onViewAnswerTapped 의 silent fail 경로 (캐시 miss → 서버
+                // 재조회 결과 없음 → 그냥 Log.w 후 return) 로 인해 "터치 무반응" 회귀가
+                // 발생했었다 — 캐시 hit 면 ViewModel 우회, miss 면 ViewModel 호출 후
+                // 결과 없을 시 ShowError 토스트가 뜨도록 한다.
                 val user = uiState.familyMembers.find { it.id == info.id }
-                user?.let { viewModel.onViewAnswerTapped(it) }
+                if (user != null) {
+                    val cached = uiState.memberAnswers[user.id]
+                    android.util.Log.d(
+                        "HomeScreen",
+                        "onViewAnswer member=${user.name} cached=${cached != null} hasAnswered=${info.hasAnswered}"
+                    )
+                    if (cached != null) {
+                        val idx = uiState.familyMembers.indexOfFirst { it.id == user.id }.coerceAtLeast(0)
+                        peerAnswerData = Triple(user, idx, cached)
+                    } else {
+                        viewModel.onViewAnswerTapped(user)
+                    }
+                }
             },
             onNudge = { info ->
                 val user = uiState.familyMembers.find { it.id == info.id }
