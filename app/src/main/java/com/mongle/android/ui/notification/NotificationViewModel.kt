@@ -76,8 +76,27 @@ class NotificationViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteAll() {
-        _uiState.update { it.copy(notifications = emptyList()) }
+    /**
+     * 주어진 familyId 범위의 알림만 제거한다.
+     * - familyId == null: 전체 알림 제거 (그룹 선택 화면에서 진입한 경우)
+     * - familyId != null: 해당 그룹에 속한 알림만 제거. 그룹 무관(familyId == null)
+     *   알림은 다른 그룹에서도 계속 노출되어야 하므로 남겨둔다.
+     */
+    fun onDeleteAll(familyId: String? = null) {
+        val current = _uiState.value.notifications
+        val toDelete = if (familyId == null) {
+            current
+        } else {
+            current.filter { it.familyId == familyId }
+        }
+        if (toDelete.isEmpty()) return
+        val remaining = current - toDelete.toSet()
+        _uiState.update { it.copy(notifications = remaining) }
+        viewModelScope.launch {
+            toDelete.forEach { n ->
+                runCatching { notificationRepository.deleteNotification(n.id) }
+            }
+        }
     }
 
     fun dismissError() {

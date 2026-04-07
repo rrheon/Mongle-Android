@@ -135,7 +135,7 @@ fun NotificationScreen(
                                 color = MongleTextSecondary
                             )
                         }
-                        TextButton(onClick = viewModel::onDeleteAll) {
+                        TextButton(onClick = { viewModel.onDeleteAll(currentFamilyId?.toString()) }) {
                             Text(
                                 text = stringResource(R.string.notif_delete_all),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),

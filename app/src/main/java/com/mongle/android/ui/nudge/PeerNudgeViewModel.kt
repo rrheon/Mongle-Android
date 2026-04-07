@@ -36,20 +36,14 @@ class PeerNudgeViewModel @Inject constructor(
     val uiState: StateFlow<PeerNudgeUiState> = _uiState.asStateFlow()
 
     fun initialize(targetUserId: String, targetUserName: String, hearts: Int) {
+        // 화면 진입 시에는 항상 재촉 전송 관련 상태를 초기화한다.
+        // (sentCount/heartsRemaining 이 남아있으면 재진입 시 토스트가 잘못 노출됨)
         _uiState.update {
-            // 타겟 사용자가 바뀌면 재촉 상태를 초기화하여 대상별로 개별화한다
-            if (it.targetUserId != targetUserId) {
-                PeerNudgeUiState(
-                    targetUserId = targetUserId,
-                    targetUserName = targetUserName,
-                    hearts = hearts
-                )
-            } else {
-                it.copy(
-                    targetUserName = targetUserName,
-                    hearts = hearts
-                )
-            }
+            PeerNudgeUiState(
+                targetUserId = targetUserId,
+                targetUserName = targetUserName,
+                hearts = hearts
+            )
         }
     }
 
