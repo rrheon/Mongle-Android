@@ -258,12 +258,17 @@ fun HomeScreen(
                 user?.let { viewModel.onNudgeTapped(it) }
             },
             onSelfTap = {
-                // 본인이 오늘의 질문에 이미 답변했다면, 본인 답변 내용을 담은 PeerAnswerSheet를 노출한다.
-                // (캐시 → 서버 가족 답변 → /me 엔드포인트 순서로 onViewAnswerTapped가 처리)
-                // 아직 답변 전이라면 기존처럼 질문 바텀시트(답변/수정)를 연다.
+                // 본인 몽글캐릭터 탭 시: 어떤 상태에서도 무조건 "보이는 동작"이 있어야 한다.
+                // 1) 답변 완료 + 캐시에 본인 답변 있음 → PeerAnswerSheet 즉시 노출
+                // 2) 그 외(답변 전 / 캐시 미스 등) → 오늘의 질문 바텀시트 노출
+                //    (질문 바텀시트는 hasAnswered 일 땐 "답변 수정", 아니면 "답변하기" 버튼을 보여준다)
+                // 과거에는 viewModel.onViewAnswerTapped 의 silent fail 경로(서버 응답 없음 등)
+                // 때문에 탭이 무반응이 되는 회귀가 있었다 — 동기 fallback 으로 차단한다.
                 val me = uiState.currentUser
-                if (me != null && uiState.hasAnsweredToday) {
-                    viewModel.onViewAnswerTapped(me)
+                val cachedMyAnswer = me?.let { uiState.memberAnswers[it.id] }
+                if (me != null && uiState.hasAnsweredToday && cachedMyAnswer != null) {
+                    val idx = uiState.familyMembers.indexOfFirst { it.id == me.id }.coerceAtLeast(0)
+                    peerAnswerData = Triple(me, idx, cachedMyAnswer)
                 } else if (uiState.todayQuestion != null) {
                     showQuestionSheet = true
                 }
