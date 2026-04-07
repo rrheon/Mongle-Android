@@ -90,7 +90,9 @@ class HomeViewModel @Inject constructor(
         hasAnsweredToday: Boolean,
         hasSkippedToday: Boolean = false
     ) {
-        val questionChanged = _uiState.value.todayQuestion?.dailyQuestionId != todayQuestion?.dailyQuestionId
+        val prev = _uiState.value
+        val questionChanged = prev.todayQuestion?.dailyQuestionId != todayQuestion?.dailyQuestionId
+        val answeredTransition = !prev.hasAnsweredToday && hasAnsweredToday
         _uiState.update {
             it.copy(
                 todayQuestion = todayQuestion,
@@ -108,7 +110,9 @@ class HomeViewModel @Inject constructor(
             )
         }
         // 오늘의 질문이 있으면 가족 답변 상태 로드
-        todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it) }
+        // 본인 답변 직후(false → true 전환)에는 서버에서 오늘의 질문도 함께 재조회하여
+        // 백엔드가 본인 답변 존재 여부로 게이트하는 가족 답변을 최신 상태로 가져온다.
+        todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it, forceRefreshQuestion = answeredTransition) }
         // 미읽은 알림 확인
         checkUnreadNotifications()
     }
@@ -122,10 +126,17 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadFamilyAnswers(dailyQuestionId: String) {
+    private fun loadFamilyAnswers(dailyQuestionId: String, forceRefreshQuestion: Boolean = false) {
         viewModelScope.launch {
             try {
                 val dailyQId = UUID.fromString(dailyQuestionId)
+
+                // 본인 답변 직후 백엔드 게이팅 우회를 위해 오늘의 질문을 먼저 재조회 (동기화 목적)
+                if (forceRefreshQuestion) {
+                    runCatching { questionRepository.getTodayQuestion() }.getOrNull()?.let { freshQ ->
+                        _uiState.update { it.copy(todayQuestion = freshQ, hasAnsweredToday = freshQ.hasMyAnswer) }
+                    }
+                }
 
                 // 1) 가족 답변 로드 (Answer 목록)
                 val familyAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
@@ -248,12 +259,27 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onViewAnswerTapped(member: User) {
-        val state = _uiState.value
         viewModelScope.launch {
-            val answer = state.memberAnswers[member.id]
+            val state = _uiState.value
             val memberIndex = state.familyMembers.indexOfFirst { it.id == member.id }
+            val cached = state.memberAnswers[member.id]
+            if (cached != null) {
+                _events.emit(HomeEvent.ShowPeerAnswer(member, memberIndex.coerceAtLeast(0), cached))
+                return@launch
+            }
+            // 캐시에 없으면 서버에서 최신 가족 답변을 즉시 재조회 후 재시도
+            val dailyQId = _uiState.value.todayQuestion?.dailyQuestionId?.let {
+                runCatching { UUID.fromString(it) }.getOrNull()
+            } ?: return@launch
+            val freshAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
+            val freshMap = freshAnswers.associateBy { it.userId }
+            _uiState.update { it.copy(memberAnswers = it.memberAnswers + freshMap) }
+            val answer = freshMap[member.id]
             if (answer != null) {
                 _events.emit(HomeEvent.ShowPeerAnswer(member, memberIndex.coerceAtLeast(0), answer))
+            } else {
+                // 서버에도 없으면 에러 토스트 대신 일단 동작 안내 없이 조용히 리턴
+                android.util.Log.w("HomeVM", "onViewAnswerTapped: no answer for ${member.id}")
             }
         }
     }
