@@ -110,6 +110,17 @@ private val sceneCharacterColors = listOf(
     MongleMonggleOrange
 )
 
+/**
+ * PeerAnswerSheet 노출 시 함께 전달할 데이터 묶음. characterColor 는 HOME 씬에서 이미
+ * 계산된 moodColor 와 동일 색을 시트에서도 재사용하기 위한 필드.
+ */
+private data class PeerAnswerDisplay(
+    val member: User,
+    val index: Int,
+    val answer: Answer,
+    val characterColor: Color?
+)
+
 private fun moodColor(moodId: String?, fallback: Color): Color = when (moodId) {
     "happy" -> MongleMonggleYellow
     "calm" -> MongleMonggleGreenLight
@@ -135,7 +146,7 @@ fun HomeScreen(
 
     // QuestionSheet / PeerAnswerSheet 상태
     var showQuestionSheet by remember { mutableStateOf(false) }
-    var peerAnswerData by remember { mutableStateOf<Triple<User, Int, Answer>?>(null) }
+    var peerAnswerData by remember { mutableStateOf<PeerAnswerDisplay?>(null) }
 
     // 그룹 드롭다운 상태 (호이스팅)
     var showGroupDropdown by remember { mutableStateOf(false) }
@@ -169,8 +180,15 @@ fun HomeScreen(
             when (event) {
                 is HomeEvent.NavigateToQuestionDetail -> onNavigateToQuestionDetail(event.question)
                 is HomeEvent.NavigateToNudge -> onNavigateToNudge(event.targetUser)
-                is HomeEvent.ShowPeerAnswer ->
-                    peerAnswerData = Triple(event.member, event.memberIndex, event.answer)
+                is HomeEvent.ShowPeerAnswer -> {
+                    // LaunchedEffect 클로저는 캡처 시점 sceneMembers 만 보므로,
+                    // 이벤트 시점의 최신 viewModel.uiState 와 답변 moodId 를 사용해 색을 다시 계산한다.
+                    val latestState = viewModel.uiState.value
+                    val idx = latestState.familyMembers.indexOfFirst { it.id == event.member.id }.coerceAtLeast(0)
+                    val fallback = sceneCharacterColors[idx % sceneCharacterColors.size]
+                    val color = moodColor(event.answer.moodId ?: event.member.moodId, fallback)
+                    peerAnswerData = PeerAnswerDisplay(event.member, event.memberIndex, event.answer, color)
+                }
                 is HomeEvent.ShowAnswerFirstToView -> showAnswerFirstDialog = event.memberName
                 is HomeEvent.ShowNudgeUnavailable -> showNudgeUnavailableDialog = event.memberName
                 is HomeEvent.ShowError -> {
@@ -264,7 +282,9 @@ fun HomeScreen(
                     )
                     if (cached != null) {
                         val idx = uiState.familyMembers.indexOfFirst { it.id == user.id }.coerceAtLeast(0)
-                        peerAnswerData = Triple(user, idx, cached)
+                        // 씬에서 이미 계산된 색을 우선 재사용 (같은 moodColor 결과)
+                        val color = sceneMembers.find { it.id == user.id }?.color
+                        peerAnswerData = PeerAnswerDisplay(user, idx, cached, color)
                     } else {
                         viewModel.onViewAnswerTapped(user)
                     }
@@ -285,7 +305,8 @@ fun HomeScreen(
                 val cachedMyAnswer = me?.let { uiState.memberAnswers[it.id] }
                 if (me != null && uiState.hasAnsweredToday && cachedMyAnswer != null) {
                     val idx = uiState.familyMembers.indexOfFirst { it.id == me.id }.coerceAtLeast(0)
-                    peerAnswerData = Triple(me, idx, cachedMyAnswer)
+                    val color = sceneMembers.find { it.id == me.id }?.color
+                    peerAnswerData = PeerAnswerDisplay(me, idx, cachedMyAnswer, color)
                 } else if (uiState.todayQuestion != null) {
                     showQuestionSheet = true
                 }
@@ -416,13 +437,14 @@ fun HomeScreen(
     }
 
     // PeerAnswerSheet
-    peerAnswerData?.let { (member, index, answer) ->
+    peerAnswerData?.let { data ->
         PeerAnswerSheet(
-            member = member,
-            memberIndex = index,
+            member = data.member,
+            memberIndex = data.index,
             questionText = uiState.todayQuestion?.content ?: "",
-            answer = answer,
-            onDismiss = { peerAnswerData = null }
+            answer = data.answer,
+            onDismiss = { peerAnswerData = null },
+            characterColor = data.characterColor
         )
     }
 

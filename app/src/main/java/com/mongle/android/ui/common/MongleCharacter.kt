@@ -80,9 +80,12 @@ fun MongleCharacter(
     size: Dp = 56.dp,
     hasAnswered: Boolean = false,
     showName: Boolean = true,
+    color: Color? = null,
     modifier: Modifier = Modifier
 ) {
-    val bodyColor = characterColors[index % characterColors.size]
+    // 명시적으로 color 가 전달되면 그것을 사용 (HOME 의 moodColor 와 동일색을 PeerAnswerSheet 에서 재사용),
+    // 아니면 index 기반 기본색을 fallback 으로 사용한다.
+    val bodyColor = color ?: characterColors[index % characterColors.size]
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
     val eyeVOffset = size * 0.07f
