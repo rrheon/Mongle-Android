@@ -715,8 +715,10 @@ private fun CreateStep(
             }
 
             MongleLogo(
-                size = MongleLogoSize.LARGE,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                size = MongleLogoSize.SMALL,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = MongleSpacing.lg)
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
@@ -872,8 +874,10 @@ private fun JoinStep(
             Spacer(modifier = Modifier.height(MongleSpacing.md))
 
             MongleLogo(
-                size = MongleLogoSize.LARGE,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                size = MongleLogoSize.SMALL,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = MongleSpacing.lg)
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(MongleSpacing.xxs)) {
