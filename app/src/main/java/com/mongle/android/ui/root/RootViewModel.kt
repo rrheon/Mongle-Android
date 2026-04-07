@@ -166,12 +166,9 @@ class RootViewModel @Inject constructor(
                         }
                     }
 
-                    // 오늘의 질문이 없으면 히스토리에서 가장 최근 질문을 가져와 표시
-                    val lastQ = if (question == null) {
-                        runCatching {
-                            questionRepository.getDailyHistory(page = 1, limit = 1).firstOrNull()?.question
-                        }.getOrNull()
-                    } else null
+                    // 서버가 KST 자정에 새 질문을 배정하므로 별도의 "최근 질문 폴백" 은 불필요.
+                    // (과거엔 오전 11시 이전에 어제 질문을 보여주는 용도였으나 자정 기준으로 통일)
+                    val lastQ: Question? = null
 
                     _uiState.update {
                         val serverMe = members.firstOrNull { m -> m.id == it.currentUser?.id }

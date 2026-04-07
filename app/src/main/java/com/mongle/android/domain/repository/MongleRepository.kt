@@ -37,11 +37,11 @@ interface MongleRepository {
 }
 
 sealed class MongleError(message: String) : Exception(message) {
-    data object FamilyNotFound : MongleError("가족을 찾을 수 없습니다.")
+    data object FamilyNotFound : MongleError("그룹을 찾을 수 없습니다.")
     data object InvalidInviteCode : MongleError("유효하지 않은 초대 코드입니다.")
-    data object AlreadyMember : MongleError("이미 가족 구성원입니다.")
-    data object NotMember : MongleError("가족 구성원이 아닙니다.")
-    data object CannotLeaveAsOnlyAdmin : MongleError("유일한 관리자는 가족을 떠날 수 없습니다.")
+    data object AlreadyMember : MongleError("이미 그룹 구성원입니다.")
+    data object NotMember : MongleError("그룹 구성원이 아닙니다.")
+    data object CannotLeaveAsOnlyAdmin : MongleError("유일한 관리자는 그룹을 떠날 수 없습니다.")
     data object NetworkError : MongleError("네트워크 연결을 확인해주세요.")
     data class Unknown(val msg: String) : MongleError(msg)
 }

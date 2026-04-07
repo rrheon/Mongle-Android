@@ -32,7 +32,7 @@
     <string name="onboarding_group_desc">Invite family, friends, couples\nand anyone you want</string>
     <string name="onboarding_question_title">Share your\nfeelings daily</string>
     <string name="onboarding_question_desc">Answer new questions daily\nand peek into each other\'s hearts</string>
-    <string name="onboarding_sample_group">My Family 🩷</string>
+    <string name="onboarding_sample_group">My Group 🩷</string>
     <string name="onboarding_sample_question">What made you smile today?</string>
     <string name="onboarding_today_question">Today\'s Question</string>
     <string name="onboarding_start">Get Started</string>
@@ -65,6 +65,7 @@
     <string name="home_hearts_insufficient_write">You need 3 hearts to write a question.\nCurrent hearts: %d</string>
     <string name="home_hearts_insufficient_skip">You need 3 hearts to skip.\nCurrent hearts: %d</string>
     <string name="home_watch_ad_skip">Watch ad and skip</string>
+    <string name="home_watch_ad_write">Watch ad and write</string>
     <string name="error_already_answered_skip">You cannot skip a question you\'ve already answered</string>
     <string name="error_already_skipped">You\'ve already skipped this question</string>
     <string name="error_skip_failed">Failed to skip the question</string>
@@ -87,7 +88,7 @@
     <string name="detail_answer_placeholder">Write about your feelings today.\nAnything is welcome.</string>
     <string name="detail_submit">Submit Answer</string>
     <string name="detail_edit_submit">Edit Answer</string>
-    <string name="detail_family_answers">Family Answers (%d)</string>
+    <string name="detail_family_answers">Group Answers (%d)</string>
     <string name="detail_mood_required_title">Please select today\'s Mongle</string>
     <string name="detail_mood_required_desc">Choose the Mongle character closest to your current mood</string>
     <string name="detail_edit_confirm_title">Edit your answer?</string>
@@ -113,7 +114,7 @@
     <string name="search_min_length">Please enter at least 2 characters</string>
     <string name="search_no_results">No records matching \"%s\"</string>
     <string name="search_result_count">Found %d records</string>
-    <string name="search_empty">Search your family\'s precious records</string>
+    <string name="search_empty">Search your group\'s precious records</string>
 
     <!-- Notifications -->
     <string name="notif_title">Notifications</string>
@@ -156,9 +157,9 @@
     <string name="group_join_desc">Join with your invite code</string>
     <string name="group_create_title">Create New Space</string>
     <string name="group_create_headline">Create our Mongle space</string>
-    <string name="group_create_subtitle">Share feelings with family and friends</string>
+    <string name="group_create_subtitle">Share feelings with the people you care about</string>
     <string name="group_name_label">Space Name</string>
-    <string name="group_name_placeholder">Kim Family</string>
+    <string name="group_name_placeholder">My Group</string>
     <string name="group_name_error">Please enter a space name</string>
     <string name="group_name_hint">Family, friends, couples, etc.! (max 10)</string>
     <string name="group_nickname_label">My Nickname</string>
@@ -170,7 +171,7 @@
     <string name="group_create_btn">Create Space</string>
     <string name="group_join_title">Join with Code</string>
     <string name="group_join_headline">Enter your invite code.</string>
-    <string name="group_join_subtitle">Enter the code from your friend or family\nto join the space</string>
+    <string name="group_join_subtitle">Enter the invite code you received\nto join the space</string>
     <string name="group_code_label">Invite Code</string>
     <string name="group_code_placeholder">Enter invite code</string>
     <string name="group_code_hint">Code consists of uppercase letters and numbers</string>
@@ -186,7 +187,7 @@
 
     <!-- Notification Permission -->
     <string name="perm_notif_title">Allow notifications 🔔</string>
-    <string name="perm_notif_desc">Don\'t miss updates from your family</string>
+    <string name="perm_notif_desc">Don\'t miss updates from your group</string>
     <string name="perm_notif_answer">When a member answers</string>
     <string name="perm_notif_nudge">When you receive a nudge</string>
     <string name="perm_notif_question">New question notification</string>
@@ -280,7 +281,7 @@
     <string name="notif_settings_dnd">Do Not Disturb</string>
 
     <!-- Toast Messages -->
-    <string name="toast_skip">Question skipped. Check other family answers!</string>
+    <string name="toast_skip">Question skipped. Check other members\' answers!</string>
     <string name="toast_write">Your question has been registered!</string>
     <string name="toast_nudge">Nudge sent!</string>
     <string name="toast_edit">Answer edited!</string>

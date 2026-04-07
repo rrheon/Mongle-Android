@@ -57,6 +57,7 @@ sealed class HomeEvent {
     data class ShowAnswerFirstToView(val memberName: String) : HomeEvent()
     data class ShowNudgeUnavailable(val memberName: String) : HomeEvent()
     data class ShowError(val message: String) : HomeEvent()
+    object NavigateToWriteQuestion : HomeEvent()
 }
 
 @HiltViewModel
@@ -378,6 +379,36 @@ class HomeViewModel @Inject constructor(
                     _events.emit(HomeEvent.ShowError(e.message ?: ""))
                 }
         }
+    }
+
+    fun watchAdForWrite(adManager: AdManager) {
+        _uiState.update { it.copy(isLoading = true) }
+        adManager.showRewardedAd(
+            onRewarded = {
+                viewModelScope.launch {
+                    try {
+                        val heartsAfterAd = userRepository.grantAdHearts(3)
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                currentUser = it.currentUser?.copy(hearts = heartsAfterAd)
+                            )
+                        }
+                        // 광고 시청 후 작성 화면으로 자동 이동
+                        _events.emit(HomeEvent.NavigateToWriteQuestion)
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(isLoading = false) }
+                        _events.emit(HomeEvent.ShowError(e.message ?: "ad_reward_failed"))
+                    }
+                }
+            },
+            onFailed = {
+                viewModelScope.launch {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.emit(HomeEvent.ShowError("ad_load_failed"))
+                }
+            }
+        )
     }
 
     fun watchAdForSkip(adManager: AdManager) {

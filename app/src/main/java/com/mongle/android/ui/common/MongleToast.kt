@@ -117,7 +117,7 @@ private val MongleToastType.iconColor: Color
 
 val MongleToastType.defaultMessage: String
     get() = when (this) {
-        MongleToastType.REFRESH_QUESTION -> "질문을 넘겼어요. 다른 가족 답변을 확인해보세요!"
+        MongleToastType.REFRESH_QUESTION -> "질문을 넘겼어요. 다른 멤버 답변을 확인해보세요!"
         MongleToastType.WRITE_QUESTION -> "나만의 질문을 등록했어요!"
         MongleToastType.NUDGE -> "재촉 메시지를 보냈어요!"
         MongleToastType.EDIT_ANSWER -> "답변을 수정했어요!"

@@ -486,19 +486,9 @@ private fun HistoryQuestionCard(
 
 @Composable
 private fun EmptyDateCard(selectedDate: Date, modifier: Modifier = Modifier) {
-    val cal = Calendar.getInstance()
-    val isToday = run {
-        val dateCal = Calendar.getInstance().apply { time = selectedDate }
-        dateCal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR) &&
-            dateCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
-    }
-    val questionTime = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, 11)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-    }.time
-    val isBeforeQuestionTime = Date() < questionTime
-    val message = if (isToday && isBeforeQuestionTime) stringResource(R.string.home_question_placeholder) else stringResource(R.string.history_no_record)
+    // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로 "오전 11시 대기 중" 메시지 불필요.
+    // 해당 날짜에 기록이 없는 경우엔 일괄 "기록 없음" 안내.
+    val message = stringResource(R.string.history_no_record)
 
     Column(
         modifier = modifier

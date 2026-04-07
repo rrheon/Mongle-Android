@@ -32,7 +32,7 @@
     <string name="onboarding_group_desc">家族、友達、カップルなど\n一緒にしたい人を招待しましょう</string>
     <string name="onboarding_question_title">毎日一緒に\n気持ちを分かち合おう</string>
     <string name="onboarding_question_desc">毎日新しい質問に答えて\nお互いの気持ちを覗いてみましょう</string>
-    <string name="onboarding_sample_group">私たちの家族 🩷</string>
+    <string name="onboarding_sample_group">私たちのグループ 🩷</string>
     <string name="onboarding_sample_question">今日あなたを笑顔にしたものは何ですか？</string>
     <string name="onboarding_today_question">今日の質問</string>
     <string name="onboarding_start">はじめる</string>
@@ -59,12 +59,13 @@
     <string name="home_write_question_desc">ハート3個を消費して自分だけの質問を\n今日の質問として登録します。</string>
     <string name="home_write_btn">作成する</string>
     <string name="home_skip_question_title">質問をスキップしますか？</string>
-    <string name="home_skip_question_desc">ハート3個を消費して新しい質問に\n変更されます。スキップ後は他の家族の\n回答を閲覧できます。</string>
+    <string name="home_skip_question_desc">ハート3個を消費して新しい質問に\n変更されます。スキップ後は他のメンバーの\n回答を閲覧できます。</string>
     <string name="home_skip_btn">スキップ</string>
     <string name="home_hearts_insufficient_title">ハートが足りません</string>
     <string name="home_hearts_insufficient_write">質問を作成するにはハート3個が必要です。\n現在のハート: %d個</string>
     <string name="home_hearts_insufficient_skip">質問をスキップするにはハート3個が必要です。\n現在のハート: %d個</string>
     <string name="home_watch_ad_skip">広告を見てスキップ</string>
+    <string name="home_watch_ad_write">広告を見て作成</string>
     <string name="error_already_answered_skip">既に回答した質問はスキップできません</string>
     <string name="error_already_skipped">既にこの質問をスキップしました</string>
     <string name="error_skip_failed">質問のスキップに失敗しました</string>
@@ -77,7 +78,7 @@
     <string name="sheet_write_question">自分だけの質問を作成する</string>
     <string name="sheet_heart_cost_3">ハート3個消費</string>
     <string name="sheet_skip">質問をスキップ</string>
-    <string name="sheet_skip_desc">ハート3個消費 · 他の家族の回答閲覧可能</string>
+    <string name="sheet_skip_desc">ハート3個消費 · 他のメンバーの回答閲覧可能</string>
 
     <!-- Question Detail -->
     <string name="detail_title">気持ちを残す</string>
@@ -87,7 +88,7 @@
     <string name="detail_answer_placeholder">今日の感情を自由に書いてみてください。\nどんな話でも大丈夫です。</string>
     <string name="detail_submit">回答を残す</string>
     <string name="detail_edit_submit">回答を修正する</string>
-    <string name="detail_family_answers">家族の回答 (%d)</string>
+    <string name="detail_family_answers">グループの回答 (%d)</string>
     <string name="detail_mood_required_title">今日のモングルを選んでください</string>
     <string name="detail_mood_required_desc">今の気分に最も近いモングルキャラクターを選んでください</string>
     <string name="detail_edit_confirm_title">回答を修正しますか？</string>
@@ -113,7 +114,7 @@
     <string name="search_min_length">2文字以上入力してください</string>
     <string name="search_no_results">「%s」に一致する記録がありません</string>
     <string name="search_result_count">%d件の記録が見つかりました</string>
-    <string name="search_empty">家族の大切な記録を検索してみましょう</string>
+    <string name="search_empty">グループの大切な記録を検索してみましょう</string>
 
     <!-- Notifications -->
     <string name="notif_title">お知らせ</string>
@@ -156,9 +157,9 @@
     <string name="group_join_desc">受け取った招待コードで参加してください</string>
     <string name="group_create_title">新しいスペースを作る</string>
     <string name="group_create_headline">私たちのモングルスペースを作りましょう</string>
-    <string name="group_create_subtitle">家族や友達と気持ちを分かち合いましょう</string>
+    <string name="group_create_subtitle">大切な人たちと気持ちを分かち合いましょう</string>
     <string name="group_name_label">スペース名</string>
-    <string name="group_name_placeholder">田中家</string>
+    <string name="group_name_placeholder">マイグループ</string>
     <string name="group_name_error">スペース名を入力してください</string>
     <string name="group_name_hint">家族、親友、カップルなど自由に！（最大10文字）</string>
     <string name="group_nickname_label">ニックネーム</string>
@@ -170,7 +171,7 @@
     <string name="group_create_btn">スペースを作成</string>
     <string name="group_join_title">招待コードで参加する</string>
     <string name="group_join_headline">招待コードを入力してください。</string>
-    <string name="group_join_subtitle">友達や家族からもらったコードを入力すると\n一緒にスペースに参加できます</string>
+    <string name="group_join_subtitle">受け取った招待コードを入力すると\n一緒にスペースに参加できます</string>
     <string name="group_code_label">招待コード</string>
     <string name="group_code_placeholder">招待コードを入力してください</string>
     <string name="group_code_hint">大文字と数字で構成されたコードです</string>
@@ -186,7 +187,7 @@
 
     <!-- Notification Permission -->
     <string name="perm_notif_title">通知を許可してください 🔔</string>
-    <string name="perm_notif_desc">家族のニュースを見逃さないようにしましょう</string>
+    <string name="perm_notif_desc">グループのお知らせを見逃さないようにしましょう</string>
     <string name="perm_notif_answer">メンバーが回答した時</string>
     <string name="perm_notif_nudge">催促通知を受けた時</string>
     <string name="perm_notif_question">新しい質問通知</string>
@@ -248,7 +249,7 @@
     <!-- Group Management -->
     <string name="mgmt_title">グループ管理</string>
     <string name="mgmt_invite_section">グループ招待</string>
-    <string name="mgmt_invite_desc">招待コードやリンクを共有して家族を招待しましょう</string>
+    <string name="mgmt_invite_desc">招待コードやリンクを共有してメンバーを招待しましょう</string>
     <string name="mgmt_leave">グループを退出</string>
     <string name="mgmt_leave_title">グループ退出</string>
     <string name="mgmt_leave_desc">グループを退出すると全ての回答記録の接続が解除されます。</string>
@@ -280,7 +281,7 @@
     <string name="notif_settings_dnd">おやすみ時間</string>
 
     <!-- Toast Messages -->
-    <string name="toast_skip">質問をスキップしました。他の家族の回答を確認してみましょう！</string>
+    <string name="toast_skip">質問をスキップしました。他のメンバーの回答を確認してみましょう！</string>
     <string name="toast_write">自分だけの質問を登録しました！</string>
     <string name="toast_nudge">催促メッセージを送りました！</string>
     <string name="toast_edit">回答を修正しました！</string>

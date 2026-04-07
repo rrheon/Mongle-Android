@@ -180,6 +180,7 @@ fun HomeScreen(
             when (event) {
                 is HomeEvent.NavigateToQuestionDetail -> onNavigateToQuestionDetail(event.question)
                 is HomeEvent.NavigateToNudge -> onNavigateToNudge(event.targetUser)
+                is HomeEvent.NavigateToWriteQuestion -> onNavigateToWriteQuestion()
                 is HomeEvent.ShowPeerAnswer -> {
                     // LaunchedEffect 클로저는 캡처 시점 sceneMembers 만 보므로,
                     // 이벤트 시점의 최신 viewModel.uiState 와 답변 moodId 를 사용해 색을 다시 계산한다.
@@ -338,22 +339,14 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // 오늘의 질문 카드 (씬 안쪽 오버레이)
+            // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로 시각 분기 없이
+            // todayQuestion 이 있으면 그대로 노출. (과거엔 오전 11시 이전에
+            // lastQuestion 을 대체 노출했으나 자정 기준으로 통일)
             if (uiState.todayQuestion != null) {
                 TodayQuestionCard(
                     question = uiState.todayQuestion!!,
                     hasAnswered = uiState.hasAnsweredToday,
                     onTap = { showQuestionSheet = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = MongleSpacing.md)
-                        .padding(bottom = MongleSpacing.sm)
-                )
-            } else if (uiState.lastQuestion != null) {
-                // 오늘의 질문이 아직 도착하지 않았을 때 전날 질문을 읽기 전용으로 표시
-                TodayQuestionCard(
-                    question = uiState.lastQuestion!!,
-                    hasAnswered = true,
-                    onTap = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = MongleSpacing.md)
@@ -511,8 +504,15 @@ fun HomeScreen(
                 MonglePopup(
                     title = stringResource(R.string.home_hearts_insufficient_title),
                     description = stringResource(R.string.home_hearts_insufficient_write, currentHearts),
-                    primaryLabel = stringResource(R.string.common_confirm),
-                    onPrimary = { showWriteConfirmDialog = false }
+                    primaryLabel = if (adManager != null) stringResource(R.string.home_watch_ad_write) else stringResource(R.string.common_confirm),
+                    onPrimary = {
+                        showWriteConfirmDialog = false
+                        if (adManager != null) {
+                            viewModel.watchAdForWrite(adManager)
+                        }
+                    },
+                    secondaryLabel = stringResource(R.string.common_cancel),
+                    onSecondary = { showWriteConfirmDialog = false }
                 )
             }
         }

@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.mongle.android.ui.common.AdBannerSection
 import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -486,6 +487,12 @@ private fun SelectStep(
                         color = MongleTextSecondary
                     )
                 }
+            }
+
+            // 그룹이 1개 이상일 때만 광고 배너 표시
+            if (groups.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(MongleSpacing.sm))
+                AdBannerSection()
             }
 
             Spacer(modifier = Modifier.height(MongleSpacing.lg))
