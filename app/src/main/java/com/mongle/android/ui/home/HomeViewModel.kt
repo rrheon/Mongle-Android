@@ -156,33 +156,29 @@ class HomeViewModel @Inject constructor(
                     questionRepository.getTodayQuestionMemberStatuses()
                 }.getOrElse { emptyList() }
 
-                android.util.Log.d("HomeVM", "loadFamilyAnswers: answers=${allAnswers.size}, statuses=${todayStatuses.size}, statuses=$todayStatuses")
+                // 상태맵과 답변맵의 정합성 보장:
+                // - answersMap에 답변이 있으면 무조건 "answered"로 간주 (서버 상태가 뒤처져도 UI 즉시 반영)
+                // - todayStatuses의 "answered"/"skipped" 정보는 추가 병합
+                val answeredFromAnswers = answersMap.mapValues { true }
+                val answeredFromStatus = todayStatuses
+                    .filter { it.second == "answered" }
+                    .associate { (userId, _) -> UUID.fromString(userId) to true }
+                val statusMap = answeredFromAnswers + answeredFromStatus
+                val skipMap = todayStatuses
+                    .filter { it.second == "skipped" }
+                    .associate { (userId, _) -> UUID.fromString(userId) to true }
 
-                if (todayStatuses.isNotEmpty()) {
-                    val statusMap = todayStatuses.associate { (userId, status) ->
-                        UUID.fromString(userId) to (status == "answered")
-                    }
-                    val skipMap = todayStatuses.associate { (userId, status) ->
-                        UUID.fromString(userId) to (status == "skipped")
-                    }
-                    android.util.Log.d("HomeVM", "statusMap=$statusMap, skipMap=$skipMap")
-                    _uiState.update {
-                        it.copy(
-                            memberAnswerStatus = statusMap,
-                            memberAnswers = answersMap,
-                            memberSkipStatus = skipMap
-                        )
-                    }
-                } else {
-                    // fallback: 답변 있는 멤버는 answered, 나머지는 상태 없음
-                    val statusMap = answersMap.mapValues { true }
-                    android.util.Log.d("HomeVM", "fallback statusMap=$statusMap")
-                    _uiState.update {
-                        it.copy(
-                            memberAnswerStatus = statusMap,
-                            memberAnswers = answersMap
-                        )
-                    }
+                android.util.Log.d(
+                    "HomeVM",
+                    "loadFamilyAnswers: answers=${allAnswers.size}, statuses=${todayStatuses.size}, statusMap=$statusMap, skipMap=$skipMap"
+                )
+
+                _uiState.update {
+                    it.copy(
+                        memberAnswerStatus = statusMap,
+                        memberAnswers = answersMap,
+                        memberSkipStatus = skipMap
+                    )
                 }
             } catch (e: Exception) {
                 android.util.Log.e("HomeVM", "loadFamilyAnswers failed", e)

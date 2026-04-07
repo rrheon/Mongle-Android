@@ -454,11 +454,23 @@ private fun notificationTypeStyle(type: String): NotifStyle = when (type.lowerca
     else -> NotifStyle(Color(0xFFF5F5F5), Icons.Default.QuestionMark, Color(0xFF9E9E9E))
 }
 
-private val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-private val isoFormatZ = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+// 서버가 보내는 createdAt은 UTC 기준 ISO 8601 문자열.
+// 'Z'는 SimpleDateFormat에서 리터럴로 취급되므로 반드시 TimeZone을 UTC로 명시해야
+// KST(+9) 환경에서 9시간 어긋난 값을 피할 수 있다.
+private val isoFormatZ = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).apply {
+    timeZone = java.util.TimeZone.getTimeZone("UTC")
+}
+private val isoFormatMillisZ = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+    timeZone = java.util.TimeZone.getTimeZone("UTC")
+}
+// 타임존 표기가 없는 경우도 UTC로 해석 (서버가 항상 UTC를 내려준다고 가정)
+private val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).apply {
+    timeZone = java.util.TimeZone.getTimeZone("UTC")
+}
 
 private fun timeAgo(createdAt: String, res: Resources): String {
-    val date = runCatching { isoFormatZ.parse(createdAt) }.getOrNull()
+    val date = runCatching { isoFormatMillisZ.parse(createdAt) }.getOrNull()
+        ?: runCatching { isoFormatZ.parse(createdAt) }.getOrNull()
         ?: runCatching { isoFormat.parse(createdAt) }.getOrNull()
         ?: return ""
     val diffMs = Date().time - date.time
