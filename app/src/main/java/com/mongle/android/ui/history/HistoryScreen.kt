@@ -486,7 +486,7 @@ private fun HistoryQuestionCard(
 
 @Composable
 private fun EmptyDateCard(selectedDate: Date, modifier: Modifier = Modifier) {
-    // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로 "오전 11시 대기 중" 메시지 불필요.
+    // 서버 스케줄러가 KST 정오에 새 질문을 배정한다.
     // 해당 날짜에 기록이 없는 경우엔 일괄 "기록 없음" 안내.
     val message = stringResource(R.string.history_no_record)
 

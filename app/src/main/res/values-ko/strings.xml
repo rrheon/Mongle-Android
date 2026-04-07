@@ -246,6 +246,21 @@
     <string name="settings_login_required_desc">이 기능을 이용하려면 로그인이 필요해요.</string>
     <string name="settings_login_btn">로그인하기</string>
 
+    <!-- Consent -->
+    <string name="consent_title">약관에 동의해주세요</string>
+    <string name="consent_subtitle">몽글 서비스 이용을 위해\n아래 항목에 동의가 필요해요.</string>
+    <string name="consent_all">전체 동의</string>
+    <string name="consent_age">(필수) 만 14세 이상입니다</string>
+    <string name="consent_terms">(필수) 서비스 이용약관 동의</string>
+    <string name="consent_privacy">(필수) 개인정보 처리방침 동의</string>
+    <string name="consent_view">보기</string>
+    <string name="consent_submit">동의하고 시작하기</string>
+
+    <!-- Settings - Legal -->
+    <string name="settings_legal">약관 및 정책</string>
+    <string name="settings_terms">서비스 이용약관</string>
+    <string name="settings_privacy">개인정보 처리방침</string>
+
     <!-- Group Management -->
     <string name="mgmt_title">그룹 관리</string>
     <string name="mgmt_invite_section">그룹 초대</string>

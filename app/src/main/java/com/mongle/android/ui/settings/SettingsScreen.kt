@@ -34,7 +34,9 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Notifications
@@ -343,6 +345,32 @@ private fun MyScreen(
                     )
                 )
             )
+
+            // 약관/개인정보 섹션 — 노션 페이지를 Custom Tab 으로 오픈
+            run {
+                val ctx = LocalContext.current
+                SettingsSection(
+                    title = stringResource(R.string.settings_legal),
+                    rows = listOf(
+                        SettingsRowData(
+                            icon = Icons.Default.Description,
+                            iconBgColor = MongleMonggleGreenLight,
+                            iconTint = Color.White,
+                            title = stringResource(R.string.settings_terms),
+                            subtitle = "",
+                            onClick = { openLegalUrl(ctx, com.mongle.android.ui.consent.LegalLinks.TERMS_URL) }
+                        ),
+                        SettingsRowData(
+                            icon = Icons.Default.Lock,
+                            iconBgColor = MongleMonggleGreenLight,
+                            iconTint = Color.White,
+                            title = stringResource(R.string.settings_privacy),
+                            subtitle = "",
+                            onClick = { openLegalUrl(ctx, com.mongle.android.ui.consent.LegalLinks.PRIVACY_URL) }
+                        )
+                    )
+                )
+            }
 
             // 버전
             Text(
@@ -1373,5 +1401,18 @@ private fun SettingsRow(row: SettingsRowData) {
                 modifier = Modifier.size(16.dp)
             )
         }
+    }
+}
+
+/**
+ * 노션 약관 페이지를 Custom Tab 으로 오픈. Custom Tabs 미설치 환경은 일반 브라우저로 폴백.
+ */
+private fun openLegalUrl(context: Context, url: String) {
+    runCatching {
+        androidx.browser.customtabs.CustomTabsIntent.Builder()
+            .build()
+            .launchUrl(context, android.net.Uri.parse(url))
+    }.onFailure {
+        context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)))
     }
 }

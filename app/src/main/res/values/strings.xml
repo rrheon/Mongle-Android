@@ -246,6 +246,21 @@
     <string name="settings_login_required_desc">You need to log in to use this feature.</string>
     <string name="settings_login_btn">Log In</string>
 
+    <!-- Consent -->
+    <string name="consent_title">Please agree to the terms</string>
+    <string name="consent_subtitle">We need your consent to the items\nbelow to use Mongle.</string>
+    <string name="consent_all">Agree to all</string>
+    <string name="consent_age">(Required) I am 14 or older</string>
+    <string name="consent_terms">(Required) Terms of Service</string>
+    <string name="consent_privacy">(Required) Privacy Policy</string>
+    <string name="consent_view">View</string>
+    <string name="consent_submit">Agree and continue</string>
+
+    <!-- Settings - Legal -->
+    <string name="settings_legal">Legal</string>
+    <string name="settings_terms">Terms of Service</string>
+    <string name="settings_privacy">Privacy Policy</string>
+
     <!-- Group Management -->
     <string name="mgmt_title">Group Management</string>
     <string name="mgmt_invite_section">Group Invite</string>

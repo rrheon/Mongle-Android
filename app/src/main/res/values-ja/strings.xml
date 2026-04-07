@@ -246,6 +246,21 @@
     <string name="settings_login_required_desc">この機能を利用するにはログインが必要です。</string>
     <string name="settings_login_btn">ログインする</string>
 
+    <!-- Consent -->
+    <string name="consent_title">規約に同意してください</string>
+    <string name="consent_subtitle">モングルをご利用いただくには\n下記項目への同意が必要です。</string>
+    <string name="consent_all">すべて同意</string>
+    <string name="consent_age">（必須）満14歳以上です</string>
+    <string name="consent_terms">（必須）利用規約に同意</string>
+    <string name="consent_privacy">（必須）プライバシーポリシーに同意</string>
+    <string name="consent_view">見る</string>
+    <string name="consent_submit">同意して始める</string>
+
+    <!-- Settings - Legal -->
+    <string name="settings_legal">規約とポリシー</string>
+    <string name="settings_terms">利用規約</string>
+    <string name="settings_privacy">プライバシーポリシー</string>
+
     <!-- Group Management -->
     <string name="mgmt_title">グループ管理</string>
     <string name="mgmt_invite_section">グループ招待</string>

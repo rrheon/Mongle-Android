@@ -63,7 +63,25 @@ data class StreakResponse(
 data class AuthResponse(
     val user: ApiUserResponse,
     val token: String,
-    val refresh_token: String?
+    val refresh_token: String?,
+    /** 약관/개인정보 동의 필요 여부 — 신규 가입 또는 약관 버전 변경 시 true */
+    val needsConsent: Boolean? = null,
+    /** 동의가 필요한 약관 종류 ("terms", "privacy") */
+    val requiredConsents: List<String>? = null,
+    /** 서버가 알려주는 현재 약관 버전 */
+    val legalVersions: LegalVersionsDto? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class LegalVersionsDto(
+    val terms: String,
+    val privacy: String
+)
+
+@JsonClass(generateAdapter = true)
+data class ConsentRequest(
+    val termsVersion: String? = null,
+    val privacyVersion: String? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -315,6 +333,9 @@ interface MongleApiService {
 
     @DELETE("auth/account")
     suspend fun deleteAccount()
+
+    @POST("auth/consent")
+    suspend fun submitConsent(@Body body: ConsentRequest)
 
     // Users
     @GET("users/me")

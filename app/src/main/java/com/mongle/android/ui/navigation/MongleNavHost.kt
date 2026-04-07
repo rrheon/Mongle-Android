@@ -35,6 +35,7 @@ import com.mongle.android.ui.common.MongleLogoSize
 import com.mongle.android.ui.common.MongleToastOverlay
 import com.mongle.android.ui.common.MongleToastType
 import com.mongle.android.ui.common.defaultMessage
+import com.mongle.android.ui.consent.ConsentScreen
 import com.mongle.android.ui.groupselect.GroupSelectScreen
 import com.mongle.android.ui.login.LoginScreen
 import com.mongle.android.ui.main.MainTabScreen
@@ -135,10 +136,21 @@ fun MongleNavHost(
 
         AppState.Unauthenticated -> {
             LoginScreen(
-                onLoggedIn = { user -> rootViewModel.onLoggedIn(user) },
+                onLoggedIn = { user, needsConsent, requiredConsents, legalVersions ->
+                    rootViewModel.onLoggedIn(user, needsConsent, requiredConsents, legalVersions)
+                },
                 onBrowse = { rootViewModel.onBrowse() },
                 pendingAppleCallbackUri = uiState.pendingAppleCallbackUri,
                 onAppleCallbackConsumed = { rootViewModel.clearPendingAppleCallback() }
+            )
+        }
+
+        AppState.ConsentRequired -> {
+            ConsentScreen(
+                requiredConsents = uiState.pendingConsentRequired,
+                legalVersions = uiState.pendingLegalVersions,
+                onCompleted = { rootViewModel.onConsentCompleted() },
+                onBack = { rootViewModel.onConsentCancelled() }
             )
         }
 

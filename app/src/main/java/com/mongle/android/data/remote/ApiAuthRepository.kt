@@ -3,7 +3,10 @@ package com.mongle.android.data.remote
 import android.content.Context
 import android.util.Log
 import com.mongle.android.domain.model.FamilyRole
+import com.mongle.android.domain.model.LegalDocType
+import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.SocialLoginCredential
+import com.mongle.android.domain.model.SocialLoginResult
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AuthRepository
@@ -71,7 +74,7 @@ class ApiAuthRepository @Inject constructor(
         }
     }
 
-    override suspend fun socialLogin(credential: SocialLoginCredential): User {
+    override suspend fun socialLogin(credential: SocialLoginCredential): SocialLoginResult {
         return safeCall {
             val request = when (credential.providerType) {
                 SocialProviderType.KAKAO -> SocialLoginRequest(
@@ -96,7 +99,25 @@ class ApiAuthRepository @Inject constructor(
             }
             val response = api.socialLogin(request)
             saveSession(response.user, response.token, response.refresh_token)
-            response.user.toDomain()
+            val required = response.requiredConsents.orEmpty()
+                .mapNotNull { LegalDocType.fromKey(it) }
+            // 서버가 legalVersions 를 안 내려주면 빈 문자열로 두고 needsConsent=false 로 안전 동작
+            val versions = LegalVersions(
+                terms = response.legalVersions?.terms.orEmpty(),
+                privacy = response.legalVersions?.privacy.orEmpty()
+            )
+            SocialLoginResult(
+                user = response.user.toDomain(),
+                needsConsent = response.needsConsent ?: false,
+                requiredConsents = required,
+                legalVersions = versions
+            )
+        }
+    }
+
+    override suspend fun submitConsent(termsVersion: String?, privacyVersion: String?) {
+        safeCall {
+            api.submitConsent(ConsentRequest(termsVersion = termsVersion, privacyVersion = privacyVersion))
         }
     }
 

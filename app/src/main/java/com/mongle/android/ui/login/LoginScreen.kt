@@ -45,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mongle.android.domain.model.LegalDocType
+import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.User
 import com.mongle.android.ui.common.MongleLogo
 import com.mongle.android.ui.common.MongleLogoSize
@@ -63,7 +65,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
-    onLoggedIn: (User) -> Unit,
+    onLoggedIn: (User, Boolean, List<LegalDocType>, LegalVersions) -> Unit,
     onBrowse: () -> Unit = {},
     pendingAppleCallbackUri: Uri? = null,
     onAppleCallbackConsumed: () -> Unit = {},
@@ -104,7 +106,12 @@ fun LoginScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is LoginEvent.LoggedIn -> onLoggedIn(event.user)
+                is LoginEvent.LoggedIn -> onLoggedIn(
+                    event.user,
+                    event.needsConsent,
+                    event.requiredConsents,
+                    event.legalVersions
+                )
             }
         }
     }

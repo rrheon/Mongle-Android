@@ -3,6 +3,8 @@ package com.mongle.android.ui.login
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mongle.android.domain.model.LegalDocType
+import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.SocialLoginCredential
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
@@ -24,7 +26,17 @@ data class LoginUiState(
 )
 
 sealed class LoginEvent {
-    data class LoggedIn(val user: User, val providerType: SocialProviderType?) : LoginEvent()
+    /**
+     * 로그인 성공.
+     * @param needsConsent true 면 RootViewModel 이 ConsentScreen 으로 라우팅한다.
+     */
+    data class LoggedIn(
+        val user: User,
+        val providerType: SocialProviderType?,
+        val needsConsent: Boolean,
+        val requiredConsents: List<LegalDocType>,
+        val legalVersions: LegalVersions
+    ) : LoginEvent()
 }
 
 @HiltViewModel
@@ -43,9 +55,17 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val user = authRepository.socialLogin(credential)
-                Log.d("LoginViewModel", "소셜 로그인 성공 | userId=${user.id} | name=${user.name}")
-                _events.emit(LoginEvent.LoggedIn(user, credential.providerType))
+                val result = authRepository.socialLogin(credential)
+                Log.d("LoginViewModel", "소셜 로그인 성공 | userId=${result.user.id} | name=${result.user.name} | needsConsent=${result.needsConsent}")
+                _events.emit(
+                    LoginEvent.LoggedIn(
+                        user = result.user,
+                        providerType = credential.providerType,
+                        needsConsent = result.needsConsent,
+                        requiredConsents = result.requiredConsents,
+                        legalVersions = result.legalVersions
+                    )
+                )
             } catch (e: Exception) {
                 Log.e("LoginViewModel", "소셜 로그인 실패 | provider=${credential.providerType.value} | error=${e.message}")
                 _uiState.update {

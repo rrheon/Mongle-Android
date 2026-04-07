@@ -339,9 +339,8 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // 오늘의 질문 카드 (씬 안쪽 오버레이)
-            // 서버 스케줄러가 KST 자정에 새 질문을 배정하므로 시각 분기 없이
-            // todayQuestion 이 있으면 그대로 노출. (과거엔 오전 11시 이전에
-            // lastQuestion 을 대체 노출했으나 자정 기준으로 통일)
+            // 서버 스케줄러가 KST 정오에 새 질문을 배정하므로 시각 분기 없이
+            // todayQuestion 이 있으면 그대로 노출.
             if (uiState.todayQuestion != null) {
                 TodayQuestionCard(
                     question = uiState.todayQuestion!!,

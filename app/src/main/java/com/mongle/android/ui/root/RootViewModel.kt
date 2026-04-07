@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Answer
+import com.mongle.android.domain.model.LegalDocType
+import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
@@ -27,6 +29,8 @@ sealed class AppState {
     data object Loading : AppState()
     data object Onboarding : AppState()
     data object Unauthenticated : AppState()
+    /** 로그인은 됐지만 약관 동의가 필요한 상태 */
+    data object ConsentRequired : AppState()
     data object GroupSelection : AppState()
     data object Authenticated : AppState()
 }
@@ -50,7 +54,10 @@ data class RootUiState(
     val pendingInviteCode: String? = null,
     val dailyHeartGranted: Int = 0,
     val pendingNotificationType: String? = null,
-    val pendingAppleCallbackUri: android.net.Uri? = null
+    val pendingAppleCallbackUri: android.net.Uri? = null,
+    /** 동의 화면에 전달할 컨텍스트 (로그인 응답에서 받음) */
+    val pendingConsentRequired: List<LegalDocType> = emptyList(),
+    val pendingLegalVersions: LegalVersions = LegalVersions(terms = "", privacy = "")
 )
 
 @HiltViewModel
@@ -166,8 +173,7 @@ class RootViewModel @Inject constructor(
                         }
                     }
 
-                    // 서버가 KST 자정에 새 질문을 배정하므로 별도의 "최근 질문 폴백" 은 불필요.
-                    // (과거엔 오전 11시 이전에 어제 질문을 보여주는 용도였으나 자정 기준으로 통일)
+                    // 서버가 KST 정오에 새 질문을 배정하므로 별도의 "최근 질문 폴백" 은 불필요.
                     val lastQ: Question? = null
 
                     _uiState.update {
@@ -254,13 +260,55 @@ class RootViewModel @Inject constructor(
         }
     }
 
-    fun onLoggedIn(user: User) {
+    fun onLoggedIn(
+        user: User,
+        needsConsent: Boolean = false,
+        requiredConsents: List<LegalDocType> = emptyList(),
+        legalVersions: LegalVersions = LegalVersions(terms = "", privacy = "")
+    ) {
+        if (needsConsent) {
+            // 동의 필요 → ConsentScreen 으로 라우팅
+            _uiState.update {
+                it.copy(
+                    currentUser = user,
+                    appState = AppState.ConsentRequired,
+                    pendingConsentRequired = requiredConsents,
+                    pendingLegalVersions = legalVersions
+                )
+            }
+            return
+        }
         // 로그인 직후엔 항상 그룹선택화면으로 이동 (기존 그룹 있어도 선택하게)
         viewModelScope.launch {
             _uiState.update { it.copy(currentUser = user, appState = AppState.Loading) }
             val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
             _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
         }
+    }
+
+    /** ConsentScreen 에서 뒤로가기 → 세션 정리하고 로그인 화면으로 */
+    fun onConsentCancelled() {
+        viewModelScope.launch {
+            runCatching { authRepository.logout() }
+            _uiState.update {
+                RootUiState(appState = AppState.Unauthenticated)
+            }
+        }
+    }
+
+    /** ConsentScreen 에서 동의 완료 → 일반 로그인 흐름으로 진입 */
+    fun onConsentCompleted() {
+        val user = _uiState.value.currentUser ?: run {
+            _uiState.update { it.copy(appState = AppState.Unauthenticated) }
+            return
+        }
+        _uiState.update {
+            it.copy(
+                pendingConsentRequired = emptyList(),
+                pendingLegalVersions = LegalVersions(terms = "", privacy = "")
+            )
+        }
+        onLoggedIn(user)
     }
 
     fun logout() {
