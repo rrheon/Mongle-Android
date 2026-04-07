@@ -2,6 +2,7 @@ package com.mongle.android.ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -486,6 +488,24 @@ private fun AnimatedSceneMemberBox(
     val animHop by animateFloatAsState(targetValue = hopTarget, animationSpec = animSpec, label = "hop")
     val half = (charSizePx / 2).roundToInt()
 
+    val handleTap: () -> Unit = {
+        val isCurrentUser = member.id == currentUserId
+        android.util.Log.d(
+            "MongleScene",
+            "tap member=${member.name} id=${member.id} self=$isCurrentUser hasAnswered=${info.hasAnswered} canView=${hasCurrentUserAnswered || hasCurrentUserSkipped}"
+        )
+        if (isCurrentUser) {
+            onSelfTap()
+        } else {
+            val canView = hasCurrentUserAnswered || hasCurrentUserSkipped
+            when {
+                info.hasAnswered && canView -> onViewAnswer(info)
+                info.hasAnswered && !canView -> onAnswerFirstToView(member.name)
+                !info.hasAnswered && canView -> onNudge(info)
+                else -> onAnswerFirstToNudge(member.name)
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .offset {
@@ -494,16 +514,10 @@ private fun AnimatedSceneMemberBox(
                     (animY + animHop - half).roundToInt()
                 )
             }
-            .clickable {
-                val isCurrentUser = member.id == currentUserId
-                if (isCurrentUser) { onSelfTap(); return@clickable }
-                val canView = hasCurrentUserAnswered || hasCurrentUserSkipped
-                when {
-                    info.hasAnswered && canView -> onViewAnswer(info)
-                    info.hasAnswered && !canView -> onAnswerFirstToView(member.name)
-                    !info.hasAnswered && canView -> onNudge(info)
-                    else -> onAnswerFirstToNudge(member.name)
-                }
+            // pointerInput + detectTapGestures: animated/offset 레이아웃에서
+            // clickable 보다 hit-test 가 안정적이며, 캡처하는 핸들러가 항상 최신 상태를 참조한다.
+            .pointerInput(member.id, currentUserId, info.hasAnswered, hasCurrentUserAnswered, hasCurrentUserSkipped) {
+                detectTapGestures(onTap = { handleTap() })
             }
     ) {
         SceneMongleItem(
