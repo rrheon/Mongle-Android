@@ -57,6 +57,7 @@ class LoginViewModel @Inject constructor(
             try {
                 val result = authRepository.socialLogin(credential)
                 Log.d("LoginViewModel", "소셜 로그인 성공 | userId=${result.user.id} | name=${result.user.name} | needsConsent=${result.needsConsent}")
+                _uiState.update { it.copy(isLoading = false) }
                 _events.emit(
                     LoginEvent.LoggedIn(
                         user = result.user,

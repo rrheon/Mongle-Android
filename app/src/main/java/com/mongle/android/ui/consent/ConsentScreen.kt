@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.Icons
@@ -95,7 +98,10 @@ fun ConsentScreen(
             .background(MongleBackgroundLight)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
         ) {
             // 상단 바 (뒤로가기)
             Row(
@@ -192,8 +198,8 @@ fun ConsentScreen(
                 enabled = uiState.canSubmit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(bottom = MongleSpacing.xl),
+                    .padding(bottom = MongleSpacing.xl)
+                    .height(56.dp),
                 shape = RoundedCornerShape(MongleRadius.large),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MonglePrimary,
