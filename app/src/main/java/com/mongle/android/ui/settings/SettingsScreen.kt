@@ -1,6 +1,7 @@
 package com.mongle.android.ui.settings
 
 import com.mongle.android.BuildConfig
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -168,6 +169,11 @@ fun SettingsScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = "my") {
             composable("my") {
+                // UMP 개인정보 옵션 행 노출 여부 초기 체크 (화면 진입 시마다 재확인)
+                val activity = LocalContext.current as? Activity
+                LaunchedEffect(Unit) {
+                    activity?.let { viewModel.refreshPrivacyOptionsVisibility(it) }
+                }
                 MyScreen(
                     uiState = uiState,
                     onProfileEditTapped = {
@@ -176,7 +182,8 @@ fun SettingsScreen(
                     },
                     onNotificationsTapped = { navController.navigate("notifications") },
                     onGroupManagementTapped = { navController.navigate("group_management") },
-                    onAccountManagementTapped = { navController.navigate("account_management") }
+                    onAccountManagementTapped = { navController.navigate("account_management") },
+                    onPrivacyOptionsTapped = { act -> viewModel.onPrivacyOptionsTapped(act) }
                 )
             }
             composable("profile_edit") {
@@ -260,7 +267,8 @@ private fun MyScreen(
     onProfileEditTapped: () -> Unit,
     onNotificationsTapped: () -> Unit,
     onGroupManagementTapped: () -> Unit,
-    onAccountManagementTapped: () -> Unit
+    onAccountManagementTapped: () -> Unit,
+    onPrivacyOptionsTapped: (Activity) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -349,26 +357,48 @@ private fun MyScreen(
             // 약관/개인정보 섹션 — 노션 페이지를 Custom Tab 으로 오픈
             run {
                 val ctx = LocalContext.current
-                SettingsSection(
-                    title = stringResource(R.string.settings_legal),
-                    rows = listOf(
+                val rows = buildList {
+                    add(
                         SettingsRowData(
                             icon = Icons.Default.Description,
                             iconBgColor = MongleMonggleGreenLight,
                             iconTint = Color.White,
                             title = stringResource(R.string.settings_terms),
                             subtitle = "",
-                            onClick = { openLegalUrl(ctx, com.mongle.android.ui.consent.LegalLinks.TERMS_URL) }
-                        ),
+                            onClick = { openLegalUrl(ctx, com.mongle.android.ui.consent.LegalLinks.termsUrl()) }
+                        )
+                    )
+                    add(
                         SettingsRowData(
                             icon = Icons.Default.Lock,
                             iconBgColor = MongleMonggleGreenLight,
                             iconTint = Color.White,
                             title = stringResource(R.string.settings_privacy),
                             subtitle = "",
-                            onClick = { openLegalUrl(ctx, com.mongle.android.ui.consent.LegalLinks.PRIVACY_URL) }
+                            onClick = { openLegalUrl(ctx, com.mongle.android.ui.consent.LegalLinks.privacyUrl()) }
                         )
                     )
+                    // GDPR/CCPA 대상 사용자에게만 UMP 개인정보 옵션 행을 노출.
+                    if (uiState.showPrivacyOptionsRow) {
+                        add(
+                            SettingsRowData(
+                                icon = Icons.Default.Settings,
+                                iconBgColor = MongleMonggleGreenLight,
+                                iconTint = Color.White,
+                                title = stringResource(R.string.settings_privacy_options),
+                                subtitle = stringResource(R.string.settings_privacy_options_desc),
+                                onClick = {
+                                    (ctx as? Activity)?.let { activity ->
+                                        onPrivacyOptionsTapped(activity)
+                                    }
+                                }
+                            )
+                        )
+                    }
+                }
+                SettingsSection(
+                    title = stringResource(R.string.settings_legal),
+                    rows = rows
                 )
             }
 

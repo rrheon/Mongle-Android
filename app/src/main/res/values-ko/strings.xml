@@ -260,6 +260,8 @@
     <string name="settings_legal">약관 및 정책</string>
     <string name="settings_terms">서비스 이용약관</string>
     <string name="settings_privacy">개인정보 처리방침</string>
+    <string name="settings_privacy_options">광고 개인정보 옵션</string>
+    <string name="settings_privacy_options_desc">맞춤형 광고 동의 설정 변경</string>
 
     <!-- Group Management -->
     <string name="mgmt_title">그룹 관리</string>

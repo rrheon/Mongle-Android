@@ -260,6 +260,8 @@
     <string name="settings_legal">規約とポリシー</string>
     <string name="settings_terms">利用規約</string>
     <string name="settings_privacy">プライバシーポリシー</string>
+    <string name="settings_privacy_options">広告プライバシー設定</string>
+    <string name="settings_privacy_options_desc">パーソナライズド広告の同意を変更</string>
 
     <!-- Group Management -->
     <string name="mgmt_title">グループ管理</string>

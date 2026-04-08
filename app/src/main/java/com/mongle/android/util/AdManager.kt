@@ -22,8 +22,11 @@ class AdManager @Inject constructor(
     private var rewardedAd: RewardedAd? = null
     private var isLoading = false
     private var currentActivity: Activity? = null
+    private var isInitialized = false
 
     fun initialize() {
+        if (isInitialized) return
+        isInitialized = true
         MobileAds.initialize(context)
         loadRewardedAd()
     }

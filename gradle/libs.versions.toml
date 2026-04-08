@@ -20,6 +20,7 @@ retrofit = "2.11.0"
 okhttp = "4.12.0"
 moshi = "1.15.1"
 googleMobileAds = "23.3.0"
+userMessagingPlatform = "3.1.0"
 firebaseBom = "33.1.0"
 
 [libraries]
@@ -67,6 +68,8 @@ moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.re
 
 # Google Mobile Ads (AdMob)
 google-mobile-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "googleMobileAds" }
+# Google User Messaging Platform (UMP) — GDPR/CCPA 동의 수집 CMP
+google-user-messaging-platform = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }

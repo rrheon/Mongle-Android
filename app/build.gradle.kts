@@ -108,6 +108,8 @@ dependencies {
 
     // Google Mobile Ads (AdMob)
     implementation(libs.google.mobile.ads)
+    // UMP SDK — GDPR/CCPA 동의 수집 CMP
+    implementation(libs.google.user.messaging.platform)
 
     // Firebase
     implementation(platform(libs.firebase.bom))

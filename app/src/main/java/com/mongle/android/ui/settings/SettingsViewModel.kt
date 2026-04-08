@@ -1,5 +1,6 @@
 package com.mongle.android.ui.settings
 
+import android.app.Activity
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,6 +13,7 @@ import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.UserRepository
 import com.mongle.android.ui.login.revokeGoogleAccess
 import com.mongle.android.ui.login.unlinkKakao
+import com.mongle.android.util.ConsentManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,7 +44,9 @@ data class SettingsUiState(
     val editRole: FamilyRole = FamilyRole.OTHER,
     val family: MongleGroup? = null,
     val familyMembers: List<User> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    /** UMP(GDPR/CCPA) 대상 사용자에게만 "광고 개인정보 옵션" 행을 노출한다. */
+    val showPrivacyOptionsRow: Boolean = false
 ) {
     val isOwner: Boolean get() = family?.createdBy == currentUser?.id
     val transferCandidates: List<User> get() = familyMembers.filter { it.id != currentUser?.id }
@@ -74,6 +78,7 @@ class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val mongleRepository: MongleRepository,
+    private val consentManager: ConsentManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -313,5 +318,22 @@ class SettingsViewModel @Inject constructor(
 
     fun dismissError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    // ── 광고 개인정보 옵션 (UMP) ──────────────────────────────
+
+    /** UMP 대상 여부에 따라 "광고 개인정보 옵션" 행 노출 여부를 갱신한다. */
+    fun refreshPrivacyOptionsVisibility(activity: Activity) {
+        val required = consentManager.isPrivacyOptionsRequired(activity)
+        _uiState.update { it.copy(showPrivacyOptionsRow = required) }
+    }
+
+    /** UMP 동의 재설정 폼을 노출한다. */
+    fun onPrivacyOptionsTapped(activity: Activity) {
+        consentManager.showPrivacyOptionsForm(activity) { errorMessage ->
+            if (errorMessage != null) {
+                _uiState.update { it.copy(errorMessage = errorMessage) }
+            }
+        }
     }
 }
