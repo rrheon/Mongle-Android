@@ -165,14 +165,14 @@ fun ConsentScreen(
                     title = stringResource(R.string.consent_terms),
                     checked = uiState.termsAgreed,
                     onTap = { viewModel.toggleTerms() },
-                    onLink = { openUrl(LegalLinks.TERMS_URL) }
+                    onLink = { openUrl(LegalLinks.termsUrl()) }
                 )
 
                 ConsentRow(
                     title = stringResource(R.string.consent_privacy),
                     checked = uiState.privacyAgreed,
                     onTap = { viewModel.togglePrivacy() },
-                    onLink = { openUrl(LegalLinks.PRIVACY_URL) }
+                    onLink = { openUrl(LegalLinks.privacyUrl()) }
                 )
             }
 
