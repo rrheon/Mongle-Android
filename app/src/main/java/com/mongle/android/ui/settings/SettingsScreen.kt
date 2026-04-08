@@ -1443,6 +1443,9 @@ private fun openLegalUrl(context: Context, url: String) {
             .build()
             .launchUrl(context, android.net.Uri.parse(url))
     }.onFailure {
-        context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+        // Custom Tabs 미설치 시 일반 브라우저 폴백 (브라우저도 없으면 조용히 무시)
+        runCatching {
+            context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+        }
     }
 }

@@ -87,8 +87,9 @@ fun PeerNudgeScreen(
     // 재촉 전송 성공 시 하트 잔량을 상위에 알리고 토스트 노출
     val sentToastMessage = stringResource(R.string.nudge_sent)
     LaunchedEffect(uiState.sentCount) {
-        if (uiState.sentCount > 0 && uiState.heartsRemaining != null) {
-            onNudgeSent(uiState.heartsRemaining!!)
+        val heartsRemaining = uiState.heartsRemaining
+        if (uiState.sentCount > 0 && heartsRemaining != null) {
+            onNudgeSent(heartsRemaining)
             toastData = MongleToastData(message = sentToastMessage, type = MongleToastType.SUCCESS)
         }
     }

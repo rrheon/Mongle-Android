@@ -164,7 +164,9 @@ fun MongleNavHost(
                         showNotifications = false
                         val familyId = notification.familyId
                         if (familyId != null) {
-                            rootViewModel.onGroupSelected(java.util.UUID.fromString(familyId))
+                            runCatching { java.util.UUID.fromString(familyId) }
+                                .getOrNull()
+                                ?.let { rootViewModel.onGroupSelected(it) }
                         }
                     }
                 )
@@ -212,10 +214,12 @@ fun MongleNavHost(
             }
 
             Box(modifier = Modifier.fillMaxSize()) {
+                val currentQuestionDetail = showQuestionDetail
+                val currentNudgeTarget = showNudgeTarget
                 when {
-                    showQuestionDetail != null -> {
+                    currentQuestionDetail != null -> {
                         QuestionDetailScreen(
-                            question = showQuestionDetail!!,
+                            question = currentQuestionDetail,
                             currentUser = uiState.currentUser,
                             familyMembers = uiState.familyMembers,
                             currentUserHearts = uiState.currentUser?.hearts ?: 0,
@@ -242,8 +246,12 @@ fun MongleNavHost(
                                     // 그룹선택 → 알림 탭: 해당 그룹으로 전환
                                     val familyId = notification.familyId
                                     if (familyId != null) {
-                                        showGroupSelect = false
-                                        rootViewModel.onGroupSelected(java.util.UUID.fromString(familyId))
+                                        runCatching { java.util.UUID.fromString(familyId) }
+                                            .getOrNull()
+                                            ?.let {
+                                                showGroupSelect = false
+                                                rootViewModel.onGroupSelected(it)
+                                            }
                                     }
                                 } else {
                                     when (notification.type.lowercase()) {
@@ -258,9 +266,9 @@ fun MongleNavHost(
                             }
                         )
                     }
-                    showNudgeTarget != null && adManager != null -> {
+                    currentNudgeTarget != null && adManager != null -> {
                         PeerNudgeScreen(
-                            targetUser = showNudgeTarget!!,
+                            targetUser = currentNudgeTarget,
                             currentUserHearts = uiState.currentUser?.hearts ?: 0,
                             questionContent = uiState.todayQuestion?.content ?: "",
                             adManager = adManager,

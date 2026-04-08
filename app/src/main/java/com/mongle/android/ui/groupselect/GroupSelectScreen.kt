@@ -178,8 +178,8 @@ fun GroupSelectScreen(
     }
 
     LaunchedEffect(uiState.errorMessage) {
-        if (uiState.errorMessage != null) {
-            val msg = uiState.errorMessage!!
+        val msg = uiState.errorMessage
+        if (msg != null) {
             val type = MongleToastType.fromErrorMessage(msg)
             toastData = MongleToastData(
                 message = if (type.defaultMessage.isNotEmpty()) type.defaultMessage else msg,

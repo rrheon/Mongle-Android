@@ -226,7 +226,8 @@ fun LoginScreen(
         }
 
         // 에러 토스트 (iOS 기준: mongleErrorToast 방식)
-        if (uiState.errorMessage != null) {
+        val errorMessage = uiState.errorMessage
+        if (errorMessage != null) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -234,7 +235,7 @@ fun LoginScreen(
                     .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.xl)
             ) {
                 Text(
-                    text = uiState.errorMessage!!,
+                    text = errorMessage,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White,
                     modifier = Modifier

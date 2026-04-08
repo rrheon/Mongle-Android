@@ -87,8 +87,10 @@ fun ConsentScreen(
         runCatching {
             CustomTabsIntent.Builder().build().launchUrl(context, Uri.parse(url))
         }.onFailure {
-            // Custom Tabs 미설치 시 일반 브라우저 폴백
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            // Custom Tabs 미설치 시 일반 브라우저 폴백 (브라우저도 없으면 조용히 무시)
+            runCatching {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            }
         }
     }
 

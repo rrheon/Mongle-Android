@@ -341,9 +341,10 @@ fun HomeScreen(
             // 오늘의 질문 카드 (씬 안쪽 오버레이)
             // 서버 스케줄러가 KST 정오에 새 질문을 배정하므로 시각 분기 없이
             // todayQuestion 이 있으면 그대로 노출.
-            if (uiState.todayQuestion != null) {
+            val todayQuestion = uiState.todayQuestion
+            if (todayQuestion != null) {
                 TodayQuestionCard(
-                    question = uiState.todayQuestion!!,
+                    question = todayQuestion,
                     hasAnswered = uiState.hasAnsweredToday,
                     onTap = { showQuestionSheet = true },
                     modifier = Modifier
@@ -408,14 +409,15 @@ fun HomeScreen(
     }
 
     // QuestionSheet
-    if (showQuestionSheet && uiState.todayQuestion != null) {
+    val todayQuestionForSheet = uiState.todayQuestion
+    if (showQuestionSheet && todayQuestionForSheet != null) {
         QuestionSheetBottomSheet(
-            question = uiState.todayQuestion!!,
+            question = todayQuestionForSheet,
             hasAnswered = uiState.hasAnsweredToday,
             onDismiss = { showQuestionSheet = false },
             onAnswerTap = {
                 showQuestionSheet = false
-                onNavigateToQuestionDetail(uiState.todayQuestion!!)
+                onNavigateToQuestionDetail(todayQuestionForSheet)
             },
             onWriteQuestionTap = {
                 showQuestionSheet = false
