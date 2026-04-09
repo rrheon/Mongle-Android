@@ -121,6 +121,68 @@ class ApiAuthRepository @Inject constructor(
         }
     }
 
+    // region Email Auth
+
+    override suspend fun requestEmailSignupCode(email: String) {
+        safeCall { api.requestEmailCode(EmailRequestCodeBody(email = email)) }
+    }
+
+    override suspend fun emailSignup(
+        email: String,
+        password: String,
+        code: String,
+        name: String?,
+        termsVersion: String,
+        privacyVersion: String
+    ): SocialLoginResult {
+        return safeCall {
+            val response = api.emailSignup(
+                EmailSignupBody(
+                    email = email,
+                    password = password,
+                    code = code,
+                    name = name,
+                    termsVersion = termsVersion,
+                    privacyVersion = privacyVersion
+                )
+            )
+            saveSession(response.user, response.token, response.refresh_token)
+            val required = response.requiredConsents.orEmpty()
+                .mapNotNull { LegalDocType.fromKey(it) }
+            val versions = LegalVersions(
+                terms = response.legalVersions?.terms.orEmpty(),
+                privacy = response.legalVersions?.privacy.orEmpty()
+            )
+            SocialLoginResult(
+                user = response.user.toDomain(),
+                needsConsent = response.needsConsent ?: false,
+                requiredConsents = required,
+                legalVersions = versions
+            )
+        }
+    }
+
+    override suspend fun emailLogin(email: String, password: String): SocialLoginResult {
+        return safeCall {
+            val response = api.emailLogin(EmailLoginBody(email = email, password = password))
+            saveSession(response.user, response.token, response.refresh_token)
+            val required = response.requiredConsents.orEmpty()
+                .mapNotNull { LegalDocType.fromKey(it) }
+            val versions = LegalVersions(
+                terms = response.legalVersions?.terms.orEmpty(),
+                privacy = response.legalVersions?.privacy.orEmpty()
+            )
+            SocialLoginResult(
+                user = response.user.toDomain(),
+                needsConsent = response.needsConsent ?: false,
+                requiredConsents = required,
+                legalVersions = versions
+            )
+        }
+    }
+
+    // endregion
+
     override suspend fun logout() {
         clearSession()
     }

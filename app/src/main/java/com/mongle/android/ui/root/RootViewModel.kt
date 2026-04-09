@@ -31,6 +31,8 @@ sealed class AppState {
     data object Unauthenticated : AppState()
     /** 로그인은 됐지만 약관 동의가 필요한 상태 */
     data object ConsentRequired : AppState()
+    /** 이메일 회원가입 플로우 (Consent → 입력 → 인증코드) */
+    data object EmailSignup : AppState()
     data object GroupSelection : AppState()
     data object Authenticated : AppState()
 }
@@ -248,6 +250,14 @@ class RootViewModel @Inject constructor(
 
     fun clearPendingNotification() {
         _uiState.update { it.copy(pendingNotificationType = null) }
+    }
+
+    fun onEmailFlowRequested() {
+        _uiState.update { it.copy(appState = AppState.EmailSignup) }
+    }
+
+    fun onEmailSignupCancelled() {
+        _uiState.update { it.copy(appState = AppState.Unauthenticated) }
     }
 
     fun onBrowse() {
