@@ -63,7 +63,7 @@ class ApiUserRepository @Inject constructor(
     }
 
     suspend fun registerFcmToken(token: String) = safeCall {
-        api.registerFcmToken(RegisterDeviceTokenRequest(token))
+        api.registerDeviceToken(RegisterDeviceTokenRequest(token))
     }
 
     override suspend fun claimDailyHeart(): DailyHeartResult? = try {
