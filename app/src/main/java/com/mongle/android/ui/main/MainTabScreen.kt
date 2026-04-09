@@ -149,7 +149,7 @@ fun MainTabScreen(
                     onNavigateToQuestionDetail = onNavigateToQuestionDetail,
                     viewModel = historyViewModel
                 )
-                MainTab.SEARCH -> SearchScreen(familyId = rootUiState.family?.id)
+                MainTab.SEARCH -> SearchScreen(familyId = rootUiState.family?.id?.toString())
                 MainTab.SETTINGS -> SettingsScreen(
                     currentUser = rootUiState.currentUser,
                     loginProviderType = null,

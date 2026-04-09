@@ -47,6 +47,14 @@
     <string name="email_auth_request_code_error">인증코드 발송에 실패했습니다.</string>
     <string name="email_auth_resend_error">재전송에 실패했습니다.</string>
     <string name="email_auth_verify_error">인증에 실패했습니다.</string>
+    <string name="email_auth_choice_title">이메일로 계속하기</string>
+    <string name="email_auth_choice_subtitle">로그인 또는 회원가입을 선택해주세요.</string>
+    <string name="email_auth_choice_login">로그인</string>
+    <string name="email_auth_choice_signup">회원가입</string>
+    <string name="email_auth_login_title">이메일로 로그인</string>
+    <string name="email_auth_login_subtitle">가입하신 이메일과 비밀번호를 입력해주세요.</string>
+    <string name="email_auth_login_submit">로그인</string>
+    <string name="email_auth_login_password_required">비밀번호를 입력해주세요.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">몽글에 오신 걸\n환영해요</string>
@@ -349,6 +357,7 @@
     <string name="history_recent_mood">최근 14일 기분</string>
     <string name="history_answer_count">%1$d/%2$d명 답변</string>
     <string name="history_no_record">이 날의 기록이 없어요</string>
+    <string name="history_skipped_label">오늘 질문을 넘겼어요.</string>
     <string name="history_day_sun">일</string>
     <string name="history_day_mon">월</string>
     <string name="history_day_tue">화</string>

@@ -3,7 +3,9 @@ package com.mongle.android.ui.history
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.HistoryAnswerSummary
+import com.mongle.android.domain.model.HistorySkippedSummary
 import com.mongle.android.domain.model.Question
+import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,7 +31,8 @@ data class HistoryItem(
     val isCompleted: Boolean,
     val userAnswered: Boolean,
     val isSkipped: Boolean = false,
-    val memberAnswers: List<HistoryAnswerSummary> = emptyList()
+    val memberAnswers: List<HistoryAnswerSummary> = emptyList(),
+    val skippedMembers: List<HistorySkippedSummary> = emptyList()
 )
 
 data class HistoryUiState(
@@ -55,7 +58,8 @@ sealed class HistoryEvent {
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val questionRepository: QuestionRepository,
-    private val mongleRepository: MongleRepository
+    private val mongleRepository: MongleRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
@@ -74,6 +78,7 @@ class HistoryViewModel @Inject constructor(
             try {
                 val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
                 val totalMembers = familyResult?.second?.size ?: 1
+                val currentUser = runCatching { authRepository.getCurrentUser() }.getOrNull()
 
                 val history = questionRepository.getDailyHistory(page = 1, limit = 50)
 
@@ -92,6 +97,19 @@ class HistoryViewModel @Inject constructor(
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
                     }
+                    // 본인이 넘겼는데 서버 응답에 본인이 포함되지 않은 경우 직접 추가
+                    val mergedSkipped = if (item.hasMySkipped && currentUser != null &&
+                        item.skippedMembers.none { it.userId == currentUser.id.toString() }
+                    ) {
+                        item.skippedMembers + HistorySkippedSummary(
+                            userId = currentUser.id.toString(),
+                            userName = currentUser.name,
+                            colorId = currentUser.moodId
+                        )
+                    } else {
+                        item.skippedMembers
+                    }
+
                     historyMap[cal.timeInMillis] = HistoryItem(
                         id = runCatching { UUID.fromString(item.id) }.getOrElse { UUID.randomUUID() },
                         date = item.date,
@@ -101,7 +119,8 @@ class HistoryViewModel @Inject constructor(
                         isCompleted = item.familyAnswerCount >= totalMembers,
                         userAnswered = item.hasMyAnswer,
                         isSkipped = item.hasMySkipped,
-                        memberAnswers = item.answers
+                        memberAnswers = item.answers,
+                        skippedMembers = mergedSkipped
                     )
                 }
 

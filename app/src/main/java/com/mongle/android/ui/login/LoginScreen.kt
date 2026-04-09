@@ -23,14 +23,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -63,11 +70,13 @@ import com.mongle.android.ui.theme.MongleTextSecondary
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onLoggedIn: (User, Boolean, List<LegalDocType>, LegalVersions) -> Unit,
     onBrowse: () -> Unit = {},
-    onEmailContinue: () -> Unit = {},
+    onEmailLoginSelected: () -> Unit = {},
+    onEmailSignupSelected: () -> Unit = {},
     pendingAppleCallbackUri: Uri? = null,
     onAppleCallbackConsumed: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
@@ -75,6 +84,10 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // 이메일로 계속하기 → 로그인/회원가입 선택 바텀시트 (iOS 와 동일 패턴)
+    var showEmailChoiceSheet by remember { mutableStateOf(false) }
+    val emailChoiceSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val googleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -214,7 +227,7 @@ fun LoginScreen(
 
                 // 이메일로 계속하기 — Apple 버튼 아래
                 Button(
-                    onClick = onEmailContinue,
+                    onClick = { showEmailChoiceSheet = true },
                     enabled = !uiState.isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -291,6 +304,82 @@ fun LoginScreen(
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        }
+
+        // 이메일 로그인/회원가입 선택 바텀시트
+        if (showEmailChoiceSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showEmailChoiceSheet = false },
+                sheetState = emailChoiceSheetState,
+                containerColor = Color.White
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = MongleSpacing.xl)
+                        .padding(top = MongleSpacing.sm, bottom = MongleSpacing.xl),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.email_auth_choice_title),
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MongleTextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(MongleSpacing.xs))
+                    Text(
+                        text = stringResource(R.string.email_auth_choice_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MongleTextSecondary
+                    )
+
+                    Spacer(modifier = Modifier.height(MongleSpacing.lg))
+
+                    // 로그인 (Primary)
+                    Button(
+                        onClick = {
+                            showEmailChoiceSheet = false
+                            onEmailLoginSelected()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.email_auth_choice_login),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(MongleSpacing.sm))
+
+                    // 회원가입 (Outlined)
+                    OutlinedButton(
+                        onClick = {
+                            showEmailChoiceSheet = false
+                            onEmailSignupSelected()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .border(1.dp, MongleGoogleBorder, RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color.White,
+                            contentColor = MongleTextPrimary
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.email_auth_choice_signup),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                        )
+                    }
+                }
             }
         }
     }

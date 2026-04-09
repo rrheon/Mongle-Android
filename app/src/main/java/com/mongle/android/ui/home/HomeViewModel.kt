@@ -261,6 +261,16 @@ class HomeViewModel @Inject constructor(
         _uiState.value.todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it) }
     }
 
+    /**
+     * 멤버별 답변/스킵 상태만 가볍게 재조회한다.
+     * HOME 탭으로 (재)진입할 때마다 호출하여, 다른 멤버가 그 사이 답변/넘기기를 한 경우
+     * UI 캐릭터 상태를 즉시 최신화한다. (HISTORY 다녀온 뒤에야 반영되던 회귀 수정)
+     */
+    fun refreshMemberStatuses() {
+        val dailyQuestionId = _uiState.value.todayQuestion?.dailyQuestionId ?: return
+        loadFamilyAnswers(dailyQuestionId)
+    }
+
     fun onMemberTapped(member: User) {
         val state = _uiState.value
         val currentUser = state.currentUser ?: return

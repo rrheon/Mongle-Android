@@ -47,6 +47,14 @@
     <string name="email_auth_request_code_error">認証コードの送信に失敗しました。</string>
     <string name="email_auth_resend_error">再送信に失敗しました。</string>
     <string name="email_auth_verify_error">認証に失敗しました。</string>
+    <string name="email_auth_choice_title">メールで続ける</string>
+    <string name="email_auth_choice_subtitle">ログインまたは新規登録を選択してください。</string>
+    <string name="email_auth_choice_login">ログイン</string>
+    <string name="email_auth_choice_signup">新規登録</string>
+    <string name="email_auth_login_title">メールでログイン</string>
+    <string name="email_auth_login_subtitle">登録したメールアドレスとパスワードを入力してください。</string>
+    <string name="email_auth_login_submit">ログイン</string>
+    <string name="email_auth_login_password_required">パスワードを入力してください。</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">モングルへ\nようこそ</string>
@@ -349,6 +357,7 @@
     <string name="history_recent_mood">最近14日間の気分</string>
     <string name="history_answer_count">%1$d/%2$d人回答</string>
     <string name="history_no_record">この日の記録はありません</string>
+    <string name="history_skipped_label">今日の質問をスキップしました。</string>
     <string name="history_day_sun">日</string>
     <string name="history_day_mon">月</string>
     <string name="history_day_tue">火</string>

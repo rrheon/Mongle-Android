@@ -2,6 +2,7 @@ package com.mongle.android.data.remote
 
 import com.mongle.android.domain.model.DailyQuestionHistory
 import com.mongle.android.domain.model.HistoryAnswerSummary
+import com.mongle.android.domain.model.HistorySkippedSummary
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.QuestionCategory
 import com.mongle.android.domain.repository.QuestionRepository
@@ -96,6 +97,20 @@ class ApiQuestionRepository @Inject constructor(
 
     override suspend fun getDailyHistory(page: Int, limit: Int): List<DailyQuestionHistory> = safeCall {
         api.getQuestionHistory(page, limit).data.map { item ->
+            // memberAnswerStatuses 를 한 번만 인덱싱해 두고
+            //  - 답변 카드의 colorId 조인
+            //  - 스킵 멤버 섹션 추출
+            // 두 가지 용도로 사용한다.
+            val statusByUserId = item.memberAnswerStatuses.associateBy { it.userId }
+            val skippedMembers = item.memberAnswerStatuses
+                .filter { it.status == "skipped" }
+                .map { s ->
+                    HistorySkippedSummary(
+                        userId = s.userId,
+                        userName = s.userName,
+                        colorId = s.colorId
+                    )
+                }
             DailyQuestionHistory(
                 id = item.id,
                 question = item.question.toDomain(
@@ -114,9 +129,11 @@ class ApiQuestionRepository @Inject constructor(
                         userName = a.userName,
                         content = a.content,
                         imageUrl = a.imageUrl,
-                        moodId = a.moodId
+                        moodId = a.moodId,
+                        colorId = statusByUserId[a.userId]?.colorId
                     )
-                }
+                },
+                skippedMembers = skippedMembers
             )
         }
     }

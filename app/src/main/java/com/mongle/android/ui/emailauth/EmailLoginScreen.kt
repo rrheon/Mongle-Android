@@ -4,10 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -47,14 +43,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.R
-import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.SocialLoginResult
-import com.mongle.android.ui.common.MongleToastOverlay
-import com.mongle.android.ui.common.MongleToastType
-import com.mongle.android.ui.consent.ConsentScreen
 import com.mongle.android.ui.theme.MongleBackgroundLight
 import com.mongle.android.ui.theme.MongleBorder
 import com.mongle.android.ui.theme.MonglePrimary
@@ -65,69 +58,25 @@ import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 
 @Composable
-fun EmailSignupScreen(
+fun EmailLoginScreen(
     onCompleted: (SocialLoginResult) -> Unit,
     onCancelled: () -> Unit,
-    initialLegalVersions: LegalVersions = LegalVersions(terms = "1.0.0", privacy = "1.0.0"),
-    viewModel: EmailSignupViewModel = hiltViewModel()
+    viewModel: EmailLoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     BackHandler { viewModel.onBack() }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is EmailSignupEvent.Completed -> onCompleted(event.result)
-                is EmailSignupEvent.Cancelled -> onCancelled()
+                is EmailLoginEvent.Completed -> onCompleted(event.result)
+                is EmailLoginEvent.Cancelled -> onCancelled()
             }
         }
     }
 
-    when (uiState.phase) {
-        EmailSignupPhase.CONSENT -> {
-            ConsentScreen(
-                requiredConsents = uiState.requiredConsents,
-                legalVersions = initialLegalVersions,
-                onCompleted = { /* preSignup 모드에선 호출되지 않음 */ },
-                onBack = { viewModel.onBack() },
-                preSignup = true,
-                onPreSignupCompleted = { terms, privacy ->
-                    viewModel.onConsentCompleted(terms, privacy)
-                }
-            )
-        }
-
-        EmailSignupPhase.INPUT_FORM -> InputFormView(
-            uiState = uiState,
-            onEmailChanged = viewModel::onEmailChanged,
-            onPasswordChanged = viewModel::onPasswordChanged,
-            onSendCode = viewModel::sendCode,
-            onBack = viewModel::onBack,
-            onDismissError = viewModel::dismissError
-        )
-
-        EmailSignupPhase.VERIFY_CODE -> VerifyCodeView(
-            uiState = uiState,
-            onCodeChanged = viewModel::onCodeChanged,
-            onVerify = viewModel::verifyAndSignup,
-            onResend = viewModel::resendCode,
-            onBack = viewModel::onBack
-        )
-    }
-}
-
-@Composable
-private fun InputFormView(
-    uiState: EmailSignupUiState,
-    onEmailChanged: (String) -> Unit,
-    onPasswordChanged: (String) -> Unit,
-    onSendCode: () -> Unit,
-    onBack: () -> Unit,
-    onDismissError: () -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    Box(modifier = Modifier.fillMaxSize()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -138,7 +87,7 @@ private fun InputFormView(
                 detectTapGestures(onTap = { focusManager.clearFocus() })
             }
     ) {
-        TopBar(onBack = onBack)
+        TopBar(onBack = viewModel::onBack)
 
         Column(
             modifier = Modifier
@@ -148,25 +97,25 @@ private fun InputFormView(
                 .padding(horizontal = MongleSpacing.xl)
         ) {
             Text(
-                text = stringResource(R.string.email_auth_signup_title),
+                text = stringResource(R.string.email_auth_login_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MongleTextPrimary
             )
             Spacer(Modifier.height(MongleSpacing.xs))
             Text(
-                text = stringResource(R.string.email_auth_signup_subtitle),
+                text = stringResource(R.string.email_auth_login_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MongleTextSecondary
             )
 
             Spacer(Modifier.height(MongleSpacing.lg))
 
-            LabeledField(
+            LoginField(
                 label = stringResource(R.string.email_auth_email_label),
                 placeholder = stringResource(R.string.email_auth_email_placeholder),
                 value = uiState.email,
-                onValueChange = onEmailChanged,
+                onValueChange = viewModel::onEmailChanged,
                 keyboardType = KeyboardType.Email,
                 isError = uiState.emailErrorRes != null,
                 errorMessage = uiState.emailErrorRes?.let { stringResource(it) }
@@ -174,22 +123,30 @@ private fun InputFormView(
 
             Spacer(Modifier.height(MongleSpacing.md))
 
-            LabeledField(
+            LoginField(
                 label = stringResource(R.string.email_auth_password_label),
                 placeholder = stringResource(R.string.email_auth_password_placeholder),
                 value = uiState.password,
-                onValueChange = onPasswordChanged,
+                onValueChange = viewModel::onPasswordChanged,
                 keyboardType = KeyboardType.Password,
                 isError = uiState.passwordErrorRes != null,
                 errorMessage = uiState.passwordErrorRes?.let { stringResource(it) },
-                hint = stringResource(R.string.email_auth_password_hint),
                 isPassword = true
             )
+
+            uiState.errorMessage?.let { msg ->
+                Spacer(Modifier.height(MongleSpacing.sm))
+                Text(
+                    text = msg,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
 
         Button(
-            onClick = onSendCode,
-            enabled = uiState.canSendCode,
+            onClick = viewModel::submit,
+            enabled = uiState.canSubmit,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = MongleSpacing.xl)
@@ -201,133 +158,14 @@ private fun InputFormView(
                 disabledContainerColor = MongleBorder
             )
         ) {
-            if (uiState.isSendingCode) {
+            if (uiState.isSubmitting) {
                 CircularProgressIndicator(
                     color = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
             } else {
                 Text(
-                    text = stringResource(R.string.email_auth_send_code),
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
-        }
-    }
-
-    // 서버 에러 토스트 (중복 이메일 등)
-    MongleToastOverlay(
-        message = uiState.errorMessage,
-        type = MongleToastType.ERROR,
-        onDismiss = onDismissError
-    )
-    }
-}
-
-@Composable
-private fun VerifyCodeView(
-    uiState: EmailSignupUiState,
-    onCodeChanged: (String) -> Unit,
-    onVerify: () -> Unit,
-    onResend: () -> Unit,
-    onBack: () -> Unit
-) {
-    val focusManager = LocalFocusManager.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MongleBackgroundLight)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = { focusManager.clearFocus() })
-            }
-    ) {
-        TopBar(onBack = onBack)
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = MongleSpacing.xl)
-        ) {
-            Text(
-                text = stringResource(R.string.email_auth_verify_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MongleTextPrimary
-            )
-            Spacer(Modifier.height(MongleSpacing.xs))
-            Text(
-                text = stringResource(R.string.email_auth_verify_subtitle, uiState.email),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MongleTextSecondary
-            )
-
-            Spacer(Modifier.height(MongleSpacing.lg))
-
-            LabeledField(
-                label = stringResource(R.string.email_auth_code_label),
-                placeholder = stringResource(R.string.email_auth_code_placeholder),
-                value = uiState.code,
-                onValueChange = onCodeChanged,
-                keyboardType = KeyboardType.NumberPassword,
-                isError = uiState.codeError != null,
-                errorMessage = uiState.codeError
-            )
-
-            Spacer(Modifier.height(MongleSpacing.md))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                if (uiState.resendCooldownSec > 0) {
-                    Text(
-                        text = stringResource(R.string.email_auth_resend_cooldown, uiState.resendCooldownSec),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MongleTextHint
-                    )
-                } else {
-                    TextButton(
-                        onClick = onResend,
-                        enabled = !uiState.isSendingCode,
-                        contentPadding = PaddingValues(horizontal = MongleSpacing.xs)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.email_auth_resend),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MonglePrimary
-                        )
-                    }
-                }
-            }
-        }
-
-        Button(
-            onClick = onVerify,
-            enabled = uiState.canSubmitCode,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = MongleSpacing.xl)
-                .padding(bottom = MongleSpacing.xl)
-                .height(56.dp),
-            shape = RoundedCornerShape(MongleRadius.large),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MonglePrimary,
-                disabledContainerColor = MongleBorder
-            )
-        ) {
-            if (uiState.isVerifying) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-            } else {
-                Text(
-                    text = stringResource(R.string.email_auth_verify_submit),
+                    text = stringResource(R.string.email_auth_login_submit),
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White
                 )
@@ -355,7 +193,7 @@ private fun TopBar(onBack: () -> Unit) {
 }
 
 @Composable
-private fun LabeledField(
+private fun LoginField(
     label: String,
     placeholder: String,
     value: String,
@@ -363,7 +201,6 @@ private fun LabeledField(
     keyboardType: KeyboardType,
     isError: Boolean,
     errorMessage: String?,
-    hint: String? = null,
     isPassword: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -382,7 +219,7 @@ private fun LabeledField(
             singleLine = true,
             isError = isError,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             shape = RoundedCornerShape(MongleRadius.large),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
@@ -407,13 +244,6 @@ private fun LabeledField(
                 text = errorMessage,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
-            )
-        } else if (hint != null) {
-            Spacer(Modifier.height(MongleSpacing.xxs))
-            Text(
-                text = hint,
-                style = MaterialTheme.typography.bodySmall,
-                color = MongleTextHint
             )
         }
     }

@@ -36,6 +36,7 @@ import com.mongle.android.ui.common.MongleToastOverlay
 import com.mongle.android.ui.common.MongleToastType
 import com.mongle.android.ui.common.defaultMessage
 import com.mongle.android.ui.consent.ConsentScreen
+import com.mongle.android.ui.emailauth.EmailLoginScreen
 import com.mongle.android.ui.emailauth.EmailSignupScreen
 import com.mongle.android.ui.groupselect.GroupSelectScreen
 import com.mongle.android.ui.login.LoginScreen
@@ -141,7 +142,8 @@ fun MongleNavHost(
                     rootViewModel.onLoggedIn(user, needsConsent, requiredConsents, legalVersions)
                 },
                 onBrowse = { rootViewModel.onBrowse() },
-                onEmailContinue = { rootViewModel.onEmailFlowRequested() },
+                onEmailLoginSelected = { rootViewModel.onEmailLoginRequested() },
+                onEmailSignupSelected = { rootViewModel.onEmailSignupRequested() },
                 pendingAppleCallbackUri = uiState.pendingAppleCallbackUri,
                 onAppleCallbackConsumed = { rootViewModel.clearPendingAppleCallback() }
             )
@@ -158,6 +160,20 @@ fun MongleNavHost(
                     )
                 },
                 onCancelled = { rootViewModel.onEmailSignupCancelled() }
+            )
+        }
+
+        AppState.EmailLogin -> {
+            EmailLoginScreen(
+                onCompleted = { result ->
+                    rootViewModel.onLoggedIn(
+                        user = result.user,
+                        needsConsent = result.needsConsent,
+                        requiredConsents = result.requiredConsents,
+                        legalVersions = result.legalVersions
+                    )
+                },
+                onCancelled = { rootViewModel.onEmailLoginCancelled() }
             )
         }
 

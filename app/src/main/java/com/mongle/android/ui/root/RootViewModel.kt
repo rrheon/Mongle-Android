@@ -33,6 +33,8 @@ sealed class AppState {
     data object ConsentRequired : AppState()
     /** 이메일 회원가입 플로우 (Consent → 입력 → 인증코드) */
     data object EmailSignup : AppState()
+    /** 이메일 로그인 플로우 (이메일/비밀번호 입력 → 서버 로그인) */
+    data object EmailLogin : AppState()
     data object GroupSelection : AppState()
     data object Authenticated : AppState()
 }
@@ -252,11 +254,19 @@ class RootViewModel @Inject constructor(
         _uiState.update { it.copy(pendingNotificationType = null) }
     }
 
-    fun onEmailFlowRequested() {
+    fun onEmailSignupRequested() {
         _uiState.update { it.copy(appState = AppState.EmailSignup) }
     }
 
+    fun onEmailLoginRequested() {
+        _uiState.update { it.copy(appState = AppState.EmailLogin) }
+    }
+
     fun onEmailSignupCancelled() {
+        _uiState.update { it.copy(appState = AppState.Unauthenticated) }
+    }
+
+    fun onEmailLoginCancelled() {
         _uiState.update { it.copy(appState = AppState.Unauthenticated) }
     }
 

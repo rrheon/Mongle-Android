@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.HistoryAnswerSummary
+import com.mongle.android.domain.model.HistorySkippedSummary
 import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.theme.MongleBorder
 import com.mongle.android.ui.theme.MongleMonggleBlue
@@ -226,10 +227,14 @@ fun HistoryScreen(
                             selectedDate = uiState.selectedDate,
                             onClick = { viewModel.onItemTapped(selectedItem) }
                         )
-                        // 내가 답변했거나 넘기기한 경우에만 다른 멤버 답변 표시
+                        // 내가 답변했거나 넘기기한 경우에만 다른 멤버 답변/넘김 노출
                         if (selectedItem.userAnswered || selectedItem.isSkipped) {
                             selectedItem.memberAnswers.forEach { answer ->
                                 FamilyAnswerCard(answer = answer)
+                            }
+                            // 질문 넘긴 멤버는 답변자와 별개 섹션으로 노출 (캐릭터 색상은 colorId 기반)
+                            selectedItem.skippedMembers.forEach { skipped ->
+                                FamilySkippedCard(skipped = skipped)
                             }
                         }
                     }
@@ -399,10 +404,20 @@ private fun MoodTimelineSection(
 
 // ── 가족 답변 카드 ──
 
+/**
+ * 사용자가 본인 캐릭터에 지정한 colorId 기준으로 캐릭터 색상을 결정한다.
+ * (서버 memberAnswerStatuses.colorId)
+ * colorId 가 비어 있으면 답변의 moodId 로 폴백.
+ */
+private fun characterColorFor(colorId: String?, moodId: String?): Pair<Int, Color?> {
+    val key = colorId ?: moodId
+    val idx = key?.let { moodIds.indexOf(it).takeIf { i -> i >= 0 } }
+    return (idx ?: 0) to idx?.let { moodCharacterColors[it] }
+}
+
 @Composable
 private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
-    val moodIdx = answer.moodId?.let { moodIds.indexOf(it).takeIf { i -> i >= 0 } }
-    val moodColor = moodIdx?.let { moodCharacterColors[it] }
+    val (charIdx, charColor) = characterColorFor(answer.colorId, answer.moodId)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -413,9 +428,9 @@ private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
     ) {
         MongleCharacterAvatar(
             name = answer.userName,
-            index = moodIdx ?: 0,
+            index = charIdx,
             size = 36.dp,
-            color = moodColor
+            color = charColor
         )
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -429,6 +444,42 @@ private fun FamilyAnswerCard(answer: HistoryAnswerSummary) {
                 text = answer.content,
                 style = MaterialTheme.typography.bodySmall,
                 color = MongleTextSecondary
+            )
+        }
+    }
+}
+
+// ── 질문 넘긴 멤버 카드 ──
+
+@Composable
+private fun FamilySkippedCard(skipped: HistorySkippedSummary) {
+    val (charIdx, charColor) = characterColorFor(skipped.colorId, null)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .border(1.dp, MongleBorder, RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        MongleCharacterAvatar(
+            name = skipped.userName,
+            index = charIdx,
+            size = 36.dp,
+            color = charColor
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = skipped.userName,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MongleTextPrimary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.history_skipped_label),
+                style = MaterialTheme.typography.bodySmall,
+                color = MongleTextHint
             )
         }
     }

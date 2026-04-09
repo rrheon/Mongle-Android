@@ -162,7 +162,7 @@ fun HomeScreen(
     var showSkipConfirmDialog by remember { mutableStateOf(false) }
     var showWriteConfirmDialog by remember { mutableStateOf(false) }
 
-    // 화면 복귀 시 답변 상태 새로고침
+    // 화면 복귀 시 답변 상태 새로고침 (앱 백그라운드 → 포그라운드 복귀)
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -172,6 +172,15 @@ fun HomeScreen(
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    // 탭 (재)진입 시 멤버 답변/스킵 상태 즉시 재조회
+    // (HOME → HISTORY → HOME 처럼 탭만 전환된 경우 ON_RESUME 가 발생하지 않으므로
+    //  HomeScreen 이 컴포지션에 다시 들어올 때마다 별도 트리거가 필요하다.)
+    // 그룹 전환은 MainTabScreen 의 LaunchedEffect(rootUiState) → homeViewModel.initialize()
+    // 경로에서 자동으로 loadFamilyAnswers() 가 호출되므로 별도 처리 불필요.
+    LaunchedEffect(Unit) {
+        viewModel.refreshMemberStatuses()
     }
 
     // ViewModel 이벤트 처리
