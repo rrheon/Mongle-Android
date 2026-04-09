@@ -151,6 +151,12 @@ fun SettingsScreen(
                         type = MongleToastType.INVITE_CODE_COPIED
                     )
                 }
+                is SettingsEvent.LeaveTooSoon -> {
+                    toastData = MongleToastData(
+                        message = context.getString(R.string.group_leave_too_soon, event.daysLeft),
+                        type = MongleToastType.LEAVE_TOO_SOON
+                    )
+                }
             }
         }
     }

@@ -71,6 +71,8 @@ sealed class SettingsEvent {
     data object AccountDeleted : SettingsEvent()
     data object LeftGroup : SettingsEvent()
     data class CopiedInviteCode(val code: String) : SettingsEvent()
+    /** 그룹장이 생성 후 3일(72시간)이 지나지 않아 나가기가 차단된 경우 */
+    data class LeaveTooSoon(val daysLeft: Int) : SettingsEvent()
 }
 
 @HiltViewModel
@@ -186,6 +188,23 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onLeaveGroupTapped() {
+        val state = _uiState.value
+        // 그룹장인 경우에만 생성 후 3일(72시간) 쿨다운 체크
+        // (일반 멤버나 위임 후 나가기는 제한 없음)
+        if (state.isOwner) {
+            val family = state.family
+            if (family != null) {
+                val hoursSinceCreation =
+                    (System.currentTimeMillis() - family.createdAt.time) / (1000.0 * 60 * 60)
+                if (hoursSinceCreation < 72) {
+                    val daysLeft = kotlin.math.ceil((72 - hoursSinceCreation) / 24.0).toInt()
+                    viewModelScope.launch {
+                        _events.emit(SettingsEvent.LeaveTooSoon(daysLeft))
+                    }
+                    return
+                }
+            }
+        }
         _uiState.update { it.copy(showLeaveGroupConfirmation = true) }
     }
 

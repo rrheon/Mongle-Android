@@ -331,6 +331,7 @@
     <string name="toast_max_groups">グループは最大3つまで作成できます</string>
     <string name="toast_already_member">すでに参加しているグループです</string>
     <string name="toast_invalid_code">招待コードを再確認してください</string>
+    <string name="group_leave_too_soon">グループ作成後3日が経過しないと退出できません。(あと%1$d日)</string>
 
     <!-- Error Messages -->
     <string name="error_offline">インターネット接続を確認してください</string>

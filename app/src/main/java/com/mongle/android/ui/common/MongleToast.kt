@@ -63,6 +63,7 @@ enum class MongleToastType {
     MAX_GROUPS_REACHED,  // 그룹 3개 한도 초과
     ALREADY_MEMBER,      // 이미 속해있는 그룹
     INVALID_INVITE_CODE, // 유효하지 않은 초대코드
+    LEAVE_TOO_SOON,      // 그룹 생성 후 3일 미경과로 나가기 차단
     // Generic
     SUCCESS,
     ERROR,
@@ -91,6 +92,7 @@ private val MongleToastType.icon: ImageVector
         MongleToastType.MAX_GROUPS_REACHED -> Icons.Default.Warning
         MongleToastType.ALREADY_MEMBER -> Icons.Default.Warning
         MongleToastType.INVALID_INVITE_CODE -> Icons.Default.Error
+        MongleToastType.LEAVE_TOO_SOON -> Icons.Default.Info
         MongleToastType.SUCCESS -> Icons.Default.CheckCircle
         MongleToastType.ERROR -> Icons.Default.Warning
         MongleToastType.INFO -> Icons.Default.Info
@@ -108,6 +110,7 @@ private val MongleToastType.iconColor: Color
         MongleToastType.MAX_GROUPS_REACHED -> MongleError
         MongleToastType.ALREADY_MEMBER -> MongleError
         MongleToastType.INVALID_INVITE_CODE -> MongleError
+        MongleToastType.LEAVE_TOO_SOON -> MonglePrimary
         MongleToastType.SUCCESS -> MonglePrimary
         MongleToastType.ERROR -> MongleError
         MongleToastType.INFO -> Color(0xFF42A5F5)
@@ -127,6 +130,7 @@ val MongleToastType.defaultMessage: String
         MongleToastType.MAX_GROUPS_REACHED -> "그룹은 최대 3개까지 만들 수 있어요"
         MongleToastType.ALREADY_MEMBER -> "이미 속해있는 그룹이에요"
         MongleToastType.INVALID_INVITE_CODE -> "초대코드를 다시 확인해주세요"
+        MongleToastType.LEAVE_TOO_SOON -> "그룹 생성 후 3일이 지나야 나갈 수 있어요"
         MongleToastType.SUCCESS -> ""
         MongleToastType.ERROR -> ""
         MongleToastType.INFO -> ""
@@ -144,6 +148,7 @@ fun MongleToastType.localizedMessage(): String = when (this) {
     MongleToastType.MAX_GROUPS_REACHED -> stringResource(R.string.toast_max_groups)
     MongleToastType.ALREADY_MEMBER -> stringResource(R.string.toast_already_member)
     MongleToastType.INVALID_INVITE_CODE -> stringResource(R.string.toast_invalid_code)
+    MongleToastType.LEAVE_TOO_SOON -> ""
     MongleToastType.SUCCESS -> ""
     MongleToastType.ERROR -> ""
     MongleToastType.INFO -> ""
