@@ -79,6 +79,7 @@ private val SearchBg = Color(0xFFF8FAF8)
 
 @Composable
 fun SearchScreen(
+    familyId: String? = null,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -88,6 +89,11 @@ fun SearchScreen(
     // 탭 전환 시 키보드 자동 포커스
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
+    }
+
+    // 화면 진입 / 그룹 변경 시 히스토리 재로드 (그룹별 독립 검색)
+    LaunchedEffect(familyId) {
+        viewModel.setActiveFamily(familyId)
     }
 
     Column(
@@ -302,13 +308,15 @@ private fun SearchResultCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(MongleSpacing.md)) {
-            // 질문 텍스트 (검색어 하이라이팅)
+            // 질문 텍스트 — 매칭 여부와 무관하게 항상 표시되도록 일반 Text 로 직접 렌더링
+            // (AnnotatedString 경로의 미묘한 렌더링 이슈 회피)
             Text(
-                text = buildHighlightedText(result.questionContent, query),
+                text = result.questionContent,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp
-                )
+                ),
+                color = MongleTextPrimary
             )
 
             if (result.matchedAnswers.isNotEmpty()) {

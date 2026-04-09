@@ -105,7 +105,7 @@ class ApiQuestionRepository @Inject constructor(
                 ),
                 date = parseDate(item.date),
                 hasMyAnswer = item.hasMyAnswer,
-                isSkipped = item.isSkipped,
+                hasMySkipped = item.hasMySkipped,
                 familyAnswerCount = item.familyAnswerCount,
                 answers = item.answers.map { a ->
                     HistoryAnswerSummary(
