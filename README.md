@@ -16,7 +16,8 @@
 | 의존성 주입 | Hilt 2.52 |
 | 비동기 | Kotlin Coroutines 1.8.1 |
 | 네트워크 | Retrofit 2.11 + OkHttp 4.12 + Moshi 1.15 |
-| 소셜 로그인 | Kakao SDK 2.20.3, Google Sign-In 21.2.0 |
+| 소셜 로그인 | Kakao SDK 2.20.3, Google Sign-In 21.2.0, Apple Sign-In (웹 플로우) |
+| 광고 | Google Mobile Ads 23.3 + UMP 3.1 (GDPR/CCPA 동의 수집) |
 | Min SDK | 26 (Android 8.0) |
 | Target SDK | 35 (Android 15) |
 
@@ -148,14 +149,16 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 | 항목 | 상태 | 비고 |
 |---|---|---|
 | 네트워크 레이어 (Retrofit + OkHttp + Moshi) | ✅ | Bearer 토큰 자동 주입 |
-| 이메일 로그인 / 회원가입 | ✅ | |
-| 카카오 / 구글 소셜 로그인 | ✅ | |
+| 카카오 / 구글 / 애플 소셜 로그인 | ✅ | |
 | 홈 화면 | ✅ | 오늘의 질문, 가족 현황, 스트릭, 그라디언트 |
 | 질문 상세 화면 | ✅ | 답변 제출·수정, 가족 답변 목록 실제 API |
 | 히스토리 화면 | ✅ | 월별 달력, 답변 표시 |
 | 설정 화면 | ✅ | 프로필 편집, 그룹 관리, 계정 삭제 |
 | 알림 화면 | ✅ | 읽음·전체읽음 처리 |
 | 디자인 시스템 | ✅ | iOS 디자인 100% 이식 |
+| 광고 (AdMob) | ✅ | 리워드/배너 광고, UMP(GDPR/CCPA) 동의 폼 |
+| 약관/개인정보 | ✅ | Notion 호스팅 페이지를 기기 언어(ko/en/ja) 로 자동 선택 |
+| 다국어 지원 | ✅ | values / values-ko / values-ja |
 
 ### 미구현
 

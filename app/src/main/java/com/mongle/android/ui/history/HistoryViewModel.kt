@@ -100,7 +100,7 @@ class HistoryViewModel @Inject constructor(
                         totalMembers = totalMembers,
                         isCompleted = item.familyAnswerCount >= totalMembers,
                         userAnswered = item.hasMyAnswer,
-                        isSkipped = item.isSkipped,
+                        isSkipped = item.hasMySkipped,
                         memberAnswers = item.answers
                     )
                 }

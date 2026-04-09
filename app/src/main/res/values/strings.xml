@@ -23,7 +23,30 @@
     <string name="login_kakao">Continue with Kakao</string>
     <string name="login_google">Continue with Google</string>
     <string name="login_apple">Continue with Apple</string>
+    <string name="login_email">Continue with Email</string>
     <string name="login_browse">Browse</string>
+
+    <!-- Email Auth -->
+    <string name="email_auth_signup_title">Sign up with email</string>
+    <string name="email_auth_signup_subtitle">Enter your email and password.\nWe\'ll send a verification code to your email.</string>
+    <string name="email_auth_email_label">Email</string>
+    <string name="email_auth_email_placeholder">name@example.com</string>
+    <string name="email_auth_email_invalid">Invalid email format.</string>
+    <string name="email_auth_password_label">Password</string>
+    <string name="email_auth_password_placeholder">Enter your password</string>
+    <string name="email_auth_password_hint">At least 10 characters with one special character</string>
+    <string name="email_auth_password_invalid">Must be at least 10 characters and include one special character.</string>
+    <string name="email_auth_send_code">Send code</string>
+    <string name="email_auth_verify_title">Enter verification code</string>
+    <string name="email_auth_verify_subtitle">Enter the 6-digit code\nsent to %1$s.</string>
+    <string name="email_auth_code_label">Verification code</string>
+    <string name="email_auth_code_placeholder">000000</string>
+    <string name="email_auth_verify_submit">Verify</string>
+    <string name="email_auth_resend">Resend code</string>
+    <string name="email_auth_resend_cooldown">Resend in %1$ds</string>
+    <string name="email_auth_request_code_error">Failed to send the verification code.</string>
+    <string name="email_auth_resend_error">Failed to resend the code.</string>
+    <string name="email_auth_verify_error">Verification failed.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">Welcome to\nMongle</string>

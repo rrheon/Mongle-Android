@@ -64,6 +64,9 @@ fun ConsentScreen(
     legalVersions: LegalVersions,
     onCompleted: () -> Unit,
     onBack: () -> Unit,
+    /** 이메일 회원가입 이전 단계에서 호출될 때 true. 서버 호출 없이 버전만 상위로 전달. */
+    preSignup: Boolean = false,
+    onPreSignupCompleted: ((termsVersion: String, privacyVersion: String) -> Unit)? = null,
     viewModel: ConsentViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -71,14 +74,16 @@ fun ConsentScreen(
 
     BackHandler(onBack = onBack)
 
-    LaunchedEffect(requiredConsents, legalVersions) {
-        viewModel.setContext(requiredConsents, legalVersions)
+    LaunchedEffect(requiredConsents, legalVersions, preSignup) {
+        viewModel.setContext(requiredConsents, legalVersions, preSignup = preSignup)
     }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is ConsentEvent.Completed -> onCompleted()
+                is ConsentEvent.PreSignupCompleted ->
+                    onPreSignupCompleted?.invoke(event.termsVersion, event.privacyVersion)
             }
         }
     }

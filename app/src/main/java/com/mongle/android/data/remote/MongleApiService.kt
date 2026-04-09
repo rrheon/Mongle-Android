@@ -84,6 +84,33 @@ data class ConsentRequest(
     val privacyVersion: String? = null
 )
 
+// ── Email Auth 요청 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class EmailRequestCodeBody(val email: String)
+
+@JsonClass(generateAdapter = true)
+data class EmailRequestCodeResponse(
+    val sent: Boolean = true,
+    val expiresInSec: Int = 600
+)
+
+@JsonClass(generateAdapter = true)
+data class EmailSignupBody(
+    val email: String,
+    val password: String,
+    val code: String,
+    val termsVersion: String,
+    val privacyVersion: String,
+    val name: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class EmailLoginBody(
+    val email: String,
+    val password: String
+)
+
 @JsonClass(generateAdapter = true)
 data class TokenRefreshResponse(
     val token: String,
@@ -336,6 +363,15 @@ interface MongleApiService {
 
     @POST("auth/consent")
     suspend fun submitConsent(@Body body: ConsentRequest)
+
+    @POST("auth/email/request-code")
+    suspend fun requestEmailCode(@Body body: EmailRequestCodeBody): EmailRequestCodeResponse
+
+    @POST("auth/email/signup")
+    suspend fun emailSignup(@Body body: EmailSignupBody): AuthResponse
+
+    @POST("auth/email/login")
+    suspend fun emailLogin(@Body body: EmailLoginBody): AuthResponse
 
     // Users
     @GET("users/me")

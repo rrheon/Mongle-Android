@@ -21,6 +21,31 @@ interface AuthRepository {
      * @param privacyVersion null 이면 개인정보 동의 미갱신
      */
     suspend fun submitConsent(termsVersion: String?, privacyVersion: String?)
+
+    // region Email Auth
+
+    /**
+     * 이메일 회원가입 6자리 인증코드 발송.
+     * 이미 가입된 이메일이면 예외 발생.
+     */
+    suspend fun requestEmailSignupCode(email: String)
+
+    /**
+     * 이메일 회원가입 완료. 인증코드 + 약관 버전 검증 후 유저 생성.
+     */
+    suspend fun emailSignup(
+        email: String,
+        password: String,
+        code: String,
+        name: String?,
+        termsVersion: String,
+        privacyVersion: String
+    ): SocialLoginResult
+
+    /** 이메일/비밀번호 로그인 (기존 회원) */
+    suspend fun emailLogin(email: String, password: String): SocialLoginResult
+
+    // endregion
 }
 
 sealed class AuthError(message: String) : Exception(message) {

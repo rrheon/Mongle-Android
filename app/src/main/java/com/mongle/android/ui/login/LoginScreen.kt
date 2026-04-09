@@ -67,6 +67,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoggedIn: (User, Boolean, List<LegalDocType>, LegalVersions) -> Unit,
     onBrowse: () -> Unit = {},
+    onEmailContinue: () -> Unit = {},
     pendingAppleCallbackUri: Uri? = null,
     onAppleCallbackConsumed: () -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
@@ -208,6 +209,37 @@ fun LoginScreen(
                         launchAppleSignIn(context)
                     }
                 )
+
+                Spacer(modifier = Modifier.height(MongleSpacing.sm))
+
+                // 이메일로 계속하기 — Apple 버튼 아래
+                Button(
+                    onClick = onEmailContinue,
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .border(1.dp, MongleGoogleBorder, RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = MongleTextPrimary,
+                        disabledContainerColor = Color.White.copy(alpha = 0.5f),
+                        disabledContentColor = MongleTextPrimary.copy(alpha = 0.5f)
+                    ),
+                    contentPadding = PaddingValues(horizontal = MongleSpacing.md)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.login_email),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MongleTextPrimary
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(MongleSpacing.md))
 

@@ -23,7 +23,30 @@
     <string name="login_kakao">カカオで続ける</string>
     <string name="login_google">Googleで続ける</string>
     <string name="login_apple">Appleで続ける</string>
+    <string name="login_email">メールで続ける</string>
     <string name="login_browse">見てみる</string>
+
+    <!-- Email Auth -->
+    <string name="email_auth_signup_title">メールで登録</string>
+    <string name="email_auth_signup_subtitle">メールアドレスとパスワードを入力してください。\n入力いただいたメールに認証コードを送信します。</string>
+    <string name="email_auth_email_label">メールアドレス</string>
+    <string name="email_auth_email_placeholder">name@example.com</string>
+    <string name="email_auth_email_invalid">メールアドレスの形式が正しくありません。</string>
+    <string name="email_auth_password_label">パスワード</string>
+    <string name="email_auth_password_placeholder">パスワードを入力してください</string>
+    <string name="email_auth_password_hint">10文字以上・特殊文字を1つ以上含む</string>
+    <string name="email_auth_password_invalid">10文字以上、特殊文字を1つ以上含めてください。</string>
+    <string name="email_auth_send_code">認証コードを受け取る</string>
+    <string name="email_auth_verify_title">認証コードを入力してください</string>
+    <string name="email_auth_verify_subtitle">%1$s に送信した\n6桁のコードを入力してください。</string>
+    <string name="email_auth_code_label">認証コード</string>
+    <string name="email_auth_code_placeholder">000000</string>
+    <string name="email_auth_verify_submit">認証完了</string>
+    <string name="email_auth_resend">コードを再送信</string>
+    <string name="email_auth_resend_cooldown">%1$d秒後に再送信できます</string>
+    <string name="email_auth_request_code_error">認証コードの送信に失敗しました。</string>
+    <string name="email_auth_resend_error">再送信に失敗しました。</string>
+    <string name="email_auth_verify_error">認証に失敗しました。</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">モングルへ\nようこそ</string>
