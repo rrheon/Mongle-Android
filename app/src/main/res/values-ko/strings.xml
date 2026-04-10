@@ -339,6 +339,7 @@
     <string name="toast_max_groups">그룹은 최대 3개까지 만들 수 있어요</string>
     <string name="toast_already_member">이미 속해있는 그룹이에요</string>
     <string name="toast_invalid_code">초대코드를 다시 확인해주세요</string>
+    <string name="group_leave_too_soon">그룹 생성 후 3일이 지나야 나갈 수 있어요. (%1$d일 남음)</string>
 
     <!-- Error Messages -->
     <string name="error_offline">인터넷 연결을 확인해주세요</string>

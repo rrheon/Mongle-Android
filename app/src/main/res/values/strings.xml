@@ -339,6 +339,7 @@
     <string name="toast_max_groups">You can create up to 3 groups</string>
     <string name="toast_already_member">Already a member of this group</string>
     <string name="toast_invalid_code">Please check the invite code</string>
+    <string name="group_leave_too_soon">You can leave 3 days after creating the group. (%1$d day(s) left)</string>
 
     <!-- Error Messages -->
     <string name="error_offline">Please check your internet connection</string>
