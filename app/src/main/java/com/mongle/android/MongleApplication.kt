@@ -1,4 +1,5 @@
 package com.mongle.android
+import com.ycompany.Monggle.BuildConfig
 
 import android.app.Application
 import com.kakao.sdk.common.KakaoSdk
