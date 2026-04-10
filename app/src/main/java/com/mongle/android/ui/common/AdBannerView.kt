@@ -1,5 +1,4 @@
 package com.mongle.android.ui.common
-import com.ycompany.Monggle.BuildConfig
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,7 +14,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 
-private val BANNER_AD_UNIT_ID = BuildConfig.ADMOB_BANNER_ID
+private val BANNER_AD_UNIT_ID = com.mongle.android.BuildConfig.ADMOB_BANNER_ID
 
 @Composable
 fun AdBannerSection(modifier: Modifier = Modifier) {

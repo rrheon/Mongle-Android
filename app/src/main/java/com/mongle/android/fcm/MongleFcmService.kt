@@ -10,7 +10,7 @@ import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.mongle.android.MainActivity
-import com.ycompany.Monggle.R
+import com.mongle.android.R
 
 class MongleFcmService : FirebaseMessagingService() {
 

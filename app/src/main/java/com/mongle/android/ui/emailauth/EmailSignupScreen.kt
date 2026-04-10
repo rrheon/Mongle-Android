@@ -49,7 +49,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ycompany.Monggle.R
+import com.mongle.android.R
 import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.SocialLoginResult
 import com.mongle.android.ui.common.MongleToastOverlay

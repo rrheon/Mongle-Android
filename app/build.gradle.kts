@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.ycompany.Monggle"
+    namespace = "com.mongle.android"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.ycompany.Monggle"
+        applicationId = "com.mongle.android"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

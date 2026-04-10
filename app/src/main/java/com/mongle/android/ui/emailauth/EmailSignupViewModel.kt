@@ -3,7 +3,7 @@ package com.mongle.android.ui.emailauth
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ycompany.Monggle.R
+import com.mongle.android.R
 import com.mongle.android.domain.model.LegalDocType
 import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.model.SocialLoginResult

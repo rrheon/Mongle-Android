@@ -58,7 +58,7 @@ import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import androidx.compose.ui.res.stringResource
-import com.ycompany.Monggle.R
+import com.mongle.android.R
 import kotlinx.coroutines.delay
 
 @Composable

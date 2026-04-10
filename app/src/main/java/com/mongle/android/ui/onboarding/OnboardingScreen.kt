@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
-import com.ycompany.Monggle.R
+import com.mongle.android.R
 import com.mongle.android.ui.common.MongleButton
 import com.mongle.android.ui.common.MongleCharacterAvatar
 import com.mongle.android.ui.common.MongleLogo

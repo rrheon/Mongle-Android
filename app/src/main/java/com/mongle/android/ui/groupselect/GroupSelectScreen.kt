@@ -1,6 +1,6 @@
 package com.mongle.android.ui.groupselect
 
-import com.ycompany.Monggle.BuildConfig
+import com.mongle.android.BuildConfig
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -112,7 +112,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.res.stringResource
-import com.ycompany.Monggle.R
+import com.mongle.android.R
 import java.util.UUID
 
 // ─── Color data ──────────────────────────────────────────────────────────────

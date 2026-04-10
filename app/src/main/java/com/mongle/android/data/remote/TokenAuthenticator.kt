@@ -1,5 +1,4 @@
 package com.mongle.android.data.remote
-import com.ycompany.Monggle.BuildConfig
 
 import android.content.Context
 import com.squareup.moshi.Moshi
@@ -30,7 +29,7 @@ class TokenAuthenticator @Inject constructor(
     private val sessionExpiredNotifier: SessionExpiredNotifier
 ) : Authenticator {
 
-    private val baseUrl = BuildConfig.BASE_URL
+    private val baseUrl = com.mongle.android.BuildConfig.BASE_URL
 
     private val prefs by lazy {
         context.getSharedPreferences(AUTH_PREF_NAME, Context.MODE_PRIVATE)

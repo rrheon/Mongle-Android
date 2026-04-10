@@ -1,5 +1,4 @@
 package com.mongle.android.ui.login
-import com.ycompany.Monggle.BuildConfig
 
 import android.app.Activity
 import android.content.Context
@@ -23,11 +22,11 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-internal val GOOGLE_WEB_CLIENT_ID = BuildConfig.GOOGLE_WEB_CLIENT_ID
+internal val GOOGLE_WEB_CLIENT_ID = com.mongle.android.BuildConfig.GOOGLE_WEB_CLIENT_ID
 
 // Apple Sign-In OAuth 설정
-internal val APPLE_CLIENT_ID = BuildConfig.APPLE_CLIENT_ID
-internal val APPLE_REDIRECT_URI = "${BuildConfig.BASE_URL}auth/apple/callback"
+internal val APPLE_CLIENT_ID = com.mongle.android.BuildConfig.APPLE_CLIENT_ID
+internal val APPLE_REDIRECT_URI = "${com.mongle.android.BuildConfig.BASE_URL}auth/apple/callback"
 
 // ── 카카오 ─────────────────────────────────────────
 
