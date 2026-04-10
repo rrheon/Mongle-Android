@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:name=".MongleApplication"
+        android:name="com.mongle.android.MongleApplication"
         android:allowBackup="false"
         android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher"
@@ -15,7 +15,7 @@
         android:theme="@style/Theme.Mongle">
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.mongle.android.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Mongle">
@@ -70,7 +70,7 @@
 
         <!-- FCM -->
         <service
-            android:name=".fcm.MongleFcmService"
+            android:name="com.mongle.android.fcm.MongleFcmService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
