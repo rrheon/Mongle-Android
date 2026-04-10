@@ -39,7 +39,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleError
 import com.mongle.android.ui.theme.MongleHeartRed

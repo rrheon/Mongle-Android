@@ -3,7 +3,7 @@ package com.mongle.android.ui.search
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mongle.android.BuildConfig
+import com.ycompany.Monggle.BuildConfig
 import com.mongle.android.domain.model.DailyQuestionHistory
 import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.domain.repository.MongleRepository

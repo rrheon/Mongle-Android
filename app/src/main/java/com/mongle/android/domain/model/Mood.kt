@@ -1,7 +1,7 @@
 package com.mongle.android.domain.model
 
 import androidx.annotation.StringRes
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 
 enum class Mood(
     val id: String,

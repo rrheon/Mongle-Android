@@ -80,7 +80,7 @@ import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import androidx.compose.ui.res.stringResource
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 import com.mongle.android.util.AdManager
 
 private data class MoodOption(val id: String, val labelResId: Int, val color: Color)

@@ -5,7 +5,7 @@ import com.mongle.android.data.remote.MongleApiService
 import com.mongle.android.data.remote.TokenAuthenticator
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.mongle.android.BuildConfig
+import com.ycompany.Monggle.BuildConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

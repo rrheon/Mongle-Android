@@ -41,7 +41,7 @@ import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import androidx.compose.ui.res.stringResource
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 import java.text.SimpleDateFormat
 import java.util.Locale
 

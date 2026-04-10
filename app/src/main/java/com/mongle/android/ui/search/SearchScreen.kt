@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.ui.common.AdBannerSection
 import com.mongle.android.ui.common.MongleCharacter
