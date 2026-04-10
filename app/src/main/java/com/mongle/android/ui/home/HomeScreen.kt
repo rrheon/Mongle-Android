@@ -99,7 +99,7 @@ import com.mongle.android.ui.common.MongleToastType
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import androidx.compose.ui.res.stringResource
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 
 // iOS monggleColor(for:) 순서와 동일: [Green, Yellow, Pink, Blue, Orange]
 private val sceneCharacterColors = listOf(

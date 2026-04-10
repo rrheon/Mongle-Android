@@ -60,7 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 import com.mongle.android.data.remote.AppNotification
 import com.mongle.android.ui.theme.MongleAccentCoralLight
 import com.mongle.android.ui.theme.MongleInfo

@@ -1,6 +1,6 @@
 package com.mongle.android.ui.settings
 
-import com.mongle.android.BuildConfig
+import com.ycompany.Monggle.BuildConfig
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -103,7 +103,7 @@ import com.mongle.android.ui.theme.MongleTextHint
 import com.mongle.android.ui.theme.MongleTextPrimary
 import com.mongle.android.ui.theme.MongleTextSecondary
 import androidx.compose.ui.res.stringResource
-import com.mongle.android.R
+import com.ycompany.Monggle.R
 import java.util.UUID
 
 // ── 진입점 ──────────────────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 package com.mongle.android.util
+import com.ycompany.Monggle.BuildConfig
 
 import android.app.Activity
 import android.content.Context
@@ -13,7 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private val REWARDED_AD_UNIT_ID = com.mongle.android.BuildConfig.ADMOB_REWARDED_ID
+private val REWARDED_AD_UNIT_ID = BuildConfig.ADMOB_REWARDED_ID
 
 @Singleton
 class AdManager @Inject constructor(

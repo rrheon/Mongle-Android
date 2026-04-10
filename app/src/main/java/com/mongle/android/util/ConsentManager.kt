@@ -6,7 +6,7 @@ import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
-import com.mongle.android.BuildConfig
+import com.ycompany.Monggle.BuildConfig
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
