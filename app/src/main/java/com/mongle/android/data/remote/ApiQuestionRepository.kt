@@ -52,7 +52,7 @@ class ApiQuestionRepository @Inject constructor(
         else -> QuestionCategory.DAILY
     }
 
-    override suspend fun getTodayQuestion(): Question? = safeCall {
+    override suspend fun getTodayQuestion(): Question? = try {
         val response = api.getTodayQuestion()
         response.question.toDomain(
             dailyQuestionId = response.id,
@@ -60,6 +60,8 @@ class ApiQuestionRepository @Inject constructor(
             hasMySkipped = response.hasMySkipped,
             familyAnswerCount = response.familyAnswerCount
         )
+    } catch (e: HttpException) {
+        if (e.code() == 404) null else throw Exception(parseServerMessage(e.response()?.errorBody()?.string() ?: e.message()))
     }
 
     override suspend fun create(question: Question): Question =

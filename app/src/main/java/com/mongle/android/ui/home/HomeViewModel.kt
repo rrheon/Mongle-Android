@@ -227,8 +227,22 @@ class HomeViewModel @Inject constructor(
             _uiState.update { it.copy(isRefreshing = true, errorMessage = null) }
             try {
                 val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
-                val question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
+                var question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
                 val tree = runCatching { treeRepository.getMyTreeProgress() }.getOrElse { TreeProgress() }
+
+                // 오늘의 질문을 찾지 못한 경우 히스토리에서 최근 질문을 fallback으로 사용
+                if (question == null) {
+                    val history = runCatching { questionRepository.getDailyHistory(page = 1, limit = 5) }.getOrElse { emptyList() }
+                    val recent = history.firstOrNull()
+                    if (recent != null) {
+                        question = recent.question.copy(
+                            dailyQuestionId = recent.id,
+                            hasMyAnswer = recent.hasMyAnswer,
+                            hasMySkipped = recent.hasMySkipped,
+                            familyAnswerCount = recent.familyAnswerCount
+                        )
+                    }
+                }
 
                 _uiState.update {
                     it.copy(

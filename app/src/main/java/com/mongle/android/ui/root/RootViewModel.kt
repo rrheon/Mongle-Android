@@ -142,10 +142,24 @@ class RootViewModel @Inject constructor(
                 val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
                 val family = familyResult?.first
                 val members = familyResult?.second ?: emptyList()
-                val question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
+                var question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
                 val tree = runCatching { treeRepository.getMyTreeProgress() }.getOrElse { TreeProgress() }
 
                 val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
+
+                // 오늘의 질문을 찾지 못한 경우 히스토리에서 가장 최근 질문을 fallback으로 사용
+                if (question == null) {
+                    val history = runCatching { questionRepository.getDailyHistory(page = 1, limit = 5) }.getOrElse { emptyList() }
+                    val recent = history.firstOrNull()
+                    if (recent != null) {
+                        question = recent.question.copy(
+                            dailyQuestionId = recent.id,
+                            hasMyAnswer = recent.hasMyAnswer,
+                            hasMySkipped = recent.hasMySkipped,
+                            familyAnswerCount = recent.familyAnswerCount
+                        )
+                    }
+                }
 
                 if (family == null) {
                     // No active family → go to GroupSelection
@@ -177,16 +191,13 @@ class RootViewModel @Inject constructor(
                         }
                     }
 
-                    // 서버가 KST 정오에 새 질문을 배정하므로 별도의 "최근 질문 폴백" 은 불필요.
-                    val lastQ: Question? = null
-
                     _uiState.update {
                         val serverMe = members.firstOrNull { m -> m.id == it.currentUser?.id }
                         val syncedUser = serverMe ?: it.currentUser
                         it.copy(
                             appState = AppState.Authenticated,
                             todayQuestion = question,
-                            lastQuestion = lastQ,
+                            lastQuestion = null,
                             familyTree = tree ?: TreeProgress(),
                             family = family,
                             familyMembers = members,
