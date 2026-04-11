@@ -130,7 +130,9 @@ class HomeViewModel @Inject constructor(
     private fun loadFamilyAnswers(dailyQuestionId: String, forceRefreshQuestion: Boolean = false) {
         viewModelScope.launch {
             try {
-                val dailyQId = UUID.fromString(dailyQuestionId)
+                // 서버 Answer 테이블은 question(콘텐츠) ID로 연결되므로
+                // answer API 호출에는 question.id 사용 (iOS와 동일)
+                val questionId = _uiState.value.todayQuestion?.id ?: return@launch
 
                 // 본인 답변 직후 백엔드 게이팅 우회를 위해 오늘의 질문을 먼저 재조회 (동기화 목적)
                 if (forceRefreshQuestion) {
@@ -140,10 +142,10 @@ class HomeViewModel @Inject constructor(
                 }
 
                 // 1) 가족 답변 로드 (Answer 목록)
-                val familyAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
+                val familyAnswers = runCatching { answerRepository.getByDailyQuestion(questionId) }.getOrElse { emptyList() }
                 val currentUserId = _uiState.value.currentUser?.id
                 val myAnswer = currentUserId?.let {
-                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
+                    runCatching { answerRepository.getByUserAndDailyQuestion(questionId, it) }.getOrNull()
                 }
                 val allAnswers = if (myAnswer != null && familyAnswers.none { it.userId == myAnswer.userId }) {
                     familyAnswers + myAnswer
@@ -164,7 +166,7 @@ class HomeViewModel @Inject constructor(
                         val aid = runCatching { UUID.fromString(summary.id) }.getOrNull() ?: return@mapNotNull null
                         Answer(
                             id = aid,
-                            dailyQuestionId = dailyQId,
+                            dailyQuestionId = questionId,
                             userId = uid,
                             content = summary.content,
                             imageUrl = summary.imageUrl,
@@ -316,29 +318,27 @@ class HomeViewModel @Inject constructor(
                 return@launch
             }
             // 캐시에 없으면 서버에서 최신 가족 답변을 즉시 재조회 후 재시도
-            val dailyQId = _uiState.value.todayQuestion?.dailyQuestionId?.let {
-                runCatching { UUID.fromString(it) }.getOrNull()
-            }
-            if (dailyQId == null) {
-                android.util.Log.w("HomeVM", "onViewAnswerTapped: dailyQuestionId 없음 member=${member.id}")
+            // 서버 Answer 테이블은 question(콘텐츠) ID 기준이므로 question.id 사용
+            val questionId = _uiState.value.todayQuestion?.id
+            if (questionId == null) {
+                android.util.Log.w("HomeVM", "onViewAnswerTapped: questionId 없음 member=${member.id}")
                 _events.emit(HomeEvent.ShowError("아직 오늘의 질문 정보가 준비되지 않았어요."))
                 return@launch
             }
-            val freshAnswers = runCatching { answerRepository.getByDailyQuestion(dailyQId) }.getOrElse { emptyList() }
+            val freshAnswers = runCatching { answerRepository.getByDailyQuestion(questionId) }.getOrElse { emptyList() }
             var freshMap = freshAnswers.associateBy { it.userId }
             // 본인 답변은 backend에서 family-answers 응답에 포함되지 않을 수 있어
             // /me 전용 엔드포인트(getByUserAndDailyQuestion)로 한 번 더 시도한다.
             val isSelf = member.id == state.currentUser?.id
             if (isSelf && freshMap[member.id] == null) {
                 val mine = runCatching {
-                    answerRepository.getByUserAndDailyQuestion(dailyQId, member.id)
+                    answerRepository.getByUserAndDailyQuestion(questionId, member.id)
                 }.getOrNull()
                 if (mine != null) {
                     freshMap = freshMap + (mine.userId to mine)
                 }
             }
             // 그래도 없으면 HISTORY 엔드포인트(daily-history)에서 오늘 항목을 찾아 본문을 보충한다.
-            // HISTORY 화면이 동일 응답으로 모든 멤버 답변을 정상 노출하고 있음.
             if (freshMap[member.id] == null) {
                 val histAnswers = runCatching {
                     questionRepository.getDailyHistory(page = 1, limit = 10)
@@ -350,7 +350,7 @@ class HomeViewModel @Inject constructor(
                 if (match != null) {
                     val converted = Answer(
                         id = runCatching { UUID.fromString(match.id) }.getOrNull() ?: UUID.randomUUID(),
-                        dailyQuestionId = dailyQId,
+                        dailyQuestionId = questionId,
                         userId = member.id,
                         content = match.content,
                         imageUrl = match.imageUrl,

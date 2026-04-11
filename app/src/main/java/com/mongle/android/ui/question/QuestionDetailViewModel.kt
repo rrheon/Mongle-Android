@@ -86,13 +86,12 @@ class QuestionDetailViewModel @Inject constructor(
     private fun loadAnswers(question: Question, currentUser: User?) {
         viewModelScope.launch {
             try {
-                // dailyQuestionId를 사용하여 답변 조회 (question.id는 질문 자체 ID)
-                val dailyQId = question.dailyQuestionId?.let {
-                    runCatching { UUID.fromString(it) }.getOrNull()
-                } ?: question.id
-                val allAnswers = answerRepository.getByDailyQuestion(dailyQId)
+                // 서버 Answer 테이블은 question(콘텐츠) ID로 연결되므로 question.id 사용
+                // (iOS와 동일 — dailyQuestionId가 아닌 question.id를 전송해야 함)
+                val questionId = question.id
+                val allAnswers = answerRepository.getByDailyQuestion(questionId)
                 val myAnswer = currentUser?.id?.let {
-                    runCatching { answerRepository.getByUserAndDailyQuestion(dailyQId, it) }.getOrNull()
+                    runCatching { answerRepository.getByUserAndDailyQuestion(questionId, it) }.getOrNull()
                 }
 
                 val members = _uiState.value.familyMembers
@@ -202,17 +201,15 @@ class QuestionDetailViewModel @Inject constructor(
         val moodId = state.selectedMoodIndex?.let { moodIds.getOrNull(it) }
         val isNewAnswer = state.myAnswer == null
 
-        // loadAnswers()와 동일한 ID 사용: dailyQuestionId 우선, 없으면 question.id
-        val dailyQId = question.dailyQuestionId?.let {
-            runCatching { UUID.fromString(it) }.getOrNull()
-        } ?: question.id
+        // 서버는 question(콘텐츠) ID를 기대함 (iOS와 동일)
+        val questionId = question.id
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
                 val answer = Answer(
                     id = state.myAnswer?.id ?: UUID.randomUUID(),
-                    dailyQuestionId = dailyQId,
+                    dailyQuestionId = questionId,
                     userId = userId,
                     content = state.answerText.trim(),
                     imageUrl = null,
