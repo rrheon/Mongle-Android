@@ -415,7 +415,9 @@ private fun SelectStep(
             Text(
                 text = stringResource(R.string.group_mongle_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             IconButton(onClick = onNotificationClick) {
                 Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.home_notifications), tint = MongleTextPrimary)
@@ -682,7 +684,9 @@ private fun CreateStep(
             Text(
                 text = stringResource(R.string.group_create_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -859,7 +863,9 @@ private fun JoinStep(
             Text(
                 text = stringResource(R.string.group_join_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -1002,7 +1008,9 @@ private fun CreatedStep(
             Text(
                 text = stringResource(R.string.group_create_title),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 

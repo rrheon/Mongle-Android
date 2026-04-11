@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -80,6 +81,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -293,7 +295,9 @@ private fun MyScreen(
             Text(
                 text = stringResource(R.string.settings_my),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.weight(1f))
         }
@@ -1141,7 +1145,8 @@ private fun AccountRow(
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(horizontal = MongleSpacing.md)
-            .height(56.dp),
+            .heightIn(min = 56.dp)
+            .padding(vertical = MongleSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md)
     ) {
@@ -1164,7 +1169,9 @@ private fun AccountRow(
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = subtitle,
@@ -1244,7 +1251,9 @@ private fun SettingsNavigationHeader(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             color = MongleTextPrimary,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         rightContent()
     }
@@ -1395,7 +1404,8 @@ private fun SettingsRow(row: SettingsRowData) {
             .fillMaxWidth()
             .then(if (row.onClick != null) Modifier.clickable { row.onClick.invoke() } else Modifier)
             .padding(horizontal = MongleSpacing.md)
-            .height(56.dp),
+            .heightIn(min = 56.dp)
+            .padding(vertical = MongleSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MongleSpacing.md)
     ) {
@@ -1418,7 +1428,9 @@ private fun SettingsRow(row: SettingsRowData) {
             Text(
                 text = row.title,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MongleTextPrimary
+                color = MongleTextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             if (row.subtitle.isNotEmpty()) {
                 Text(

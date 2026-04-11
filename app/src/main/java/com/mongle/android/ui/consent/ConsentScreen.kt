@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ycompany.Monggle.R
@@ -222,7 +223,9 @@ fun ConsentScreen(
                     Text(
                         text = stringResource(R.string.consent_submit),
                         fontWeight = FontWeight.SemiBold,
-                        color = androidx.compose.ui.graphics.Color.White
+                        color = androidx.compose.ui.graphics.Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

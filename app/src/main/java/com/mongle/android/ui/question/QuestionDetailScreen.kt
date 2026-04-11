@@ -56,6 +56,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -124,6 +125,7 @@ fun QuestionDetailScreen(
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let {
+            focusManager.clearFocus()
             toastData = MongleToastData(message = it, type = MongleToastType.ERROR)
             viewModel.dismissError()
         }
@@ -200,7 +202,10 @@ fun QuestionDetailScreen(
                     hasMyAnswer = uiState.hasMyAnswer,
                     isSubmitting = uiState.isSubmitting,
                     enabled = uiState.answerText.trim().isNotEmpty(),
-                    onClick = viewModel::submitAnswer
+                    onClick = {
+                        focusManager.clearFocus()
+                        viewModel.submitAnswer()
+                    }
                 )
             }
         }
@@ -556,7 +561,9 @@ private fun AnswerCtaButton(
                     Text(
                         text = stringResource(if (hasMyAnswer) R.string.detail_edit_submit else R.string.detail_submit),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = Color.White
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

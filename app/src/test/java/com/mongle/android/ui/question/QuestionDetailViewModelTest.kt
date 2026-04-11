@@ -1,5 +1,6 @@
 package com.mongle.android.ui.question
 
+import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.Question
@@ -32,6 +33,7 @@ class QuestionDetailViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var answerRepository: AnswerRepository
+    private lateinit var userRepository: ApiUserRepository
     private lateinit var viewModel: QuestionDetailViewModel
 
     private val dailyQId = UUID.randomUUID()
@@ -75,7 +77,8 @@ class QuestionDetailViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         answerRepository = mockk(relaxed = true)
-        viewModel = QuestionDetailViewModel(answerRepository)
+        userRepository = mockk(relaxed = true)
+        viewModel = QuestionDetailViewModel(answerRepository, userRepository)
     }
 
     @After
@@ -121,8 +124,10 @@ class QuestionDetailViewModelTest {
     }
 
     @Test
-    fun `dailyQuestionId가 없는 질문은 로딩 없이 초기화된다`() = runTest {
+    fun `dailyQuestionId가 없는 질문은 question id로 fallback하여 초기화된다`() = runTest {
         val questionWithoutId = mockQuestion.copy(dailyQuestionId = null)
+        coEvery { answerRepository.getByDailyQuestion(questionWithoutId.id) } returns emptyList()
+        coEvery { answerRepository.getByUserAndDailyQuestion(questionWithoutId.id, mockUser.id) } returns null
 
         viewModel.initialize(questionWithoutId, mockUser)
 
@@ -150,8 +155,16 @@ class QuestionDetailViewModelTest {
     }
 
     @Test
-    fun `텍스트가 있으면 isValidAnswer가 true이다`() {
+    fun `텍스트만 있고 기분 미선택이면 isValidAnswer가 false이다`() {
         viewModel.onAnswerTextChanged("답변 내용")
+
+        assertFalse(viewModel.uiState.value.isValidAnswer)
+    }
+
+    @Test
+    fun `텍스트와 기분 모두 선택하면 isValidAnswer가 true이다`() {
+        viewModel.onAnswerTextChanged("답변 내용")
+        viewModel.onMoodSelected(0)
 
         assertTrue(viewModel.uiState.value.isValidAnswer)
     }
@@ -172,6 +185,19 @@ class QuestionDetailViewModelTest {
     }
 
     @Test
+    fun `submitAnswer 시 기분 미선택이면 showMoodRequiredAlert가 true가 된다`() = runTest {
+        coEvery { answerRepository.getByDailyQuestion(any()) } returns emptyList()
+        coEvery { answerRepository.getByUserAndDailyQuestion(any(), any()) } returns null
+
+        viewModel.initialize(mockQuestion, mockUser)
+        viewModel.onAnswerTextChanged("답변 내용")
+
+        viewModel.submitAnswer()
+
+        assertTrue(viewModel.uiState.value.showMoodRequiredAlert)
+    }
+
+    @Test
     fun `submitAnswer 시 첫 답변이면 create가 호출된다`() = runTest {
         coEvery { answerRepository.getByDailyQuestion(any()) } returns emptyList()
         coEvery { answerRepository.getByUserAndDailyQuestion(any(), any()) } returns null
@@ -179,6 +205,7 @@ class QuestionDetailViewModelTest {
 
         viewModel.initialize(mockQuestion, mockUser)
         viewModel.onAnswerTextChanged("처음 작성하는 답변")
+        viewModel.onMoodSelected(0)
 
         viewModel.submitAnswer()
 
@@ -187,15 +214,32 @@ class QuestionDetailViewModelTest {
     }
 
     @Test
-    fun `submitAnswer 시 기존 답변이 있으면 update가 호출된다`() = runTest {
+    fun `submitAnswer 시 기존 답변이 있고 하트가 충분하면 수정 확인 다이얼로그가 표시된다`() = runTest {
         coEvery { answerRepository.getByDailyQuestion(any()) } returns listOf(mockAnswer)
         coEvery { answerRepository.getByUserAndDailyQuestion(dailyQId, mockUser.id) } returns mockAnswer
         coEvery { answerRepository.update(any()) } returns mockAnswer.copy(content = "수정된 답변")
 
-        viewModel.initialize(mockQuestion, mockUser)
+        viewModel.initialize(mockQuestion, mockUser, hearts = 1)
         viewModel.onAnswerTextChanged("수정된 답변")
+        viewModel.onMoodSelected(1)
 
         viewModel.submitAnswer()
+
+        assertTrue(viewModel.uiState.value.showEditConfirmDialog)
+    }
+
+    @Test
+    fun `confirmEditAnswer 후 update가 호출된다`() = runTest {
+        coEvery { answerRepository.getByDailyQuestion(any()) } returns listOf(mockAnswer)
+        coEvery { answerRepository.getByUserAndDailyQuestion(dailyQId, mockUser.id) } returns mockAnswer
+        coEvery { answerRepository.update(any()) } returns mockAnswer.copy(content = "수정된 답변")
+
+        viewModel.initialize(mockQuestion, mockUser, hearts = 1)
+        viewModel.onAnswerTextChanged("수정된 답변")
+        viewModel.onMoodSelected(1)
+
+        viewModel.submitAnswer()
+        viewModel.confirmEditAnswer()
 
         coVerify { answerRepository.update(any()) }
         coVerify(exactly = 0) { answerRepository.create(any()) }
@@ -209,15 +253,15 @@ class QuestionDetailViewModelTest {
 
         viewModel.initialize(mockQuestion, mockUser)
         viewModel.onAnswerTextChanged("새로운 답변")
+        viewModel.onMoodSelected(0)
 
-        val events = mutableListOf<QuestionDetailEvent>()
-        val job = launch { viewModel.events.collect { events.add(it) } }
-
+        // 새 답변 제출 성공 시 myAnswer가 설정되고 isSubmitting이 false가 된다
         viewModel.submitAnswer()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertTrue(events.any { it is QuestionDetailEvent.AnswerSubmitted })
-        job.cancel()
+        assertNotNull(viewModel.uiState.value.myAnswer)
+        assertFalse(viewModel.uiState.value.isSubmitting)
+        coVerify { answerRepository.create(any()) }
     }
 
     @Test
@@ -228,6 +272,7 @@ class QuestionDetailViewModelTest {
 
         viewModel.initialize(mockQuestion, mockUser)
         viewModel.onAnswerTextChanged("답변 내용")
+        viewModel.onMoodSelected(0)
 
         viewModel.submitAnswer()
 
@@ -236,14 +281,19 @@ class QuestionDetailViewModelTest {
     }
 
     @Test
-    fun `submitAnswer 시 dailyQuestionId가 없으면 에러를 설정한다`() = runTest {
+    fun `dailyQuestionId가 없어도 question id로 답변이 생성된다`() = runTest {
         val questionWithoutId = mockQuestion.copy(dailyQuestionId = null)
+        coEvery { answerRepository.getByDailyQuestion(any()) } returns emptyList()
+        coEvery { answerRepository.getByUserAndDailyQuestion(any(), any()) } returns null
+        coEvery { answerRepository.create(any()) } returns mockAnswer
+
         viewModel.initialize(questionWithoutId, mockUser)
         viewModel.onAnswerTextChanged("답변 내용")
+        viewModel.onMoodSelected(0)
 
         viewModel.submitAnswer()
 
-        assertNotNull(viewModel.uiState.value.errorMessage)
+        coVerify { answerRepository.create(any()) }
     }
 
     // MARK: - dismissError

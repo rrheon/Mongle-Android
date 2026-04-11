@@ -66,7 +66,11 @@ class QuestionDetailViewModel @Inject constructor(
     private val _events = MutableSharedFlow<QuestionDetailEvent>()
     val events: SharedFlow<QuestionDetailEvent> = _events.asSharedFlow()
 
+    private var initialized = false
+
     fun initialize(question: Question, currentUser: User?, familyMembers: List<User> = emptyList(), hearts: Int = 0) {
+        if (initialized) return
+        initialized = true
         _uiState.update {
             it.copy(
                 question = question,
@@ -198,14 +202,17 @@ class QuestionDetailViewModel @Inject constructor(
         val moodId = state.selectedMoodIndex?.let { moodIds.getOrNull(it) }
         val isNewAnswer = state.myAnswer == null
 
+        // loadAnswers()와 동일한 ID 사용: dailyQuestionId 우선, 없으면 question.id
+        val dailyQId = question.dailyQuestionId?.let {
+            runCatching { UUID.fromString(it) }.getOrNull()
+        } ?: question.id
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
-                // 답변 생성/수정 시에는 question.id (Question UUID)를 사용
-                // 서버의 createAnswer는 Question.id를 기대함
                 val answer = Answer(
                     id = state.myAnswer?.id ?: UUID.randomUUID(),
-                    dailyQuestionId = question.id,
+                    dailyQuestionId = dailyQId,
                     userId = userId,
                     content = state.answerText.trim(),
                     imageUrl = null,

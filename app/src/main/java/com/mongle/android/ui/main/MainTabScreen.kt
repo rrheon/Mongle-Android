@@ -13,6 +13,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -106,28 +107,28 @@ fun MainTabScreen(
                     selected = selectedTab == MainTab.HOME,
                     onClick = { selectedTab = MainTab.HOME },
                     icon = { Icon(Icons.Default.Home, contentDescription = "HOME") },
-                    label = { Text("HOME") },
+                    label = { Text("HOME", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     colors = tabColors
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.HISTORY,
                     onClick = { selectedTab = MainTab.HISTORY },
                     icon = { Icon(Icons.Default.DateRange, contentDescription = "HISTORY") },
-                    label = { Text("HISTORY") },
+                    label = { Text("HISTORY", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     colors = tabColors
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SEARCH,
                     onClick = { selectedTab = MainTab.SEARCH },
                     icon = { Icon(Icons.Default.Search, contentDescription = "SEARCH") },
-                    label = { Text("SEARCH") },
+                    label = { Text("SEARCH", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     colors = tabColors
                 )
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { selectedTab = MainTab.SETTINGS },
                     icon = { Icon(Icons.Default.Person, contentDescription = "MY") },
-                    label = { Text("MY") },
+                    label = { Text("MY", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                     colors = tabColors
                 )
             }

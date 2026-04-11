@@ -1,8 +1,10 @@
 package com.mongle.android.ui.groupselect
 
 import com.mongle.android.data.remote.ApiFamilyRepository
+import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.MongleGroup
+import com.mongle.android.domain.model.User
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +28,17 @@ class GroupSelectViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var familyRepository: ApiFamilyRepository
+    private lateinit var userRepository: ApiUserRepository
     private lateinit var viewModel: GroupSelectViewModel
+
+    private val mockUser = User(
+        id = UUID.randomUUID(),
+        email = "test@mongle.com",
+        name = "테스트",
+        profileImageUrl = null,
+        role = FamilyRole.FATHER,
+        createdAt = Date()
+    )
 
     private val mockGroup = MongleGroup(
         id = UUID.randomUUID(),
@@ -42,7 +54,8 @@ class GroupSelectViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         familyRepository = mockk(relaxed = true)
-        viewModel = GroupSelectViewModel(familyRepository)
+        userRepository = mockk(relaxed = true)
+        viewModel = GroupSelectViewModel(familyRepository, userRepository)
     }
 
     @After
@@ -144,10 +157,12 @@ class GroupSelectViewModelTest {
         viewModel.onGroupNameChanged("우리 가족")
         viewModel.onNicknameChanged("아빠")
         coEvery { familyRepository.createFamily(any(), any()) } returns mockGroup
+        coEvery { userRepository.getMe() } returns mockUser
+        coEvery { userRepository.update(any()) } returns mockUser
 
         viewModel.createGroup(onCreated = {})
 
-        assertEquals(GroupSelectStep.CREATED, viewModel.uiState.value.step)
+        assertEquals(GroupSelectStep.NOTIFICATION_PERMISSION, viewModel.uiState.value.step)
         assertEquals(mockGroup.inviteCode, viewModel.uiState.value.inviteCode)
         assertFalse(viewModel.uiState.value.isLoading)
     }
