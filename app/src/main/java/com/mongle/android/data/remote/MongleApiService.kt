@@ -41,7 +41,11 @@ data class ApiUserResponse(
     val familyId: String?,
     val hearts: Int = 0,
     val moodId: String? = null,
-    val createdAt: String
+    val createdAt: String,
+    /** v2: streak 위험 푸시 옵트아웃 (PRD §3.3 / Engine-8) */
+    val streakRiskNotify: Boolean? = null,
+    /** v2: 배지 획득 푸시 옵트아웃 (PRD §4.3 / Engine-8) */
+    val badgeEarnedNotify: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -49,13 +53,54 @@ data class UpdateUserRequest(
     val name: String? = null,
     val profileImageUrl: String? = null,
     val role: String? = null,
-    val moodId: String? = null
+    val moodId: String? = null,
+    /** v2: streak 위험 알림 토글 (Engine-8) */
+    val streakRiskNotify: Boolean? = null,
+    /** v2: 배지 획득 알림 토글 (Engine-8) */
+    val badgeEarnedNotify: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)
 data class StreakResponse(
     val streakDays: Int
 )
+
+@JsonClass(generateAdapter = true)
+data class CharacterStageResponse(
+    val stage: Int,
+    val stageKey: String,
+    val streakDays: Int,
+    val nextStageStreak: Int? = null,
+    val sizeMultiplier: Double
+)
+
+@JsonClass(generateAdapter = true)
+data class BadgeDefinitionDto(
+    val code: String,
+    val category: String,
+    val iconKey: String
+)
+
+@JsonClass(generateAdapter = true)
+data class UserBadgeDto(
+    val code: String,
+    val category: String? = null,
+    val iconKey: String? = null,
+    val awardedAt: String,
+    val seenAt: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class BadgeListResponse(
+    val badges: List<UserBadgeDto>,
+    val definitions: List<BadgeDefinitionDto>
+)
+
+@JsonClass(generateAdapter = true)
+data class MarkBadgesSeenRequest(val codes: List<String>)
+
+@JsonClass(generateAdapter = true)
+data class OkResponse(val ok: Boolean = true)
 
 // ── Auth 응답 ──────────────────────────────────────────
 
@@ -382,6 +427,15 @@ interface MongleApiService {
 
     @GET("users/me/streak")
     suspend fun getMyStreak(): StreakResponse
+
+    @GET("users/me/character-stage")
+    suspend fun getMyCharacterStage(): CharacterStageResponse
+
+    @GET("users/me/badges")
+    suspend fun getMyBadges(): BadgeListResponse
+
+    @POST("users/me/badges/mark-seen")
+    suspend fun markBadgesSeen(@Body body: MarkBadgesSeenRequest): OkResponse
 
     @POST("users/me/hearts/ad-reward")
     suspend fun grantAdHearts(@Body body: AdHeartRewardRequest): AdHeartRewardResponse

@@ -33,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
@@ -191,8 +192,12 @@ fun SettingsScreen(
                     onNotificationsTapped = { navController.navigate("notifications") },
                     onGroupManagementTapped = { navController.navigate("group_management") },
                     onAccountManagementTapped = { navController.navigate("account_management") },
+                    onBadgesTapped = { navController.navigate("badges") },
                     onPrivacyOptionsTapped = { act -> viewModel.onPrivacyOptionsTapped(act) }
                 )
+            }
+            composable("badges") {
+                com.mongle.android.ui.badges.BadgesScreen(onBack = { navController.popBackStack() })
             }
             composable("profile_edit") {
                 ProfileEditScreen(
@@ -214,7 +219,9 @@ fun SettingsScreen(
                 NotificationSettingsScreen(
                     uiState = uiState,
                     onBack = { navController.popBackStack() },
-                    onNotificationsToggled = viewModel::onNotificationsToggled
+                    onNotificationsToggled = viewModel::onNotificationsToggled,
+                    onStreakRiskNotifyToggled = viewModel::onStreakRiskNotifyToggled,
+                    onBadgeEarnedNotifyToggled = viewModel::onBadgeEarnedNotifyToggled
                 )
             }
             composable("group_management") {
@@ -276,6 +283,7 @@ private fun MyScreen(
     onNotificationsTapped: () -> Unit,
     onGroupManagementTapped: () -> Unit,
     onAccountManagementTapped: () -> Unit,
+    onBadgesTapped: () -> Unit = {},
     onPrivacyOptionsTapped: (Activity) -> Unit = {}
 ) {
     Column(
@@ -329,6 +337,14 @@ private fun MyScreen(
                         title = stringResource(R.string.settings_profile_edit),
                         subtitle = stringResource(R.string.settings_profile_edit_desc),
                         onClick = onProfileEditTapped
+                    ),
+                    SettingsRowData(
+                        icon = Icons.Default.EmojiEvents,
+                        iconBgColor = MongleMonggleGreenLight,
+                        iconTint = Color.White,
+                        title = stringResource(R.string.settings_badges),
+                        subtitle = stringResource(R.string.settings_badges_desc),
+                        onClick = onBadgesTapped
                     )
                 )
             )
@@ -513,7 +529,9 @@ private fun ProfileEditScreen(
 private fun NotificationSettingsScreen(
     uiState: SettingsUiState,
     onBack: () -> Unit,
-    onNotificationsToggled: (Boolean) -> Unit
+    onNotificationsToggled: (Boolean) -> Unit,
+    onStreakRiskNotifyToggled: (Boolean) -> Unit = {},
+    onBadgeEarnedNotifyToggled: (Boolean) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -551,6 +569,22 @@ private fun NotificationSettingsScreen(
                 subtitle = stringResource(R.string.notif_settings_question_detail),
                 checked = uiState.notificationsEnabled,
                 onCheckedChange = onNotificationsToggled
+            )
+            // v2 PRD §3.3 / §11-9: streak 위험 푸시 (기본 ON)
+            NotifToggleSection(
+                sectionTitle = stringResource(R.string.notif_settings_streak_risk),
+                title = stringResource(R.string.notif_settings_streak_risk),
+                subtitle = stringResource(R.string.notif_settings_streak_risk_desc),
+                checked = uiState.streakRiskNotify,
+                onCheckedChange = onStreakRiskNotifyToggled
+            )
+            // v2 PRD §4.3 / §11-9: 배지 획득 푸시 (기본 ON, 인앱 팝업과 무관)
+            NotifToggleSection(
+                sectionTitle = stringResource(R.string.notif_settings_badge_earned),
+                title = stringResource(R.string.notif_settings_badge_earned),
+                subtitle = stringResource(R.string.notif_settings_badge_earned_desc),
+                checked = uiState.badgeEarnedNotify,
+                onCheckedChange = onBadgeEarnedNotifyToggled
             )
 
             // 방해 금지 시간 — iOS와 동일: 단독 monglePanel 행

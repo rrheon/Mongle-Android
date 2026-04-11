@@ -373,4 +373,43 @@
     <string name="demo_char_3">ほっこりさん</string>
     <string name="demo_char_4">あったかさん</string>
     <string name="demo_char_5">きもちさん</string>
+
+    <!-- v2: Badges -->
+    <string name="settings_badges">マイバッジ</string>
+    <string name="settings_badges_desc">これまでに獲得した実績</string>
+    <string name="badges_title">マイバッジ</string>
+    <string name="badges_summary">%1$d / %2$d 獲得</string>
+    <string name="badges_load_error">バッジを読み込めませんでした。しばらくしてからもう一度お試しください。</string>
+
+    <string name="badge_streak_3_name">めばえ</string>
+    <string name="badge_streak_3_cond">3日連続で回答</string>
+    <string name="badge_streak_7_name">いっしゅうかん</string>
+    <string name="badge_streak_7_cond">7日連続で回答</string>
+    <string name="badge_streak_30_name">ひとつき</string>
+    <string name="badge_streak_30_cond">30日連続で回答</string>
+    <string name="badge_streak_100_name">百日</string>
+    <string name="badge_streak_100_cond">100日連続で回答</string>
+    <string name="badge_answers_10_name">10の物語</string>
+    <string name="badge_answers_10_cond">通算10件の回答</string>
+    <string name="badge_answers_50_name">50の物語</string>
+    <string name="badge_answers_50_cond">通算50件の回答</string>
+
+    <!-- v2: Stage names -->
+    <string name="stage_seed">たね</string>
+    <string name="stage_sprout">めばえ</string>
+    <string name="stage_leaf">はっぱ</string>
+    <string name="stage_bud">つぼみ</string>
+    <string name="stage_bloom">はな</string>
+    <string name="stage_radiance">まんかい</string>
+    <string name="stage_up_toast">%1$sになりました!</string>
+
+    <!-- v2: Notification toggles -->
+    <string name="notif_settings_streak_risk">連続記録のお知らせ</string>
+    <string name="notif_settings_streak_risk_desc">夜間、連続記録が途切れそうな時にお知らせします。</string>
+    <string name="notif_settings_badge_earned">バッジ獲得通知</string>
+    <string name="notif_settings_badge_earned_desc">新しいバッジを獲得した時にお知らせします。</string>
+
+    <!-- v2: Badge earned in-app popup (PRD §4.3) -->
+    <string name="badge_earned_popup_title">新しいバッジ獲得!</string>
+    <string name="badge_earned_popup_desc">\"%1$s\" バッジを獲得しました。</string>
 </resources>

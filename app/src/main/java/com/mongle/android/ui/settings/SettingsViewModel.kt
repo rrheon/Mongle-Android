@@ -8,6 +8,7 @@ import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
+import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.UserRepository
@@ -31,6 +32,10 @@ data class SettingsUiState(
     val loginProviderType: SocialProviderType? = null,
     val appVersion: String = "1.0.0",
     val notificationsEnabled: Boolean = true,
+    /** v2 PRD §3.3: streak 위험 푸시 옵트아웃 (기본 ON) */
+    val streakRiskNotify: Boolean = true,
+    /** v2 PRD §4.3: 배지 획득 푸시 옵트아웃 (기본 ON, 인앱 팝업과 무관) */
+    val badgeEarnedNotify: Boolean = true,
     val isLoading: Boolean = false,
     val showLogoutConfirmation: Boolean = false,
     val showDeleteAccountConfirmation: Boolean = false,
@@ -79,10 +84,15 @@ sealed class SettingsEvent {
 class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val apiUserRepository: ApiUserRepository,
     private val mongleRepository: MongleRepository,
     private val consentManager: ConsentManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    private val notifPrefs by lazy {
+        context.getSharedPreferences("mongle_notif_prefs", Context.MODE_PRIVATE)
+    }
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -96,7 +106,9 @@ class SettingsViewModel @Inject constructor(
                 currentUser = user,
                 loginProviderType = providerType,
                 editName = user?.name ?: "",
-                editRole = user?.role ?: FamilyRole.OTHER
+                editRole = user?.role ?: FamilyRole.OTHER,
+                streakRiskNotify = notifPrefs.getBoolean(KEY_STREAK_RISK, true),
+                badgeEarnedNotify = notifPrefs.getBoolean(KEY_BADGE_EARNED, true)
             )
         }
         loadFamilyInfo()
@@ -116,6 +128,29 @@ class SettingsViewModel @Inject constructor(
 
     fun onNotificationsToggled(enabled: Boolean) {
         _uiState.update { it.copy(notificationsEnabled = enabled) }
+    }
+
+    /** v2: streak 위험 푸시 토글. 로컬 즉시 반영 + 서버 silent sync. */
+    fun onStreakRiskNotifyToggled(enabled: Boolean) {
+        _uiState.update { it.copy(streakRiskNotify = enabled) }
+        notifPrefs.edit().putBoolean(KEY_STREAK_RISK, enabled).apply()
+        viewModelScope.launch {
+            apiUserRepository.updateNotificationPrefs(streakRiskNotify = enabled, badgeEarnedNotify = null)
+        }
+    }
+
+    /** v2: 배지 획득 푸시 토글. 인앱 팝업은 토글과 무관하게 항상 노출 (PRD §4.3). */
+    fun onBadgeEarnedNotifyToggled(enabled: Boolean) {
+        _uiState.update { it.copy(badgeEarnedNotify = enabled) }
+        notifPrefs.edit().putBoolean(KEY_BADGE_EARNED, enabled).apply()
+        viewModelScope.launch {
+            apiUserRepository.updateNotificationPrefs(streakRiskNotify = null, badgeEarnedNotify = enabled)
+        }
+    }
+
+    private companion object {
+        const val KEY_STREAK_RISK = "streakRiskNotify"
+        const val KEY_BADGE_EARNED = "badgeEarnedNotify"
     }
 
     // ── 프로필 편집 ──────────────────────────────────────────

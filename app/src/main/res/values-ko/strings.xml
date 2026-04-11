@@ -373,4 +373,43 @@
     <string name="demo_char_3">포근이</string>
     <string name="demo_char_4">따뜻이</string>
     <string name="demo_char_5">느낌이</string>
+
+    <!-- v2: Badges -->
+    <string name="settings_badges">내 배지</string>
+    <string name="settings_badges_desc">지금까지 모은 업적</string>
+    <string name="badges_title">내 배지</string>
+    <string name="badges_summary">%1$d / %2$d 획득</string>
+    <string name="badges_load_error">배지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</string>
+
+    <string name="badge_streak_3_name">새싹</string>
+    <string name="badge_streak_3_cond">3일 연속 답변</string>
+    <string name="badge_streak_7_name">한 주의 약속</string>
+    <string name="badge_streak_7_cond">7일 연속 답변</string>
+    <string name="badge_streak_30_name">한 달의 결실</string>
+    <string name="badge_streak_30_cond">30일 연속 답변</string>
+    <string name="badge_streak_100_name">백일의 기록</string>
+    <string name="badge_streak_100_cond">100일 연속 답변</string>
+    <string name="badge_answers_10_name">열 번의 이야기</string>
+    <string name="badge_answers_10_cond">누적 답변 10개</string>
+    <string name="badge_answers_50_name">쉰 번의 이야기</string>
+    <string name="badge_answers_50_cond">누적 답변 50개</string>
+
+    <!-- v2: Stage names -->
+    <string name="stage_seed">씨앗</string>
+    <string name="stage_sprout">새싹</string>
+    <string name="stage_leaf">잎사귀</string>
+    <string name="stage_bud">꽃봉오리</string>
+    <string name="stage_bloom">꽃</string>
+    <string name="stage_radiance">만개</string>
+    <string name="stage_up_toast">%1$s(이)가 되었어요!</string>
+
+    <!-- v2: Notification toggles -->
+    <string name="notif_settings_streak_risk">연속 기록 알림</string>
+    <string name="notif_settings_streak_risk_desc">저녁에 연속 기록이 끊어질 위험이 있을 때 알려드려요.</string>
+    <string name="notif_settings_badge_earned">배지 획득 알림</string>
+    <string name="notif_settings_badge_earned_desc">새로운 배지를 받으면 알려드려요.</string>
+
+    <!-- v2: Badge earned in-app popup (PRD §4.3) -->
+    <string name="badge_earned_popup_title">새 배지 획득!</string>
+    <string name="badge_earned_popup_desc">\"%1$s\" 배지를 받았어요.</string>
 </resources>

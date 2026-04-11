@@ -215,7 +215,9 @@ data class SceneMemberInfo(
     val name: String,
     val color: Color,
     val hasAnswered: Boolean,
-    val hasSkipped: Boolean = false
+    val hasSkipped: Boolean = false,
+    /** v2: 캐릭터 크기 배율. 본인 + 성장 stage 반영 시 1.0~1.6. 다른 멤버는 1.0 고정. */
+    val sizeMultiplier: Float = 1f
 )
 
 /** 씬 내부 상태 (mutable) */
@@ -530,7 +532,8 @@ private fun AnimatedSceneMemberBox(
             hasSkipped = member.hasSkipped,
             isCurrentUser = member.id == currentUserId,
             hasCurrentUserAnswered = hasCurrentUserAnswered,
-            hasCurrentUserSkipped = hasCurrentUserSkipped
+            hasCurrentUserSkipped = hasCurrentUserSkipped,
+            sizeMultiplier = info.sizeMultiplier
         )
     }
 }
@@ -543,9 +546,17 @@ private fun SceneMongleItem(
     hasSkipped: Boolean = false,
     isCurrentUser: Boolean,
     hasCurrentUserAnswered: Boolean,
-    hasCurrentUserSkipped: Boolean = false
+    hasCurrentUserSkipped: Boolean = false,
+    sizeMultiplier: Float = 1f
 ) {
-    val size = 52.dp
+    // v2: stage 변동 시 부드럽게 크기 보간. (PRD §2.4 — 약 450ms tween)
+    val animatedMultiplier by animateFloatAsState(
+        targetValue = sizeMultiplier.coerceIn(0.5f, 2f),
+        animationSpec = tween(durationMillis = 450),
+        label = "stageScale"
+    )
+    val baseSize = 52.dp
+    val size = baseSize * animatedMultiplier
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
     val eyeVOffset = size * 0.07f

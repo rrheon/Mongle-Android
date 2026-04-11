@@ -373,4 +373,43 @@
     <string name="demo_char_3">Pogeun</string>
     <string name="demo_char_4">Ttatteut</string>
     <string name="demo_char_5">Neukkim</string>
+
+    <!-- v2: Badges (PRD §4.2) -->
+    <string name="settings_badges">My Badges</string>
+    <string name="settings_badges_desc">Achievements you have earned</string>
+    <string name="badges_title">My Badges</string>
+    <string name="badges_summary">%1$d / %2$d earned</string>
+    <string name="badges_load_error">Couldn\'t load badges. Please try again later.</string>
+
+    <string name="badge_streak_3_name">First Sprout</string>
+    <string name="badge_streak_3_cond">Reach a 3-day streak</string>
+    <string name="badge_streak_7_name">One Week</string>
+    <string name="badge_streak_7_cond">Reach a 7-day streak</string>
+    <string name="badge_streak_30_name">One Month</string>
+    <string name="badge_streak_30_cond">Reach a 30-day streak</string>
+    <string name="badge_streak_100_name">Century</string>
+    <string name="badge_streak_100_cond">Reach a 100-day streak</string>
+    <string name="badge_answers_10_name">Ten Stories</string>
+    <string name="badge_answers_10_cond">Write 10 answers in total</string>
+    <string name="badge_answers_50_name">Fifty Stories</string>
+    <string name="badge_answers_50_cond">Write 50 answers in total</string>
+
+    <!-- v2: Stage names (PRD §2.2) -->
+    <string name="stage_seed">Seed</string>
+    <string name="stage_sprout">Sprout</string>
+    <string name="stage_leaf">Leaf</string>
+    <string name="stage_bud">Bud</string>
+    <string name="stage_bloom">Bloom</string>
+    <string name="stage_radiance">Radiance</string>
+    <string name="stage_up_toast">You\'ve grown into %1$s!</string>
+
+    <!-- v2: Notification toggles -->
+    <string name="notif_settings_streak_risk">Streak Risk</string>
+    <string name="notif_settings_streak_risk_desc">Get a nudge in the evening when your streak is about to break.</string>
+    <string name="notif_settings_badge_earned">Badge Earned</string>
+    <string name="notif_settings_badge_earned_desc">Be notified when you unlock a new badge.</string>
+
+    <!-- v2: Badge earned in-app popup (PRD §4.3) -->
+    <string name="badge_earned_popup_title">New Badge!</string>
+    <string name="badge_earned_popup_desc">You\'ve earned the \"%1$s\" badge.</string>
 </resources>

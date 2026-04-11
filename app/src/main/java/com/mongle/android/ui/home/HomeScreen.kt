@@ -28,18 +28,22 @@ import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.mongle.android.ui.common.MonglePopup
+import com.mongle.android.ui.common.MonglePopupIcon
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -143,6 +147,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
 
     // QuestionSheet / PeerAnswerSheet 상태
     var showQuestionSheet by remember { mutableStateOf(false) }
@@ -201,6 +206,14 @@ fun HomeScreen(
                 }
                 is HomeEvent.ShowAnswerFirstToView -> showAnswerFirstDialog = event.memberName
                 is HomeEvent.ShowNudgeUnavailable -> showNudgeUnavailableDialog = event.memberName
+                is HomeEvent.StageUp -> {
+                    val stageName = stageNameRes(event.stageKey)?.let(context::getString) ?: event.stageKey
+                    toastData = MongleToastData(
+                        message = context.getString(R.string.stage_up_toast, stageName),
+                        type = MongleToastType.SUCCESS
+                    )
+                    runCatching { hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress) }
+                }
                 is HomeEvent.ShowError -> {
                     val msg = when {
                         event.message.contains("이미 답변") -> context.getString(R.string.error_already_answered_skip)
@@ -236,7 +249,9 @@ fun HomeScreen(
                 name = user.name,
                 color = memberColor,
                 hasAnswered = hasAnswered,
-                hasSkipped = hasSkipped
+                hasSkipped = hasSkipped,
+                // v2: 본인만 stage 반영. 가족은 1.0× 고정 (PRD §2.3 / §11-7)
+                sizeMultiplier = if (isCurrentUser) uiState.characterStage.sizeMultiplier else 1f
             )
         }
     } else {
@@ -565,8 +580,49 @@ fun HomeScreen(
         }
     }
 
+    // v2: 배지 획득 인앱 팝업 — PRD §4.3 (badgeEarnedNotify 토글과 무관하게 항상 표시)
+    uiState.pendingBadgeAward?.let { badge ->
+        val badgeName = badgeNameRes(badge.definition.code)?.let { stringResource(it) } ?: badge.definition.code
+        Dialog(
+            onDismissRequest = { viewModel.onBadgePopupConfirmed() },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.badge_earned_popup_title),
+                description = stringResource(R.string.badge_earned_popup_desc, badgeName),
+                primaryLabel = stringResource(R.string.common_confirm),
+                onPrimary = { viewModel.onBadgePopupConfirmed() },
+                icon = MonglePopupIcon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    tint = Color.White,
+                    backgroundColor = MongleAccentOrange
+                )
+            )
+        }
+    }
+
     // 에러 토스트 오버레이
     MongleToastOverlay(message = toastData?.message, type = toastData?.type ?: MongleToastType.ERROR, onDismiss = { toastData = null })
+}
+
+private fun stageNameRes(stageKey: String): Int? = when (stageKey) {
+    "SEED" -> R.string.stage_seed
+    "SPROUT" -> R.string.stage_sprout
+    "LEAF" -> R.string.stage_leaf
+    "BUD" -> R.string.stage_bud
+    "BLOOM" -> R.string.stage_bloom
+    "RADIANCE" -> R.string.stage_radiance
+    else -> null
+}
+
+private fun badgeNameRes(code: String): Int? = when (code) {
+    "STREAK_3" -> R.string.badge_streak_3_name
+    "STREAK_7" -> R.string.badge_streak_7_name
+    "STREAK_30" -> R.string.badge_streak_30_name
+    "STREAK_100" -> R.string.badge_streak_100_name
+    "ANSWERS_10" -> R.string.badge_answers_10_name
+    "ANSWERS_50" -> R.string.badge_answers_50_name
+    else -> null
 }
 
 // ─── HomeTopBar ──────────────────────────────────────────────────────────────

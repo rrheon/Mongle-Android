@@ -1,13 +1,17 @@
 package com.mongle.android.ui.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Answer
+import com.mongle.android.domain.model.BadgeDisplayItem
+import com.mongle.android.domain.model.CharacterStageInfo
 import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
 import com.mongle.android.data.remote.ApiUserRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.mongle.android.domain.repository.AnswerRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
@@ -45,7 +49,11 @@ data class HomeUiState(
     val memberAnswers: Map<UUID, Answer> = emptyMap(),
     /** 각 멤버 ID별 스킵 여부 (userId → hasSkipped) */
     val memberSkipStatus: Map<UUID, Boolean> = emptyMap(),
-    val hasUnreadNotifications: Boolean = false
+    val hasUnreadNotifications: Boolean = false,
+    /** v2: 내 캐릭터 성장 스테이지. 미배포 시 streak 폴백으로 채워진다. */
+    val characterStage: CharacterStageInfo = CharacterStageInfo.ZERO,
+    /** v2: 인앱에 표시되어야 할 미확인 배지 큐의 첫 항목. (PRD §4.3) */
+    val pendingBadgeAward: BadgeDisplayItem? = null
 ) {
     val hasFamily: Boolean get() = family != null
 }
@@ -58,6 +66,8 @@ sealed class HomeEvent {
     data class ShowNudgeUnavailable(val memberName: String) : HomeEvent()
     data class ShowError(val message: String) : HomeEvent()
     object NavigateToWriteQuestion : HomeEvent()
+    /** v2: 캐릭터 스테이지가 상승했을 때. UI 는 토스트 + 햅틱으로 반응한다. */
+    data class StageUp(val stageKey: String) : HomeEvent()
 }
 
 @HiltViewModel
@@ -67,8 +77,14 @@ class HomeViewModel @Inject constructor(
     private val treeRepository: TreeRepository,
     private val answerRepository: AnswerRepository,
     private val userRepository: ApiUserRepository,
-    private val notificationRepository: com.mongle.android.data.remote.ApiNotificationRepository
+    private val notificationRepository: com.mongle.android.data.remote.ApiNotificationRepository,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
+
+    private val growthPrefs by lazy {
+        appContext.getSharedPreferences("mongle_growth", Context.MODE_PRIVATE)
+    }
+    private var pendingBadgeQueue: ArrayDeque<BadgeDisplayItem> = ArrayDeque()
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -116,6 +132,53 @@ class HomeViewModel @Inject constructor(
         todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it, forceRefreshQuestion = answeredTransition) }
         // 미읽은 알림 확인
         checkUnreadNotifications()
+        // v2: 캐릭터 스테이지 비동기 갱신 (실패 무시)
+        loadCharacterStage()
+        // v2: 미확인 배지 인앱 팝업 큐 채우기
+        loadPendingBadges()
+    }
+
+    private fun loadCharacterStage() {
+        viewModelScope.launch {
+            val info = runCatching { userRepository.getMyCharacterStage() }.getOrNull() ?: return@launch
+            val prevStage = growthPrefs.getInt(KEY_LAST_SEEN_STAGE, -1)
+            _uiState.update { it.copy(characterStage = info) }
+            // 스테이지 상승 시에만 토스트 + 햅틱. 강등은 조용히 축소 (PRD §2.4).
+            // 최초 진입 (prev = -1) 에는 알리지 않는다.
+            if (prevStage in 0 until info.stage) {
+                _events.emit(HomeEvent.StageUp(info.stageKey))
+            }
+            growthPrefs.edit().putInt(KEY_LAST_SEEN_STAGE, info.stage).apply()
+        }
+    }
+
+    /**
+     * 미확인 배지 큐를 채운다. PRD §4.3: 인앱 팝업은 badgeEarnedNotify 토글과 무관하게 항상 표시.
+     * 첫 진입/획득 직후에 호출되며, 이미 큐에 항목이 있으면 새로 채우지 않는다.
+     */
+    private fun loadPendingBadges() {
+        if (_uiState.value.pendingBadgeAward != null || pendingBadgeQueue.isNotEmpty()) return
+        viewModelScope.launch {
+            val items = runCatching { userRepository.getBadges() }.getOrNull() ?: return@launch
+            val unseen = items.filter { it.isOwned && it.awarded?.isUnseen == true }
+            if (unseen.isEmpty()) return@launch
+            pendingBadgeQueue = ArrayDeque(unseen)
+            _uiState.update { it.copy(pendingBadgeAward = pendingBadgeQueue.removeFirst()) }
+        }
+    }
+
+    /** 배지 팝업 확인 시: 서버에 mark-seen 호출 후 다음 큐 항목으로 진행. */
+    fun onBadgePopupConfirmed() {
+        val current = _uiState.value.pendingBadgeAward ?: return
+        viewModelScope.launch {
+            runCatching { userRepository.markBadgesSeen(listOf(current.definition.code)) }
+            val next = if (pendingBadgeQueue.isNotEmpty()) pendingBadgeQueue.removeFirst() else null
+            _uiState.update { it.copy(pendingBadgeAward = next) }
+        }
+    }
+
+    private companion object {
+        const val KEY_LAST_SEEN_STAGE = "last_seen_stage"
     }
 
     private fun checkUnreadNotifications() {
@@ -259,6 +322,7 @@ class HomeViewModel @Inject constructor(
                 }
                 // 답변 상태도 함께 새로고침
                 question?.dailyQuestionId?.let { loadFamilyAnswers(it) }
+                loadCharacterStage()
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(isRefreshing = false, errorMessage = e.message)
@@ -275,6 +339,10 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(hasAnsweredToday = true) }
         // 답변 제출 후 가족 답변 목록 새로고침
         _uiState.value.todayQuestion?.dailyQuestionId?.let { loadFamilyAnswers(it) }
+        // 답변으로 streak이 늘었을 수 있음
+        loadCharacterStage()
+        // 답변 제출이 새 배지를 트리거할 수 있음
+        loadPendingBadges()
     }
 
     /**
