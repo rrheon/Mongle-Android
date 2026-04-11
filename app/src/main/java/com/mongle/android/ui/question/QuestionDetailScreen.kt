@@ -189,11 +189,6 @@ fun QuestionDetailScreen(
                         hasMyAnswer = uiState.hasMyAnswer
                     )
 
-                    // 가족 답변 섹션
-                    if (uiState.familyAnswers.isNotEmpty()) {
-                        FamilyAnswersSection(familyAnswers = uiState.familyAnswers)
-                    }
-
                     Spacer(modifier = Modifier.height(MongleSpacing.xl))
                 }
 
