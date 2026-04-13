@@ -6,6 +6,7 @@ import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.MongleRepository
 import retrofit2.HttpException
+import com.mongle.android.util.parseISO8601
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -33,7 +34,7 @@ class ApiFamilyRepository @Inject constructor(
         role = FamilyRole.entries.firstOrNull { it.name == role } ?: FamilyRole.OTHER,
         hearts = hearts,
         moodId = moodId,
-        createdAt = Date()
+        createdAt = parseISO8601(createdAt)
     )
 
     private fun FamilyResponse.toGroup(): MongleGroup = MongleGroup(
@@ -42,7 +43,7 @@ class ApiFamilyRepository @Inject constructor(
         memberIds = members.map { runCatching { UUID.fromString(it.id) }.getOrElse { UUID.randomUUID() } },
         memberMoodIds = members.map { it.moodId },
         createdBy = runCatching { UUID.fromString(createdById) }.getOrElse { UUID.randomUUID() },
-        createdAt = Date(),
+        createdAt = parseISO8601(createdAt),
         inviteCode = inviteCode,
         groupProgressId = UUID.randomUUID()
     )

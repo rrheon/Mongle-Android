@@ -3,6 +3,7 @@ package com.mongle.android.data.remote
 import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.repository.AnswerRepository
 import retrofit2.HttpException
+import com.mongle.android.util.parseISO8601
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -57,8 +58,8 @@ class ApiAnswerRepository @Inject constructor(
         content = content,
         imageUrl = imageUrl,
         moodId = moodId,
-        createdAt = Date(),
-        updatedAt = Date()
+        createdAt = parseISO8601(createdAt),
+        updatedAt = parseISO8601(updatedAt)
     )
 
     private suspend fun <T> safeCall(block: suspend () -> T): T {
