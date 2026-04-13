@@ -347,6 +347,18 @@ data class RegisterDeviceTokenRequest(
     val token: String
 )
 
+// ── 알림 설정 ──────────────────────────────────────────
+
+@JsonClass(generateAdapter = true)
+data class NotificationPreferencesResponse(
+    val notifAnswer: Boolean,
+    val notifNudge: Boolean,
+    val notifQuestion: Boolean,
+    val quietHoursEnabled: Boolean,
+    val quietHoursStart: String,
+    val quietHoursEnd: String
+)
+
 // ── Retrofit 인터페이스 ──────────────────────────────
 
 interface MongleApiService {
@@ -360,6 +372,9 @@ interface MongleApiService {
 
     @DELETE("auth/account")
     suspend fun deleteAccount()
+
+    @POST("auth/logout")
+    suspend fun logout()
 
     @POST("auth/consent")
     suspend fun submitConsent(@Body body: ConsentRequest)
@@ -394,6 +409,12 @@ interface MongleApiService {
 
     @PATCH("users/me/fcm-token")
     suspend fun registerFcmToken(@Body body: RegisterDeviceTokenRequest)
+
+    @GET("users/me/notification-preferences")
+    suspend fun getNotificationPreferences(): NotificationPreferencesResponse
+
+    @PATCH("users/me/notification-preferences")
+    suspend fun updateNotificationPreferences(@Body body: Map<String, @JvmSuppressWildcards Any>): NotificationPreferencesResponse
 
     // Questions
     @GET("questions/today")

@@ -12,6 +12,7 @@ import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AuthRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.HttpException
+import com.mongle.android.util.parseISO8601
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -58,7 +59,7 @@ class ApiAuthRepository @Inject constructor(
         role = FamilyRole.entries.firstOrNull { it.name == role } ?: FamilyRole.OTHER,
         hearts = hearts,
         moodId = moodId,
-        createdAt = Date()
+        createdAt = parseISO8601(createdAt)
     )
 
     private suspend fun <T> safeCall(block: suspend () -> T): T {
@@ -184,6 +185,10 @@ class ApiAuthRepository @Inject constructor(
     // endregion
 
     override suspend fun logout() {
+        // 서버에 로그아웃 요청 (device token 정리)
+        runCatching { api.logout() }
+        // FCM 토큰 로컬 캐시 삭제
+        context.getSharedPreferences("fcm", Context.MODE_PRIVATE).edit().clear().apply()
         clearSession()
     }
 
