@@ -56,7 +56,9 @@ class NotificationViewModel @Inject constructor(
             )
         }
         viewModelScope.launch {
-            runCatching { notificationRepository.markAsRead(notificationId) }
+            withContext(NonCancellable) {
+                runCatching { notificationRepository.markAsRead(notificationId) }
+            }
         }
     }
 

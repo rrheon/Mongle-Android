@@ -319,7 +319,7 @@ private fun NotificationSwipeItem(
             NotificationCard(
                 notification = notification,
                 onClick = {
-                    viewModel.onMarkAsRead(notification.id)
+                    viewModel.onDeleteNotification(notification.id)
                     onNotificationTap(notification)
                 }
             )

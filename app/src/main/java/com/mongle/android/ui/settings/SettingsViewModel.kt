@@ -10,6 +10,7 @@ import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
+import com.mongle.android.data.remote.MongleApiService
 import com.mongle.android.domain.repository.UserRepository
 import com.mongle.android.ui.login.revokeGoogleAccess
 import com.mongle.android.ui.login.unlinkKakao
@@ -30,6 +31,11 @@ data class SettingsUiState(
     val currentUser: User? = null,
     val loginProviderType: SocialProviderType? = null,
     val appVersion: String = "1.0.0",
+    val notifAnswer: Boolean = true,
+    val notifNudge: Boolean = true,
+    val notifQuestion: Boolean = true,
+    val isSystemNotificationDenied: Boolean = false,
+    @Deprecated("Use notifAnswer/notifNudge/notifQuestion instead")
     val notificationsEnabled: Boolean = true,
     val isLoading: Boolean = false,
     val showLogoutConfirmation: Boolean = false,
@@ -80,6 +86,7 @@ class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
     private val mongleRepository: MongleRepository,
+    private val api: MongleApiService,
     private val consentManager: ConsentManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -100,6 +107,8 @@ class SettingsViewModel @Inject constructor(
             )
         }
         loadFamilyInfo()
+        loadNotificationPreferences()
+        checkSystemNotificationStatus()
     }
 
     private fun loadFamilyInfo() {
@@ -114,8 +123,51 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    @Deprecated("Use onNotificationToggled(key, enabled) instead")
     fun onNotificationsToggled(enabled: Boolean) {
-        _uiState.update { it.copy(notificationsEnabled = enabled) }
+        // Backward compat: toggle all three
+        onNotificationToggled("answer", enabled)
+        onNotificationToggled("nudge", enabled)
+        onNotificationToggled("question", enabled)
+    }
+
+    fun onNotificationToggled(key: String, enabled: Boolean) {
+        val paramKey = when (key) {
+            "answer" -> "notifAnswer"
+            "nudge" -> "notifNudge"
+            "question" -> "notifQuestion"
+            else -> return
+        }
+        _uiState.update {
+            when (key) {
+                "answer" -> it.copy(notifAnswer = enabled)
+                "nudge" -> it.copy(notifNudge = enabled)
+                "question" -> it.copy(notifQuestion = enabled)
+                else -> it
+            }
+        }
+        viewModelScope.launch {
+            runCatching { api.updateNotificationPreferences(mapOf(paramKey to enabled)) }
+        }
+    }
+
+    fun loadNotificationPreferences() {
+        viewModelScope.launch {
+            runCatching { api.getNotificationPreferences() }.onSuccess { prefs ->
+                _uiState.update {
+                    it.copy(
+                        notifAnswer = prefs.notifAnswer,
+                        notifNudge = prefs.notifNudge,
+                        notifQuestion = prefs.notifQuestion
+                    )
+                }
+            }
+        }
+    }
+
+    fun checkSystemNotificationStatus() {
+        val manager = androidx.core.app.NotificationManagerCompat.from(context)
+        _uiState.update { it.copy(isSystemNotificationDenied = !manager.areNotificationsEnabled()) }
     }
 
     // ── 프로필 편집 ──────────────────────────────────────────
