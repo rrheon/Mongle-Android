@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -113,7 +114,7 @@ private val MongleToastType.iconColor: Color
         MongleToastType.LEAVE_TOO_SOON -> MonglePrimary
         MongleToastType.SUCCESS -> MonglePrimary
         MongleToastType.ERROR -> MongleError
-        MongleToastType.INFO -> Color(0xFF42A5F5)
+        MongleToastType.INFO -> pastelColor(0xFF42A5F5)
     }
 
 // MARK: - Default messages (iOS ToastType.message 기준)

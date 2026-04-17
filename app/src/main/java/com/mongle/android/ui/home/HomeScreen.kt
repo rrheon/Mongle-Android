@@ -66,6 +66,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -263,9 +264,9 @@ fun HomeScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFEDF7F0),
-                        Color(0xFFF5FAF0),
-                        Color(0xFFFFF8F2)
+                        pastelColor(0xFFEDF7F0),
+                        pastelColor(0xFFF5FAF0),
+                        pastelColor(0xFFFFF8F2)
                     )
                 )
             )
@@ -673,7 +674,7 @@ private fun HomeTopBar(
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(Color(0xFFF2F2F2))
+                        .background(pastelColor(0xFFF2F2F2))
                         .clickable { onNotificationTap() }
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
@@ -836,14 +837,14 @@ private fun HeartCalloutBubble(hearts: Int, onDismiss: () -> Unit) {
                 )
             }
 
-            HorizontalDivider(color = Color(0xFFE0E0E0))
+            HorizontalDivider(color = pastelColor(0xFFE0E0E0))
 
             // 사용처 목록
             HeartCalloutRow(icon = Icons.Default.Refresh, color = MonglePrimary, label = stringResource(R.string.home_heart_replace), cost = "1")
             HeartCalloutRow(icon = Icons.Default.Create, color = MongleAccentOrange, label = stringResource(R.string.home_heart_write), cost = "3")
             HeartCalloutRow(icon = Icons.Default.Campaign, color = MongleHeartRed, label = stringResource(R.string.home_heart_nudge), cost = "1")
 
-            HorizontalDivider(color = Color(0xFFE0E0E0))
+            HorizontalDivider(color = pastelColor(0xFFE0E0E0))
 
             // 충전 안내
             Row(

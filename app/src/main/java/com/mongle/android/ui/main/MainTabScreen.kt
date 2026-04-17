@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.User
@@ -94,13 +95,13 @@ fun MainTabScreen(
 
     Scaffold(
         bottomBar = {
-            val tabSelectedColor = Color(0xFF7CC8A0)
+            val tabSelectedColor = pastelColor(0xFF7CC8A0)
             val tabColors = NavigationBarItemDefaults.colors(
                 selectedIconColor = tabSelectedColor,
                 selectedTextColor = tabSelectedColor,
                 indicatorColor = tabSelectedColor.copy(alpha = 0.12f),
-                unselectedIconColor = Color(0xFF9E9E9E),
-                unselectedTextColor = Color(0xFF9E9E9E)
+                unselectedIconColor = pastelColor(0xFF9E9E9E),
+                unselectedTextColor = pastelColor(0xFF9E9E9E)
             )
             NavigationBar(containerColor = Color.White) {
                 NavigationBarItem(

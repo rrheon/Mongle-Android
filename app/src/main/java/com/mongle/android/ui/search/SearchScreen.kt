@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.graphics.SolidColor
@@ -75,7 +76,7 @@ import com.mongle.android.ui.theme.MongleTextSecondary
 import java.util.Calendar
 import java.util.Date
 
-private val SearchBg = Color(0xFFF8FAF8)
+private val SearchBg = pastelColor(0xFFF8FAF8)
 
 @Composable
 fun SearchScreen(
@@ -119,7 +120,7 @@ fun SearchScreen(
                     .fillMaxWidth()
                     .height(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF0F0F0))
+                    .background(pastelColor(0xFFF0F0F0))
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -439,7 +440,7 @@ private fun buildHighlightedText(text: String, query: String) = buildAnnotatedSt
             break
         }
         if (idx > start) append(text.substring(start, idx))
-        withStyle(SpanStyle(color = Color(0xFF56A96B), fontWeight = FontWeight.Bold)) {
+        withStyle(SpanStyle(color = pastelColor(0xFF56A96B), fontWeight = FontWeight.Bold)) {
             append(text.substring(idx, idx + query.length))
         }
         start = idx + query.length
