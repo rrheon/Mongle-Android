@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -98,7 +99,7 @@ fun WriteQuestionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF8F8F8))
+                .background(pastelColor(0xFFF8F8F8))
                 .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
         ) {
             // 네비게이션 헤더

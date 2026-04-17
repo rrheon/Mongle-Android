@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,7 +61,7 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFFFFF8F0), Color(0xFFFFF2EB), Color(0xFFEFF8F1))
+                    colors = listOf(pastelColor(0xFFFFF8F0), pastelColor(0xFFFFF2EB), pastelColor(0xFFEFF8F1))
                 )
             )
     ) {
@@ -102,7 +103,7 @@ fun OnboardingScreen(
                                 .width(width)
                                 .clip(CircleShape)
                                 .background(
-                                    if (isSelected) MonglePrimary else Color(0xFFD0D0D0)
+                                    if (isSelected) MonglePrimary else pastelColor(0xFFD0D0D0)
                                 )
                         )
                     }

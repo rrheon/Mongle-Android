@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,8 +61,8 @@ import androidx.compose.ui.res.stringResource
 import com.ycompany.Monggle.R
 import com.mongle.android.util.AdManager
 
-private val NudgeBgStart = Color(0xFFFFF8F0)
-private val NudgeBgEnd   = Color(0xFFEFF8F1)
+private val NudgeBgStart = pastelColor(0xFFFFF8F0)
+private val NudgeBgEnd   = pastelColor(0xFFEFF8F1)
 
 @Composable
 fun PeerNudgeScreen(
@@ -319,7 +320,7 @@ fun PeerNudgeScreen(
                                         .fillMaxWidth()
                                         .height(52.dp),
                                     shape = RoundedCornerShape(14.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7CC8A0))
+                                    colors = ButtonDefaults.buttonColors(containerColor = pastelColor(0xFF7CC8A0))
                                 ) {
                                     if (uiState.isWatchingAd) {
                                         CircularProgressIndicator(
