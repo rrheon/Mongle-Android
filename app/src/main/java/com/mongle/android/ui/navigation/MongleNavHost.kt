@@ -109,6 +109,12 @@ fun MongleNavHost(
                     uiState.todayQuestion?.let { showQuestionDetail = it }
                 }
             }
+            "REMINDER" -> {
+                // 서버 스케줄러 발송 일반 리마인더 — 홈(MainTab) 유지. 답변 전이면 질문 상세로 이동
+                if (!uiState.hasAnsweredToday) {
+                    uiState.todayQuestion?.let { showQuestionDetail = it }
+                }
+            }
         }
         rootViewModel.clearPendingNotification()
     }
@@ -292,6 +298,12 @@ fun MongleNavHost(
                                         }
                                         "member_answered" -> {
                                             uiState.todayQuestion?.let { showQuestionDetail = it }
+                                        }
+                                        "reminder" -> {
+                                            // 리마인더는 답변 전이면 질문 상세로, 이미 답변했으면 홈 유지
+                                            if (!uiState.hasAnsweredToday) {
+                                                uiState.todayQuestion?.let { showQuestionDetail = it }
+                                            }
                                         }
                                     }
                                 }

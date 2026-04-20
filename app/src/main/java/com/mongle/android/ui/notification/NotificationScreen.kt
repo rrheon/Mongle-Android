@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.CircularProgressIndicator
@@ -451,6 +452,8 @@ private fun notificationTypeStyle(type: String): NotifStyle = when (type.lowerca
     "all_answered" -> NotifStyle(Color(0xFFE8F6EA), Icons.Default.CheckCircle, Color(0xFF4CAF50))
     "answer_request" -> NotifStyle(Color(0xFFFFF1E2), Icons.Default.Campaign, Color(0xFFFF9800))
     "badge_earned" -> NotifStyle(Color(0xFFFDDDD8), Icons.Default.CardGiftcard, Color(0xFFFF8A80))
+    // 서버 스케줄러가 발송하는 일반 리마인더 — 보라 계열 틴트로 구분
+    "reminder" -> NotifStyle(Color(0xFFEDE7F6), Icons.Default.Notifications, Color(0xFF7E57C2))
     else -> NotifStyle(Color(0xFFF5F5F5), Icons.Default.QuestionMark, Color(0xFF9E9E9E))
 }
 

@@ -19,5 +19,6 @@ enum class NotificationType {
     ALL_ANSWERED,      // 모든 구성원이 답변 완료했을 때
     ANSWER_REQUEST,    // 누군가 나에게 답변 요청할 때
     TREE_GROWTH,
-    BADGE_EARNED
+    BADGE_EARNED,
+    REMINDER           // 서버 스케줄러가 발송하는 일반 리마인더 (답변 독려 등)
 }
