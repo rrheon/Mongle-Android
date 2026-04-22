@@ -300,6 +300,11 @@ data class MarkAllReadResponse(
     val count: Int
 )
 
+@JsonClass(generateAdapter = true)
+data class DeleteAllNotificationsResponse(
+    val count: Int
+)
+
 // ── 재촉하기 ──────────────────────────────────────────
 
 @JsonClass(generateAdapter = true)
@@ -462,14 +467,24 @@ interface MongleApiService {
 
     // Notifications
     @GET("notifications")
-    suspend fun getNotifications(@Query("limit") limit: Int = 50): GetNotificationsResponse
+    suspend fun getNotifications(
+        @Query("limit") limit: Int = 50,
+        @Query("group_id") groupId: String? = null
+    ): GetNotificationsResponse
 
     @PATCH("notifications/{notificationId}/read")
     suspend fun markNotificationRead(@Path("notificationId") notificationId: String): NotificationDto
 
     @PATCH("notifications/read-all")
-    suspend fun markAllNotificationsRead(): MarkAllReadResponse
+    suspend fun markAllNotificationsRead(
+        @Query("group_id") groupId: String? = null
+    ): MarkAllReadResponse
 
     @DELETE("notifications/{notificationId}")
     suspend fun deleteNotification(@Path("notificationId") notificationId: String)
+
+    @DELETE("notifications")
+    suspend fun deleteAllNotifications(
+        @Query("group_id") groupId: String? = null
+    ): DeleteAllNotificationsResponse
 }

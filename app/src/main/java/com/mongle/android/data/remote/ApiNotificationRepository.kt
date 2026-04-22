@@ -28,20 +28,24 @@ class ApiNotificationRepository @Inject constructor(
         }
     }
 
-    suspend fun getNotifications(limit: Int = 50): List<AppNotification> = safeCall {
-        api.getNotifications(limit).notifications.map { it.toApp() }
+    suspend fun getNotifications(limit: Int = 50, familyId: String? = null): List<AppNotification> = safeCall {
+        api.getNotifications(limit, familyId).notifications.map { it.toApp() }
     }
 
     suspend fun markAsRead(notificationId: String): AppNotification = safeCall {
         api.markNotificationRead(notificationId).toApp()
     }
 
-    suspend fun markAllAsRead(): Int = safeCall {
-        api.markAllNotificationsRead().count
+    suspend fun markAllAsRead(familyId: String? = null): Int = safeCall {
+        api.markAllNotificationsRead(familyId).count
     }
 
     suspend fun deleteNotification(notificationId: String) = safeCall {
         api.deleteNotification(notificationId)
+    }
+
+    suspend fun deleteAll(familyId: String? = null): Int = safeCall {
+        api.deleteAllNotifications(familyId).count
     }
 
     private fun NotificationDto.toApp() = AppNotification(

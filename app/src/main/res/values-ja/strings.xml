@@ -63,7 +63,7 @@
     <string name="onboarding_group_desc">家族、友達、カップルなど\n一緒にしたい人を招待しましょう</string>
     <string name="onboarding_question_title">毎日一緒に\n気持ちを分かち合おう</string>
     <string name="onboarding_question_desc">毎日新しい質問に答えて\nお互いの気持ちを覗いてみましょう</string>
-    <string name="onboarding_sample_group">私たちのグループ 🩷</string>
+    <string name="onboarding_sample_group">私たちのグループ</string>
     <string name="onboarding_sample_question">今日あなたを笑顔にしたものは何ですか？</string>
     <string name="onboarding_today_question">今日の質問</string>
     <string name="onboarding_start">はじめる</string>
@@ -207,7 +207,7 @@
     <string name="group_code_placeholder">招待コードを入力してください</string>
     <string name="group_code_hint">大文字と数字で構成されたコードです</string>
     <string name="group_join_btn">参加する</string>
-    <string name="group_created_title">スペースが作成されました！🎉</string>
+    <string name="group_created_title">スペースが作成されました！</string>
     <string name="group_created_desc">下のコードやリンクで友達を招待してみましょう</string>
     <string name="group_invite_code">招待コード</string>
     <string name="group_invite_link">招待リンク</string>
@@ -217,14 +217,14 @@
     <string name="group_mongle_title">モングル</string>
 
     <!-- Notification Permission -->
-    <string name="perm_notif_title">通知を許可してください 🔔</string>
+    <string name="perm_notif_title">通知を許可してください</string>
     <string name="perm_notif_desc">グループのお知らせを見逃さないようにしましょう</string>
     <string name="perm_notif_answer">メンバーが回答した時</string>
     <string name="perm_notif_nudge">催促通知を受けた時</string>
     <string name="perm_notif_question">新しい質問通知</string>
     <string name="perm_notif_allow">許可する</string>
     <string name="perm_notif_later">あとで</string>
-    <string name="perm_dnd_title">おやすみ時間 🌙</string>
+    <string name="perm_dnd_title">おやすみ時間</string>
     <string name="perm_dnd_desc">就寝時間には通知を受けません</string>
     <string name="perm_dnd_time">午後10:00 - 午前8:00</string>
     <string name="perm_dnd_use">使用する</string>
@@ -269,6 +269,10 @@
     <string name="settings_delete_account_desc">すべてのデータが削除され、復元できません</string>
     <string name="settings_delete_confirm">退会するとすべてのデータが削除されます。\nこの操作は元に戻せません。</string>
     <string name="settings_delete_btn">退会する</string>
+    <string name="settings_delete_final_title">最終確認です</string>
+    <string name="settings_delete_final_desc">本当にMongleとお別れしますか？\nこの選択は取り消せません。</string>
+    <string name="settings_delete_final_confirm">はい、退会します</string>
+    <string name="settings_delete_final_cancel">もう少し考えます</string>
     <string name="settings_account_section">アカウント</string>
     <string name="settings_preparing">準備中です</string>
     <string name="settings_preparing_desc">もうすぐ気分ヒストリーを確認できます</string>
@@ -300,10 +304,14 @@
     <string name="mgmt_invite_desc">招待コードやリンクを共有してメンバーを招待しましょう</string>
     <string name="mgmt_leave">グループを退出</string>
     <string name="mgmt_leave_title">グループ退出</string>
-    <string name="mgmt_leave_desc">グループを退出すると全ての回答記録の接続が解除されます。</string>
+    <string name="mgmt_leave_desc">グループを退出するとメンバーとの回答記録の接続が解除されます。</string>
     <string name="mgmt_leave_btn">退出する</string>
+    <string name="group_leave_final_title">本当に退出しますか？</string>
+    <string name="group_leave_final_desc">この家族との毎日がここで途切れるかもしれません。\n戻るには再度招待が必要です。</string>
+    <string name="group_leave_final_confirm">はい、退出します</string>
+    <string name="group_leave_final_cancel">もう少しいます</string>
     <string name="mgmt_kick_title">%sさんを退出させますか？</string>
-    <string name="mgmt_kick_desc">このメンバーはグループから除外されます。</string>
+    <string name="mgmt_kick_desc">このメンバーはグループから退出します。</string>
     <string name="mgmt_kick_btn">退出させる</string>
     <string name="mgmt_transfer_title">管理者委任</string>
     <string name="mgmt_transfer_desc">グループを退出する前に管理者を委任するメンバーを選択してください。</string>
@@ -335,7 +343,7 @@
     <string name="toast_edit">回答を修正しました！</string>
     <string name="toast_answer">気持ちを残しました！</string>
     <string name="toast_group_left">グループを退出しました</string>
-    <string name="toast_code_copied">招待コードがコピーされました</string>
+    <string name="toast_code_copied">招待コードをコピーしました！</string>
     <string name="toast_max_groups">グループは最大3つまで作成できます</string>
     <string name="toast_already_member">すでに参加しているグループです</string>
     <string name="toast_invalid_code">招待コードを再確認してください</string>

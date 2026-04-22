@@ -77,5 +77,15 @@
             </intent-filter>
         </service>
 
+        <!-- FCM 기본 알림 아이콘. 데이터 메시지는 MongleFcmService 가 직접 표시하지만,
+             notification payload 자동 처리 경로에서 launcher 아이콘으로 폴백되는 것을
+             방지하기 위해 명시. ic_notification 은 단색 벡터(흰색 실루엣) 기준. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/mongle_primary" />
+
     </application>
 </manifest>
