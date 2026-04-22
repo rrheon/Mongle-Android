@@ -269,6 +269,10 @@
     <string name="settings_delete_account_desc">All data will be deleted permanently</string>
     <string name="settings_delete_confirm">All data will be deleted.\nThis cannot be undone.</string>
     <string name="settings_delete_btn">Delete Account</string>
+    <string name="settings_delete_final_title">One last check</string>
+    <string name="settings_delete_final_desc">Are you sure you want to leave Mongle?\nThis choice cannot be undone.</string>
+    <string name="settings_delete_final_confirm">Yes, delete my account</string>
+    <string name="settings_delete_final_cancel">I\'ll think it over</string>
     <string name="settings_account_section">Account</string>
     <string name="settings_preparing">Coming Soon</string>
     <string name="settings_preparing_desc">Mood history is coming soon</string>
@@ -302,6 +306,10 @@
     <string name="mgmt_leave_title">Leave Group</string>
     <string name="mgmt_leave_desc">Leaving will disconnect all answer records.</string>
     <string name="mgmt_leave_btn">Leave</string>
+    <string name="group_leave_final_title">Are you sure?</string>
+    <string name="group_leave_final_desc">Your daily moments with this family end here.\nYou\'ll need a new invite to return.</string>
+    <string name="group_leave_final_confirm">Yes, leave</string>
+    <string name="group_leave_final_cancel">I\'ll stay for now</string>
     <string name="mgmt_kick_title">Remove %s?</string>
     <string name="mgmt_kick_desc">This member will be removed from the group.</string>
     <string name="mgmt_kick_btn">Remove</string>

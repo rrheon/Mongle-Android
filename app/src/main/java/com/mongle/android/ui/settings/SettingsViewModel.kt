@@ -34,7 +34,9 @@ data class SettingsUiState(
     val isLoading: Boolean = false,
     val showLogoutConfirmation: Boolean = false,
     val showDeleteAccountConfirmation: Boolean = false,
+    val showDeleteAccountFinalConfirmation: Boolean = false,
     val showLeaveGroupConfirmation: Boolean = false,
+    val showLeaveGroupFinalConfirmation: Boolean = false,
     val showTransferSheet: Boolean = false,
     val selectedTransferMemberId: java.util.UUID? = null,
     val showKickConfirmation: Boolean = false,
@@ -208,9 +210,17 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(showLeaveGroupConfirmation = true) }
     }
 
+    fun onLeaveGroupFirstConfirmed() {
+        _uiState.update { it.copy(showLeaveGroupConfirmation = false, showLeaveGroupFinalConfirmation = true) }
+    }
+
+    fun onLeaveGroupFinalCancelled() {
+        _uiState.update { it.copy(showLeaveGroupFinalConfirmation = false) }
+    }
+
     fun onLeaveGroupConfirmed() {
         val state = _uiState.value
-        _uiState.update { it.copy(showLeaveGroupConfirmation = false) }
+        _uiState.update { it.copy(showLeaveGroupConfirmation = false, showLeaveGroupFinalConfirmation = false) }
 
         if (state.isOwner && state.transferCandidates.isNotEmpty()) {
             // 방장이고 다른 멤버가 있으면 위임 시트 표시
@@ -234,7 +244,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onLeaveGroupCancelled() {
-        _uiState.update { it.copy(showLeaveGroupConfirmation = false) }
+        _uiState.update { it.copy(showLeaveGroupConfirmation = false, showLeaveGroupFinalConfirmation = false) }
     }
 
     fun onTransferMemberSelected(userId: java.util.UUID) {
@@ -310,9 +320,17 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(showDeleteAccountConfirmation = true) }
     }
 
+    fun onDeleteAccountFirstConfirmed() {
+        _uiState.update { it.copy(showDeleteAccountConfirmation = false, showDeleteAccountFinalConfirmation = true) }
+    }
+
+    fun onDeleteAccountFinalCancelled() {
+        _uiState.update { it.copy(showDeleteAccountFinalConfirmation = false) }
+    }
+
     fun onDeleteAccountConfirmed() {
         val providerType = _uiState.value.loginProviderType
-        _uiState.update { it.copy(showDeleteAccountConfirmation = false, isLoading = true) }
+        _uiState.update { it.copy(showDeleteAccountConfirmation = false, showDeleteAccountFinalConfirmation = false, isLoading = true) }
         viewModelScope.launch {
             try {
                 // 소셜 연결 해제 (iOS의 revokeClientSocialAccess와 동일, 실패해도 계정 삭제 진행)
@@ -332,7 +350,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onDeleteAccountCancelled() {
-        _uiState.update { it.copy(showDeleteAccountConfirmation = false) }
+        _uiState.update { it.copy(showDeleteAccountConfirmation = false, showDeleteAccountFinalConfirmation = false) }
     }
 
     fun dismissError() {

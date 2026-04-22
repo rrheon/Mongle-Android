@@ -269,6 +269,10 @@
     <string name="settings_delete_account_desc">모든 데이터가 삭제되며 복구할 수 없어요</string>
     <string name="settings_delete_confirm">탈퇴하면 모든 데이터가 삭제돼요.\n이 작업은 되돌릴 수 없어요.</string>
     <string name="settings_delete_btn">탈퇴하기</string>
+    <string name="settings_delete_final_title">마지막 확인이에요</string>
+    <string name="settings_delete_final_desc">정말 몽글과 작별하실 건가요?\n이 선택은 취소할 수 없어요.</string>
+    <string name="settings_delete_final_confirm">네, 탈퇴할게요</string>
+    <string name="settings_delete_final_cancel">더 생각해볼게요</string>
     <string name="settings_account_section">계정</string>
     <string name="settings_preparing">준비 중이에요</string>
     <string name="settings_preparing_desc">곧 기분 히스토리를 확인할 수 있어요</string>
@@ -302,6 +306,10 @@
     <string name="mgmt_leave_title">그룹 나가기</string>
     <string name="mgmt_leave_desc">그룹을 나가면 모든 멤버와의 답변 기록이 연결 해제됩니다.</string>
     <string name="mgmt_leave_btn">나가기</string>
+    <string name="group_leave_final_title">정말 나가실 건가요?</string>
+    <string name="group_leave_final_desc">이 가족과의 하루하루가 여기서 끊길 수 있어요.\n돌아오려면 다시 초대받아야 해요.</string>
+    <string name="group_leave_final_confirm">네, 나갈게요</string>
+    <string name="group_leave_final_cancel">더 있어볼게요</string>
     <string name="mgmt_kick_title">%s님을 내보낼까요?</string>
     <string name="mgmt_kick_desc">해당 멤버는 그룹에서 제외됩니다.</string>
     <string name="mgmt_kick_btn">내보내기</string>

@@ -269,6 +269,10 @@
     <string name="settings_delete_account_desc">すべてのデータが削除され、復元できません</string>
     <string name="settings_delete_confirm">退会するとすべてのデータが削除されます。\nこの操作は元に戻せません。</string>
     <string name="settings_delete_btn">退会する</string>
+    <string name="settings_delete_final_title">最終確認です</string>
+    <string name="settings_delete_final_desc">本当にMongleとお別れしますか？\nこの選択は取り消せません。</string>
+    <string name="settings_delete_final_confirm">はい、退会します</string>
+    <string name="settings_delete_final_cancel">もう少し考えます</string>
     <string name="settings_account_section">アカウント</string>
     <string name="settings_preparing">準備中です</string>
     <string name="settings_preparing_desc">もうすぐ気分ヒストリーを確認できます</string>
@@ -302,6 +306,10 @@
     <string name="mgmt_leave_title">グループ退出</string>
     <string name="mgmt_leave_desc">グループを退出すると全ての回答記録の接続が解除されます。</string>
     <string name="mgmt_leave_btn">退出する</string>
+    <string name="group_leave_final_title">本当に退出しますか？</string>
+    <string name="group_leave_final_desc">この家族との毎日がここで途切れるかもしれません。\n戻るには再度招待が必要です。</string>
+    <string name="group_leave_final_confirm">はい、退出します</string>
+    <string name="group_leave_final_cancel">もう少しいます</string>
     <string name="mgmt_kick_title">%sさんを退出させますか？</string>
     <string name="mgmt_kick_desc">このメンバーはグループから除外されます。</string>
     <string name="mgmt_kick_btn">退出させる</string>

@@ -231,7 +231,9 @@ fun SettingsScreen(
                     onKickMemberConfirmed = viewModel::onKickMemberConfirmed,
                     onKickMemberCancelled = viewModel::onKickMemberCancelled,
                     onLeaveGroupTapped = viewModel::onLeaveGroupTapped,
+                    onLeaveGroupFirstConfirmed = viewModel::onLeaveGroupFirstConfirmed,
                     onLeaveGroupConfirmed = viewModel::onLeaveGroupConfirmed,
+                    onLeaveGroupFinalCancelled = viewModel::onLeaveGroupFinalCancelled,
                     onLeaveGroupCancelled = viewModel::onLeaveGroupCancelled
                 )
             }
@@ -254,7 +256,9 @@ fun SettingsScreen(
                     onLogoutConfirmed = viewModel::onLogoutConfirmed,
                     onLogoutCancelled = viewModel::onLogoutCancelled,
                     onDeleteAccountTapped = viewModel::onDeleteAccountTapped,
+                    onDeleteAccountFirstConfirmed = viewModel::onDeleteAccountFirstConfirmed,
                     onDeleteAccountConfirmed = viewModel::onDeleteAccountConfirmed,
+                    onDeleteAccountFinalCancelled = viewModel::onDeleteAccountFinalCancelled,
                     onDeleteAccountCancelled = viewModel::onDeleteAccountCancelled
                 )
             }
@@ -738,7 +742,9 @@ private fun GroupManagementScreen(
     onKickMemberConfirmed: () -> Unit,
     onKickMemberCancelled: () -> Unit,
     onLeaveGroupTapped: () -> Unit,
+    onLeaveGroupFirstConfirmed: () -> Unit,
     onLeaveGroupConfirmed: () -> Unit,
+    onLeaveGroupFinalCancelled: () -> Unit,
     onLeaveGroupCancelled: () -> Unit
 ) {
     val context = LocalContext.current
@@ -761,7 +767,7 @@ private fun GroupManagementScreen(
         }
     }
 
-    // 그룹 나가기 확인
+    // 그룹 나가기 1차 확인
     if (uiState.showLeaveGroupConfirmation) {
         Dialog(
             onDismissRequest = onLeaveGroupCancelled,
@@ -771,9 +777,27 @@ private fun GroupManagementScreen(
                 title = stringResource(R.string.mgmt_leave_title),
                 description = stringResource(R.string.mgmt_leave_desc),
                 primaryLabel = stringResource(R.string.mgmt_leave_btn),
-                onPrimary = onLeaveGroupConfirmed,
+                onPrimary = onLeaveGroupFirstConfirmed,
                 secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = onLeaveGroupCancelled,
+                isDestructive = true
+            )
+        }
+    }
+
+    // 그룹 나가기 2차 확인 (Context-aware final confirm)
+    if (uiState.showLeaveGroupFinalConfirmation) {
+        Dialog(
+            onDismissRequest = onLeaveGroupFinalCancelled,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.group_leave_final_title),
+                description = stringResource(R.string.group_leave_final_desc),
+                primaryLabel = stringResource(R.string.group_leave_final_confirm),
+                onPrimary = onLeaveGroupConfirmed,
+                secondaryLabel = stringResource(R.string.group_leave_final_cancel),
+                onSecondary = onLeaveGroupFinalCancelled,
                 isDestructive = true
             )
         }
@@ -1037,7 +1061,9 @@ private fun AccountManagementScreen(
     onLogoutConfirmed: () -> Unit,
     onLogoutCancelled: () -> Unit,
     onDeleteAccountTapped: () -> Unit,
+    onDeleteAccountFirstConfirmed: () -> Unit,
     onDeleteAccountConfirmed: () -> Unit,
+    onDeleteAccountFinalCancelled: () -> Unit,
     onDeleteAccountCancelled: () -> Unit
 ) {
     // 로그아웃 확인 다이얼로그
@@ -1058,7 +1084,7 @@ private fun AccountManagementScreen(
         }
     }
 
-    // 계정 탈퇴 확인 다이얼로그
+    // 계정 탈퇴 1차 확인 다이얼로그
     if (uiState.showDeleteAccountConfirmation) {
         Dialog(
             onDismissRequest = onDeleteAccountCancelled,
@@ -1068,9 +1094,27 @@ private fun AccountManagementScreen(
                 title = stringResource(R.string.settings_delete_account),
                 description = stringResource(R.string.settings_delete_confirm),
                 primaryLabel = stringResource(R.string.settings_delete_btn),
-                onPrimary = onDeleteAccountConfirmed,
+                onPrimary = onDeleteAccountFirstConfirmed,
                 secondaryLabel = stringResource(R.string.common_cancel),
                 onSecondary = onDeleteAccountCancelled,
+                isDestructive = true
+            )
+        }
+    }
+
+    // 계정 탈퇴 2차 확인 다이얼로그 (Context-aware final confirm)
+    if (uiState.showDeleteAccountFinalConfirmation) {
+        Dialog(
+            onDismissRequest = onDeleteAccountFinalCancelled,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.settings_delete_final_title),
+                description = stringResource(R.string.settings_delete_final_desc),
+                primaryLabel = stringResource(R.string.settings_delete_final_confirm),
+                onPrimary = onDeleteAccountConfirmed,
+                secondaryLabel = stringResource(R.string.settings_delete_final_cancel),
+                onSecondary = onDeleteAccountFinalCancelled,
                 isDestructive = true
             )
         }
