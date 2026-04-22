@@ -63,7 +63,7 @@
     <string name="onboarding_group_desc">Invite family, friends, couples\nand anyone you want</string>
     <string name="onboarding_question_title">Share your\nfeelings daily</string>
     <string name="onboarding_question_desc">Answer new questions daily\nand peek into each other\'s hearts</string>
-    <string name="onboarding_sample_group">My Group 🩷</string>
+    <string name="onboarding_sample_group">My Group</string>
     <string name="onboarding_sample_question">What made you smile today?</string>
     <string name="onboarding_today_question">Today\'s Question</string>
     <string name="onboarding_start">Get Started</string>
@@ -207,7 +207,7 @@
     <string name="group_code_placeholder">Enter invite code</string>
     <string name="group_code_hint">Code consists of uppercase letters and numbers</string>
     <string name="group_join_btn">Join</string>
-    <string name="group_created_title">Space created! 🎉</string>
+    <string name="group_created_title">Space created!</string>
     <string name="group_created_desc">Invite friends with the code or link below</string>
     <string name="group_invite_code">Invite Code</string>
     <string name="group_invite_link">Invite Link</string>
@@ -217,14 +217,14 @@
     <string name="group_mongle_title">Mongle</string>
 
     <!-- Notification Permission -->
-    <string name="perm_notif_title">Allow notifications 🔔</string>
+    <string name="perm_notif_title">Allow notifications</string>
     <string name="perm_notif_desc">Don\'t miss updates from your group</string>
     <string name="perm_notif_answer">When a member answers</string>
     <string name="perm_notif_nudge">When you receive a nudge</string>
     <string name="perm_notif_question">New question notification</string>
     <string name="perm_notif_allow">Allow</string>
     <string name="perm_notif_later">Later</string>
-    <string name="perm_dnd_title">Do Not Disturb 🌙</string>
+    <string name="perm_dnd_title">Do Not Disturb</string>
     <string name="perm_dnd_desc">No notifications during bedtime</string>
     <string name="perm_dnd_time">10:00 PM - 8:00 AM</string>
     <string name="perm_dnd_use">Enable</string>
@@ -304,14 +304,14 @@
     <string name="mgmt_invite_desc">Share invite code or link</string>
     <string name="mgmt_leave">Leave Group</string>
     <string name="mgmt_leave_title">Leave Group</string>
-    <string name="mgmt_leave_desc">Leaving will disconnect all answer records.</string>
+    <string name="mgmt_leave_desc">Leaving disconnects your answer records with members.</string>
     <string name="mgmt_leave_btn">Leave</string>
     <string name="group_leave_final_title">Are you sure?</string>
     <string name="group_leave_final_desc">Your daily moments with this family end here.\nYou\'ll need a new invite to return.</string>
     <string name="group_leave_final_confirm">Yes, leave</string>
     <string name="group_leave_final_cancel">I\'ll stay for now</string>
     <string name="mgmt_kick_title">Remove %s?</string>
-    <string name="mgmt_kick_desc">This member will be removed from the group.</string>
+    <string name="mgmt_kick_desc">This member will leave the group.</string>
     <string name="mgmt_kick_btn">Remove</string>
     <string name="mgmt_transfer_title">Transfer Admin</string>
     <string name="mgmt_transfer_desc">Select a member to transfer admin rights before leaving.</string>
@@ -341,9 +341,9 @@
     <string name="toast_write">Your question has been registered!</string>
     <string name="toast_nudge">Nudge sent!</string>
     <string name="toast_edit">Answer edited!</string>
-    <string name="toast_answer">Heart left!</string>
+    <string name="toast_answer">Heart earned!</string>
     <string name="toast_group_left">Left the group</string>
-    <string name="toast_code_copied">Invite code copied</string>
+    <string name="toast_code_copied">Invite code copied!</string>
     <string name="toast_max_groups">You can create up to 3 groups</string>
     <string name="toast_already_member">Already a member of this group</string>
     <string name="toast_invalid_code">Please check the invite code</string>

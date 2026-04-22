@@ -63,7 +63,7 @@
     <string name="onboarding_group_desc">가족, 친구, 커플 등\n함께하고 싶은 사람들을 초대해요</string>
     <string name="onboarding_question_title">매일 함께\n마음을 나눠요</string>
     <string name="onboarding_question_desc">매일 새로운 질문에 답하고\n서로의 마음을 들여다보세요</string>
-    <string name="onboarding_sample_group">우리 그룹 🩷</string>
+    <string name="onboarding_sample_group">우리 그룹</string>
     <string name="onboarding_sample_question">오늘 당신을 웃게 한 건 무엇인가요?</string>
     <string name="onboarding_today_question">오늘의 질문</string>
     <string name="onboarding_start">시작하기</string>
@@ -207,7 +207,7 @@
     <string name="group_code_placeholder">초대 코드를 입력해주세요</string>
     <string name="group_code_hint">대문자와 숫자로 이루어진 코드에요</string>
     <string name="group_join_btn">참여하기</string>
-    <string name="group_created_title">공간이 만들어졌어요! 🎉</string>
+    <string name="group_created_title">공간이 만들어졌어요!</string>
     <string name="group_created_desc">아래 코드나 링크로 친구를 초대해보세요</string>
     <string name="group_invite_code">초대 코드</string>
     <string name="group_invite_link">초대 링크</string>
@@ -217,14 +217,14 @@
     <string name="group_mongle_title">몽글</string>
 
     <!-- Notification Permission -->
-    <string name="perm_notif_title">알림을 허용해 주세요 🔔</string>
+    <string name="perm_notif_title">알림을 허용해 주세요</string>
     <string name="perm_notif_desc">그룹 소식을 놓치지 않을 수 있어요</string>
     <string name="perm_notif_answer">멤버가 답변했을 때</string>
     <string name="perm_notif_nudge">재촉 알림을 받았을 때</string>
     <string name="perm_notif_question">새 질문 알림</string>
     <string name="perm_notif_allow">허용하기</string>
     <string name="perm_notif_later">나중에</string>
-    <string name="perm_dnd_title">방해 금지 시간 🌙</string>
+    <string name="perm_dnd_title">방해 금지 시간</string>
     <string name="perm_dnd_desc">취침 시간에는 알림을 받지 않아요</string>
     <string name="perm_dnd_time">오후 10:00 - 오전 8:00</string>
     <string name="perm_dnd_use">사용하기</string>
@@ -304,14 +304,14 @@
     <string name="mgmt_invite_desc">초대 코드나 링크를 공유해 멤버를 초대하세요</string>
     <string name="mgmt_leave">그룹 나가기</string>
     <string name="mgmt_leave_title">그룹 나가기</string>
-    <string name="mgmt_leave_desc">그룹을 나가면 모든 멤버와의 답변 기록이 연결 해제됩니다.</string>
+    <string name="mgmt_leave_desc">그룹을 나가면 멤버와의 답변 기록 연결이 해제돼요.</string>
     <string name="mgmt_leave_btn">나가기</string>
     <string name="group_leave_final_title">정말 나가실 건가요?</string>
     <string name="group_leave_final_desc">이 가족과의 하루하루가 여기서 끊길 수 있어요.\n돌아오려면 다시 초대받아야 해요.</string>
     <string name="group_leave_final_confirm">네, 나갈게요</string>
     <string name="group_leave_final_cancel">더 있어볼게요</string>
     <string name="mgmt_kick_title">%s님을 내보낼까요?</string>
-    <string name="mgmt_kick_desc">해당 멤버는 그룹에서 제외됩니다.</string>
+    <string name="mgmt_kick_desc">이 멤버는 그룹에서 나가게 돼요.</string>
     <string name="mgmt_kick_btn">내보내기</string>
     <string name="mgmt_transfer_title">방장 위임</string>
     <string name="mgmt_transfer_desc">그룹을 나가기 전에 방장을 위임할 멤버를 선택해주세요.</string>
@@ -343,7 +343,7 @@
     <string name="toast_edit">답변을 수정했어요!</string>
     <string name="toast_answer">마음을 남겼어요!</string>
     <string name="toast_group_left">그룹에서 나왔어요</string>
-    <string name="toast_code_copied">초대 코드가 복사되었습니다</string>
+    <string name="toast_code_copied">초대 코드를 복사했어요</string>
     <string name="toast_max_groups">그룹은 최대 3개까지 만들 수 있어요</string>
     <string name="toast_already_member">이미 속해있는 그룹이에요</string>
     <string name="toast_invalid_code">초대코드를 다시 확인해주세요</string>
