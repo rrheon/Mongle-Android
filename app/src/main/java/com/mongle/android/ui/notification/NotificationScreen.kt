@@ -100,9 +100,11 @@ fun NotificationScreen(
 
     BackHandler { onBack() }
 
-    // 화면 진입/복귀 시 최신 알림 재로딩 (FCM 푸시 수신 후 즉시 반영)
-    LaunchedEffect(Unit) {
-        viewModel.loadNotifications()
+    // 화면 진입/복귀 시 최신 알림 재로딩 (FCM 푸시 수신 후 즉시 반영).
+    // currentFamilyId 를 ViewModel scope 로 설정 → 이후 markAllAsRead/deleteAll 이
+    // 자동으로 해당 그룹 스코프만 처리한다.
+    LaunchedEffect(currentFamilyId) {
+        viewModel.loadNotifications(currentFamilyId?.toString())
     }
 
     LaunchedEffect(uiState.errorMessage) {
@@ -195,11 +197,10 @@ fun NotificationScreen(
                 }
             }
             else -> {
-                // 현재 그룹 필터 적용 (familyId 미지정 알림은 그룹 무관하게 항상 노출)
+                // 서버가 이미 group_id 로 필터링해서 내려주지만, 안전망으로 클라도 필터.
+                // 각 그룹 화면에서는 해당 그룹 알림만 노출 — 그룹 무관(familyId==null) 알림도 제외.
                 val filtered = if (currentFamilyId != null) {
-                    uiState.notifications.filter {
-                        it.familyId == null || it.familyId == currentFamilyId.toString()
-                    }
+                    uiState.notifications.filter { it.familyId == currentFamilyId.toString() }
                 } else {
                     uiState.notifications
                 }
@@ -227,7 +228,7 @@ fun NotificationScreen(
                 } else {
                     PullToRefreshBox(
                         isRefreshing = uiState.isLoading,
-                        onRefresh = { viewModel.loadNotifications() },
+                        onRefresh = { viewModel.loadNotifications(currentFamilyId?.toString()) },
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues)
