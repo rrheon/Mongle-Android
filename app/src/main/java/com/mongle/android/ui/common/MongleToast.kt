@@ -197,10 +197,10 @@ fun MongleToastOverlay(
     onDismiss: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    // 3초 후 자동 dismiss
+    // 4초 후 자동 dismiss (긴 메시지 가독성)
     LaunchedEffect(message) {
         if (message != null && onDismiss != null) {
-            delay(3000L)
+            delay(4000L)
             onDismiss()
         }
     }
@@ -243,10 +243,10 @@ fun MongleToastHost(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 3초 후 자동 dismiss
+    // 4초 후 자동 dismiss (긴 메시지 가독성)
     LaunchedEffect(toastData) {
         if (toastData != null) {
-            delay(3000L)
+            delay(4000L)
             onDismiss()
         }
     }

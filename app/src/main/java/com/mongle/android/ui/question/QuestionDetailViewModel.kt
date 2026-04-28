@@ -81,6 +81,20 @@ class QuestionDetailViewModel @Inject constructor(
             )
         }
         loadAnswers(question, currentUser)
+        // 부모에서 캡처한 hearts 는 stale 일 수 있음(다른 단말에서 답변/스킵/edit 으로 변경됨).
+        // 진입 시 서버에서 최신 값을 가져와 editCostPopup/adReward 분기가 올바른 잔량으로 동작하게 한다.
+        refreshHearts()
+    }
+
+    /**
+     * 화면 진입 또는 재진입(onResume) 시 서버에서 최신 hearts 를 받아 갱신.
+     * 다중 단말 동기화 필요 (iOS MG-49 패리티).
+     */
+    fun refreshHearts() {
+        viewModelScope.launch {
+            runCatching { userRepository.getMe() }
+                .onSuccess { me -> _uiState.update { it.copy(hearts = me.hearts) } }
+        }
     }
 
     private fun loadAnswers(question: Question, currentUser: User?) {
