@@ -81,7 +81,7 @@
     <string name="home_heart_replace">質問をもらい直す</string>
     <string name="home_heart_write">自分だけの質問作成</string>
     <string name="home_heart_nudge">催促する</string>
-    <string name="home_heart_earn_rate">毎朝 +1 · 回答完了 +3</string>
+    <string name="home_heart_earn_rate">毎朝 +1 · 回答完了 +1</string>
     <string name="home_group_manage">グループ管理</string>
     <string name="home_answer_first_title">まず回答を完了してください</string>
     <string name="home_answer_first_view_desc">%sの回答を見るには\nまず今日の質問に答えてください</string>

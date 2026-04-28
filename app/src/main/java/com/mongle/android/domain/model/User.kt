@@ -12,7 +12,9 @@ data class User(
     val hearts: Int = 0,
     val moodId: String? = null,
     val createdAt: Date,
-    val lastNameChangedAt: Long? = null
+    val lastNameChangedAt: Long? = null,
+    /** users/me?grantDailyHeart=true 응답에서만 true 가 올 수 있음 */
+    val heartGrantedToday: Boolean = false
 )
 
 enum class FamilyRole(val displayName: String) {

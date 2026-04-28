@@ -81,7 +81,7 @@
     <string name="home_heart_replace">Replace question</string>
     <string name="home_heart_write">Write my question</string>
     <string name="home_heart_nudge">Nudge</string>
-    <string name="home_heart_earn_rate">Daily +1 · Answer +3</string>
+    <string name="home_heart_earn_rate">Daily +1 · Answer +1</string>
     <string name="home_group_manage">Manage Groups</string>
     <string name="home_answer_first_title">Please answer first</string>
     <string name="home_answer_first_view_desc">To see %s\'s answer,\nyou need to answer today\'s question first</string>
