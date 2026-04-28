@@ -263,18 +263,27 @@ private fun Date.toDateKeyMillis(): Long {
     return cal.timeInMillis
 }
 
-/** Date를 표시 문자열로 포맷 (오늘/어제/날짜) */
+/** Date를 표시 문자열로 포맷 (오늘/어제/날짜) — 시스템 로케일 기반 i18n (iOS MG-38 패리티) */
 fun Date.toDisplayLabel(): String {
+    val locale = java.util.Locale.getDefault()
+    val pattern = when (locale.language) {
+        "ko" -> "M월 d일"
+        "ja" -> "M月d日"
+        else -> "MMM d"
+    }
+    val datePart = java.text.SimpleDateFormat(pattern, locale).format(this)
+
     val cal = Calendar.getInstance().apply { time = this@toDisplayLabel }
     val today = Calendar.getInstance()
     val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
-    return when {
+    val suffix = when {
         cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
             cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) ->
-            "${cal.get(Calendar.MONTH) + 1}월 ${cal.get(Calendar.DAY_OF_MONTH)}일 · 오늘"
+            when (locale.language) { "ko" -> " · 오늘"; "ja" -> " · 今日"; else -> " · Today" }
         cal.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) &&
             cal.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR) ->
-            "${cal.get(Calendar.MONTH) + 1}월 ${cal.get(Calendar.DAY_OF_MONTH)}일 · 어제"
-        else -> "${cal.get(Calendar.MONTH) + 1}월 ${cal.get(Calendar.DAY_OF_MONTH)}일"
+            when (locale.language) { "ko" -> " · 어제"; "ja" -> " · 昨日"; else -> " · Yesterday" }
+        else -> ""
     }
+    return "$datePart$suffix"
 }
