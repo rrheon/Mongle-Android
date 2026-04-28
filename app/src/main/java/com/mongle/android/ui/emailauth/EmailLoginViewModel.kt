@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 private val EMAIL_REGEX = Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
@@ -26,7 +27,9 @@ data class EmailLoginUiState(
     @StringRes val passwordErrorRes: Int? = null,
     val isSubmitting: Boolean = false,
     /** 서버 에러(이미 i18n 처리됨) 또는 null */
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    /** 401 응답 — 이메일/비밀번호 불일치 안내를 i18n 리소스로 노출 */
+    val showInvalidCredentialsError: Boolean = false
 ) {
     val isEmailValid: Boolean get() = EMAIL_REGEX.matches(email.trim())
     val isPasswordNonEmpty: Boolean get() = password.isNotEmpty()
@@ -50,11 +53,11 @@ class EmailLoginViewModel @Inject constructor(
     val events: SharedFlow<EmailLoginEvent> = _events.asSharedFlow()
 
     fun onEmailChanged(value: String) {
-        _uiState.update { it.copy(email = value, emailErrorRes = null, errorMessage = null) }
+        _uiState.update { it.copy(email = value, emailErrorRes = null, errorMessage = null, showInvalidCredentialsError = false) }
     }
 
     fun onPasswordChanged(value: String) {
-        _uiState.update { it.copy(password = value, passwordErrorRes = null, errorMessage = null) }
+        _uiState.update { it.copy(password = value, passwordErrorRes = null, errorMessage = null, showInvalidCredentialsError = false) }
     }
 
     fun submit() {
@@ -77,12 +80,22 @@ class EmailLoginViewModel @Inject constructor(
                 _uiState.update { it.copy(isSubmitting = false) }
                 _events.emit(EmailLoginEvent.Completed(result))
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isSubmitting = false,
-                        // 서버가 i18n 처리한 메시지 우선; 없으면 화면에서 fallback 리소스 사용
-                        errorMessage = e.message
-                    )
+                val isUnauthorized = e is HttpException && e.code() == 401
+                _uiState.update { state ->
+                    if (isUnauthorized) {
+                        state.copy(
+                            isSubmitting = false,
+                            errorMessage = null,
+                            showInvalidCredentialsError = true
+                        )
+                    } else {
+                        state.copy(
+                            isSubmitting = false,
+                            // 서버가 i18n 처리한 메시지 우선; 없으면 화면에서 fallback 리소스 사용
+                            errorMessage = e.message,
+                            showInvalidCredentialsError = false
+                        )
+                    }
                 }
             }
         }
@@ -93,6 +106,6 @@ class EmailLoginViewModel @Inject constructor(
     }
 
     fun dismissError() {
-        _uiState.update { it.copy(errorMessage = null) }
+        _uiState.update { it.copy(errorMessage = null, showInvalidCredentialsError = false) }
     }
 }

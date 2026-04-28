@@ -55,6 +55,7 @@
     <string name="email_auth_login_subtitle">Enter the email and password you signed up with.</string>
     <string name="email_auth_login_submit">Log in</string>
     <string name="email_auth_login_password_required">Please enter your password.</string>
+    <string name="email_auth_login_invalid_credentials">The email or password is incorrect.\nPlease check and try again.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">Welcome to\nMongle</string>

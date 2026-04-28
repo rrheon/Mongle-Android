@@ -135,7 +135,12 @@ fun EmailLoginScreen(
                 isPassword = true
             )
 
-            uiState.errorMessage?.let { msg ->
+            val displayedError = when {
+                uiState.showInvalidCredentialsError -> stringResource(R.string.email_auth_login_invalid_credentials)
+                uiState.errorMessage != null -> uiState.errorMessage
+                else -> null
+            }
+            displayedError?.let { msg ->
                 Spacer(Modifier.height(MongleSpacing.sm))
                 Text(
                     text = msg,

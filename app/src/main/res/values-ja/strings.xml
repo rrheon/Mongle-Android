@@ -55,6 +55,7 @@
     <string name="email_auth_login_subtitle">登録したメールアドレスとパスワードを入力してください。</string>
     <string name="email_auth_login_submit">ログイン</string>
     <string name="email_auth_login_password_required">パスワードを入力してください。</string>
+    <string name="email_auth_login_invalid_credentials">メールアドレスまたはパスワードが正しくありません。\nご確認ください。</string>
 
     <!-- Onboarding -->
     <string name="onboarding_welcome_title">モングルへ\nようこそ</string>
