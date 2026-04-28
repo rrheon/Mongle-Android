@@ -47,7 +47,13 @@ data class ApiUserResponse(
      * users/me?grantDailyHeart=true 호출 시에만 서버가 set 하며, 이미 받은 날에는 false.
      * 미지원 서버 호환을 위해 nullable.
      */
-    val heartGrantedToday: Boolean? = null
+    val heartGrantedToday: Boolean? = null,
+    /**
+     * 서버 정책 기반 하트 비용. 미지원 서버에서는 클라 기본값(3) 사용.
+     * (iOS MG-84 follow-up 패리티)
+     */
+    val heartsWriteCost: Int = 3,
+    val heartsSkipCost: Int = 3
 )
 
 @JsonClass(generateAdapter = true)

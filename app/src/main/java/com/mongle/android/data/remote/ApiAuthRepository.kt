@@ -59,7 +59,9 @@ class ApiAuthRepository @Inject constructor(
         hearts = hearts,
         moodId = moodId,
         createdAt = Date(),
-        heartGrantedToday = heartGrantedToday ?: false
+        heartGrantedToday = heartGrantedToday ?: false,
+        heartsWriteCost = heartsWriteCost,
+        heartsSkipCost = heartsSkipCost
     )
 
     private suspend fun <T> safeCall(block: suspend () -> T): T {

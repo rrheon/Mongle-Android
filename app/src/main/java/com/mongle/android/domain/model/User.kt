@@ -14,7 +14,10 @@ data class User(
     val createdAt: Date,
     val lastNameChangedAt: Long? = null,
     /** users/me?grantDailyHeart=true 응답에서만 true 가 올 수 있음 */
-    val heartGrantedToday: Boolean = false
+    val heartGrantedToday: Boolean = false,
+    /** 서버 정책에 따른 하트 비용 (기본값 3, iOS MG-84 follow-up) */
+    val heartsWriteCost: Int = 3,
+    val heartsSkipCost: Int = 3
 )
 
 enum class FamilyRole(val displayName: String) {
