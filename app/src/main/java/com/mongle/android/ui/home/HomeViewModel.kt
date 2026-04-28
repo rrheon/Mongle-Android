@@ -434,7 +434,8 @@ class HomeViewModel @Inject constructor(
             onRewarded = {
                 viewModelScope.launch {
                     try {
-                        val heartsAfterAd = userRepository.grantAdHearts(3)
+                        // iOS MG-34 패리티 — AdRewardClient retry 적용
+                        val heartsAfterAd = com.mongle.android.data.remote.AdRewardClient.grantAdHearts(userRepository, 3)
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -464,7 +465,8 @@ class HomeViewModel @Inject constructor(
             onRewarded = {
                 viewModelScope.launch {
                     try {
-                        val heartsAfterAd = userRepository.grantAdHearts(3)
+                        // iOS MG-34 패리티 — AdRewardClient retry 적용
+                        val heartsAfterAd = com.mongle.android.data.remote.AdRewardClient.grantAdHearts(userRepository, 3)
                         _uiState.update {
                             it.copy(currentUser = it.currentUser?.copy(hearts = heartsAfterAd))
                         }

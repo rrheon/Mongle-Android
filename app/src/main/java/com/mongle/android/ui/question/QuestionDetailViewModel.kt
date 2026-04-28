@@ -3,6 +3,7 @@ package com.mongle.android.ui.question
 import androidx.lifecycle.ViewModel
 import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
+import com.mongle.android.data.remote.AdRewardClient
 import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.model.Question
@@ -179,8 +180,15 @@ class QuestionDetailViewModel @Inject constructor(
     }
 
     fun confirmEditAnswer() {
-        _uiState.update { it.copy(showEditConfirmDialog = false) }
-        doSubmitAnswer()
+        // iOS MG-34 패리티 — 수정 비용 1 하트를 옵티미스틱 차감해 UI 즉시 피드백.
+        // doSubmitAnswer() catch 블록에서 실패 시 +1 rollback.
+        _uiState.update {
+            it.copy(
+                showEditConfirmDialog = false,
+                hearts = (it.hearts - 1).coerceAtLeast(0)
+            )
+        }
+        doSubmitAnswer(isEditOptimistic = true)
     }
 
     fun dismissEditAdDialog() {
@@ -195,10 +203,22 @@ class QuestionDetailViewModel @Inject constructor(
             onRewarded = {
                 viewModelScope.launch {
                     try {
-                        val heartsAfterAd = userRepository.grantAdHearts(1)
-                        _uiState.update { it.copy(hearts = heartsAfterAd, isWatchingAd = false) }
-                        // 광고 시청 후 바로 수정 실행
-                        doSubmitAnswer()
+                        // iOS MG-34 패리티 — transient 오류 시에도 보상 누락 방지 (3회 retry)
+                        val heartsAfterAd = AdRewardClient.grantAdHearts(userRepository, 1)
+                        // iOS MG-34 패리티 — 다른 단말에서 동시에 하트를 사용한 경우를 대비해 재검증.
+                        if (heartsAfterAd >= 1) {
+                            // 옵티미스틱 차감 후 수정 실행
+                            _uiState.update { it.copy(hearts = heartsAfterAd - 1, isWatchingAd = false) }
+                            doSubmitAnswer(isEditOptimistic = true)
+                        } else {
+                            _uiState.update {
+                                it.copy(
+                                    hearts = heartsAfterAd,
+                                    isWatchingAd = false,
+                                    errorMessage = "다른 단말에서 하트를 사용했어요. 다시 시도해주세요."
+                                )
+                            }
+                        }
                     } catch (e: Exception) {
                         _uiState.update { it.copy(isWatchingAd = false, errorMessage = AppError.from(e).toastMessage) }
                     }
@@ -210,7 +230,11 @@ class QuestionDetailViewModel @Inject constructor(
         )
     }
 
-    private fun doSubmitAnswer() {
+    /**
+     * @param isEditOptimistic confirmEditAnswer / watchAdForEdit 진입 시 hearts 를 미리
+     *   -1 차감했음을 알리는 플래그. 실패 시 +1 rollback.
+     */
+    private fun doSubmitAnswer(isEditOptimistic: Boolean = false) {
         val state = _uiState.value
         val question = state.question ?: return
         val userId = state.currentUser?.id ?: return
@@ -244,7 +268,12 @@ class QuestionDetailViewModel @Inject constructor(
                 _events.emit(QuestionDetailEvent.AnswerSubmitted(savedAnswer, isNewAnswer))
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isSubmitting = false, errorMessage = AppError.from(e).toastMessage)
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = AppError.from(e).toastMessage,
+                        // 옵티미스틱 차감했던 hearts 복구 (iOS MG-34 패리티)
+                        hearts = if (isEditOptimistic) it.hearts + 1 else it.hearts
+                    )
                 }
             }
         }

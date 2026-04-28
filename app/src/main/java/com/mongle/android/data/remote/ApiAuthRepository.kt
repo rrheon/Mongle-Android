@@ -191,8 +191,14 @@ class ApiAuthRepository @Inject constructor(
     }
 
     override suspend fun deleteAccount() {
-        safeCall { api.deleteAccount() }
-        clearSession()
+        // iOS MG-35 패리티 — API 호출 성공/실패와 무관하게 로컬 세션 정리.
+        // 이전에는 safeCall 이 throw 하면 clearSession() 이 실행되지 않아
+        // 잔존 토큰으로 다음 사용자가 이전 계정 데이터에 접근할 위험이 있었음.
+        try {
+            safeCall { api.deleteAccount() }
+        } finally {
+            clearSession()
+        }
     }
 
     override suspend fun getCurrentUser(grantDailyHeart: Boolean): User? {

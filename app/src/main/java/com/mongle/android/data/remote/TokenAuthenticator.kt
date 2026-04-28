@@ -11,6 +11,8 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.Route
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,6 +45,11 @@ class TokenAuthenticator @Inject constructor(
         moshi.adapter(TokenRefreshResponse::class.java)
     }
 
+    // iOS MG-35 패리티 — 동시 401 발생 시 refresh 가 한 번만 일어나도록 보호한다.
+    // OkHttp 가 여러 동시 401 에 대해 authenticate() 를 동시에 호출할 수 있어
+    // refresh 토큰을 동일 값으로 여러 번 사용하면 일부 응답이 invalid 처리될 위험이 있음.
+    private val refreshLock = ReentrantLock()
+
     override fun authenticate(route: Route?, response: Response): Request? {
         // 이미 한 번 재시도했으면 포기 (무한루프 방지)
         if (response.priorResponse != null) {
@@ -53,7 +60,8 @@ class TokenAuthenticator @Inject constructor(
         // 첫 설치 직후 또는 로그아웃 직후처럼 refresh 토큰이 SharedPreferences 에 한 번도
         // 들어간 적 없는 상태에서는 sessionExpired 신호를 발화하지 않는다.
         // 발화하면 RootViewModel 이 "세션 만료"로 라우팅돼 사용자에게 불필요한 재로그인 안내가 노출됨.
-        val refreshToken = prefs.getString(AUTH_KEY_REFRESH_TOKEN, null) ?: run {
+        val incomingToken = prefs.getString(AUTH_KEY_TOKEN, null)
+        val initialRefresh = prefs.getString(AUTH_KEY_REFRESH_TOKEN, null) ?: run {
             if (prefs.contains(AUTH_KEY_REFRESH_TOKEN)) {
                 notifyAndClear()
             } else {
@@ -62,6 +70,21 @@ class TokenAuthenticator @Inject constructor(
             return null
         }
 
+        return refreshLock.withLock {
+            // 다른 스레드가 이미 갱신해 둔 액세스 토큰이 있으면 그걸 그대로 재사용한다.
+            // 요청을 보낸 시점의 access 토큰과 현재 저장된 access 토큰이 다르면 이미 갱신된 상태.
+            val currentToken = prefs.getString(AUTH_KEY_TOKEN, null)
+            if (currentToken != null && currentToken != incomingToken) {
+                return@withLock response.request.newBuilder()
+                    .header("Authorization", "Bearer $currentToken")
+                    .build()
+            }
+
+            performRefresh(initialRefresh, response)
+        }
+    }
+
+    private fun performRefresh(refreshToken: String, response: Response): Request? {
         return try {
             val body = """{"refresh_token":"$refreshToken"}"""
                 .toRequestBody("application/json".toMediaType())
