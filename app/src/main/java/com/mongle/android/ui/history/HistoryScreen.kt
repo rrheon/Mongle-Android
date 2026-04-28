@@ -182,25 +182,29 @@ fun HistoryScreen(
                         }
                     }
 
-                    // 달력 그리드
-                    val calendarDays = generateCalendarDays(uiState.currentMonth)
-                    val weeks = calendarDays.chunked(7)
+                    // 달력 그리드 — iOS MG-59 패리티: 사전 계산된 calendarDays 사용 (매 재실행 재계산 제거)
+                    val selectedDateMillis = remember(uiState.selectedDate) {
+                        Calendar.getInstance().apply {
+                            time = uiState.selectedDate
+                            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                        }.timeInMillis
+                    }
+                    val weeks = uiState.calendarDays.chunked(7)
                     weeks.forEach { week ->
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            week.forEach { date ->
+                            week.forEach { day ->
                                 CalendarDayCell(
-                                    date = date,
-                                    currentMonth = uiState.currentMonth,
-                                    selectedDate = uiState.selectedDate,
-                                    hasRecord = date?.let {
-                                        val cal = Calendar.getInstance().apply {
-                                            time = it
-                                            set(Calendar.HOUR_OF_DAY, 0)
-                                            set(Calendar.MINUTE, 0)
-                                            set(Calendar.SECOND, 0)
-                                            set(Calendar.MILLISECOND, 0)
-                                        }
-                                        uiState.historyItems[cal.timeInMillis] != null
+                                    day = day,
+                                    selectedDateMillis = selectedDateMillis,
+                                    hasRecord = day?.let {
+                                        uiState.historyItems[
+                                            Calendar.getInstance().apply {
+                                                time = it.date
+                                                set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+                                                set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                                            }.timeInMillis
+                                        ] != null
                                     } ?: false,
                                     onDateSelected = { d -> d?.let { viewModel.onDateSelected(it) } },
                                     modifier = Modifier.weight(1f)
@@ -255,52 +259,40 @@ fun HistoryScreen(
     }
 }
 
-// ── 달력 날짜 셀 ──
+// ── 달력 날짜 셀 ── iOS MG-59 패리티: ViewModel 사전 계산 CalendarDayInfo 소비
 
 @Composable
 private fun CalendarDayCell(
-    date: Date?,
-    currentMonth: Date,
-    selectedDate: Date,
+    day: CalendarDayInfo?,
+    selectedDateMillis: Long,
     hasRecord: Boolean,
     onDateSelected: (Date?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isCurrentMonth = date?.let {
-        val dateCal = Calendar.getInstance().apply { time = it }
-        val monthCal = Calendar.getInstance().apply { time = currentMonth }
-        dateCal.get(Calendar.MONTH) == monthCal.get(Calendar.MONTH) &&
-            dateCal.get(Calendar.YEAR) == monthCal.get(Calendar.YEAR)
+    val isCurrentMonth = day?.isCurrentMonth ?: false
+    val isToday = day?.isToday ?: false
+    val isSelected = day?.let {
+        // selectedDateMillis 는 부모에서 정규화된 timestamp.
+        // day.date 는 normalize 된 자정 기준 (computeCalendarDays 가 정규화) 이라 직접 비교 가능.
+        Calendar.getInstance().apply {
+            time = it.date
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }.timeInMillis == selectedDateMillis
     } ?: false
-
-    val isSelected = date?.let {
-        val dateCal = Calendar.getInstance().apply { time = it }
-        val selCal = Calendar.getInstance().apply { time = selectedDate }
-        dateCal.get(Calendar.DAY_OF_YEAR) == selCal.get(Calendar.DAY_OF_YEAR) &&
-            dateCal.get(Calendar.YEAR) == selCal.get(Calendar.YEAR)
-    } ?: false
-
-    val isToday = date?.let {
-        val dateCal = Calendar.getInstance().apply { time = it }
-        val todayCal = Calendar.getInstance()
-        dateCal.get(Calendar.DAY_OF_YEAR) == todayCal.get(Calendar.DAY_OF_YEAR) &&
-            dateCal.get(Calendar.YEAR) == todayCal.get(Calendar.YEAR)
-    } ?: false
-
-    val dayOfWeek = date?.let { Calendar.getInstance().apply { time = it }.get(Calendar.DAY_OF_WEEK) }
 
     val numColor: Color = when {
         isToday -> Color.White
         !isCurrentMonth -> MongleTextHint.copy(alpha = 0.4f)
-        dayOfWeek == Calendar.SUNDAY -> MaterialTheme.colorScheme.error
-        dayOfWeek == Calendar.SATURDAY -> Color(0xFF1565C0)
+        day?.weekday == Calendar.SUNDAY -> MaterialTheme.colorScheme.error
+        day?.weekday == Calendar.SATURDAY -> Color(0xFF1565C0)
         else -> MongleTextPrimary
     }
 
     Column(
         modifier = modifier
             .height(54.dp)
-            .clickable(enabled = date != null && isCurrentMonth) { onDateSelected(date) },
+            .clickable(enabled = day != null && isCurrentMonth) { onDateSelected(day?.date) },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -318,9 +310,7 @@ private fun CalendarDayCell(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = date?.let {
-                    Calendar.getInstance().apply { time = it }.get(Calendar.DAY_OF_MONTH).toString()
-                } ?: "",
+                text = day?.dayString ?: "",
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontWeight = if (hasRecord) FontWeight.Medium else FontWeight.Normal
                 ),
@@ -564,24 +554,3 @@ private fun EmptyDateCard(selectedDate: Date, modifier: Modifier = Modifier) {
     }
 }
 
-private fun generateCalendarDays(month: Date): List<Date?> {
-    val cal = Calendar.getInstance().apply {
-        time = month
-        set(Calendar.DAY_OF_MONTH, 1)
-    }
-    val firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1 // 0=일
-    val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
-    val days = mutableListOf<Date?>()
-
-    repeat(firstDayOfWeek) { days.add(null) }
-
-    repeat(daysInMonth) { i ->
-        days.add(Calendar.getInstance().apply {
-            time = month
-            set(Calendar.DAY_OF_MONTH, i + 1)
-        }.time)
-    }
-
-    while (days.size < 42) days.add(null)
-    return days
-}

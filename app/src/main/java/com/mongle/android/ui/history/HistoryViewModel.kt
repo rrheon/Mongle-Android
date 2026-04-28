@@ -36,6 +36,19 @@ data class HistoryItem(
     val skippedMembers: List<HistorySkippedSummary> = emptyList()
 )
 
+/**
+ * 달력 한 셀에 필요한 사전 계산 정보. iOS MG-59 패리티.
+ * 매 composable 재실행마다 Calendar.getInstance() 4~5회 호출하던 비용을 없애기 위해
+ * monthly transition 시점(loadHistory/previousMonth/nextMonth)에 1회만 계산해 stored 한다.
+ */
+data class CalendarDayInfo(
+    val date: Date,
+    val dayString: String,
+    val weekday: Int,            // Calendar.DAY_OF_WEEK (1=일~7=토)
+    val isCurrentMonth: Boolean,
+    val isToday: Boolean
+)
+
 data class HistoryUiState(
     val selectedDate: Date = Date(),
     val currentMonth: Date = Date(),
@@ -43,14 +56,11 @@ data class HistoryUiState(
     val selectedItem: HistoryItem? = null,
     val moodCounts: Map<String, Int> = emptyMap(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
-) {
-    val monthTitle: String
-        get() {
-            val cal = Calendar.getInstance().apply { time = currentMonth }
-            return "${cal.get(Calendar.YEAR)}년 ${cal.get(Calendar.MONTH) + 1}월"
-        }
-}
+    val errorMessage: String? = null,
+    /** 6주×7일 = 42 셀. null = 빈 칸. iOS MG-59 stored property 캐시. */
+    val calendarDays: List<CalendarDayInfo?> = emptyList(),
+    val monthTitle: String = ""
+)
 
 sealed class HistoryEvent {
     data class NavigateToQuestionDetail(val question: Question) : HistoryEvent()
@@ -70,7 +80,58 @@ class HistoryViewModel @Inject constructor(
     val events: SharedFlow<HistoryEvent> = _events.asSharedFlow()
 
     init {
+        // 초기 monthTitle/calendarDays 도 stored 로 미리 계산
+        val initialMonth = _uiState.value.currentMonth
+        _uiState.update {
+            it.copy(
+                monthTitle = computeMonthTitle(initialMonth),
+                calendarDays = computeCalendarDays(initialMonth)
+            )
+        }
         loadHistory()
+    }
+
+    /** iOS MG-59 패리티 — 42 셀 사전 계산 */
+    private fun computeCalendarDays(month: Date): List<CalendarDayInfo?> {
+        val firstOfMonth = Calendar.getInstance().apply {
+            time = month
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }
+        val firstDayOfWeek = firstOfMonth.get(Calendar.DAY_OF_WEEK) - 1   // 0=일요일
+        val daysInMonth = firstOfMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        val days = ArrayList<CalendarDayInfo?>(42)
+        repeat(firstDayOfWeek) { days.add(null) }
+        val cal = Calendar.getInstance().apply {
+            time = firstOfMonth.time
+        }
+        repeat(daysInMonth) { i ->
+            cal.set(Calendar.DAY_OF_MONTH, i + 1)
+            val dayMillis = cal.timeInMillis
+            days.add(
+                CalendarDayInfo(
+                    date = cal.time,
+                    dayString = (i + 1).toString(),
+                    weekday = cal.get(Calendar.DAY_OF_WEEK),
+                    isCurrentMonth = true,
+                    isToday = dayMillis == today
+                )
+            )
+        }
+        while (days.size < 42) days.add(null)
+        return days
+    }
+
+    private fun computeMonthTitle(month: Date): String {
+        val cal = Calendar.getInstance().apply { time = month }
+        return "${cal.get(Calendar.YEAR)}년 ${cal.get(Calendar.MONTH) + 1}월"
     }
 
     private fun loadHistory() {
@@ -173,13 +234,27 @@ class HistoryViewModel @Inject constructor(
     fun previousMonth() {
         val cal = Calendar.getInstance().apply { time = _uiState.value.currentMonth }
         cal.add(Calendar.MONTH, -1)
-        _uiState.update { it.copy(currentMonth = cal.time) }
+        val newMonth = cal.time
+        _uiState.update {
+            it.copy(
+                currentMonth = newMonth,
+                monthTitle = computeMonthTitle(newMonth),
+                calendarDays = computeCalendarDays(newMonth)
+            )
+        }
     }
 
     fun nextMonth() {
         val cal = Calendar.getInstance().apply { time = _uiState.value.currentMonth }
         cal.add(Calendar.MONTH, 1)
-        _uiState.update { it.copy(currentMonth = cal.time) }
+        val newMonth = cal.time
+        _uiState.update {
+            it.copy(
+                currentMonth = newMonth,
+                monthTitle = computeMonthTitle(newMonth),
+                calendarDays = computeCalendarDays(newMonth)
+            )
+        }
     }
 
     fun onItemTapped(item: HistoryItem) {

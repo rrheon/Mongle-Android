@@ -110,10 +110,13 @@ class QuestionDetailViewModel @Inject constructor(
                 }
 
                 val members = _uiState.value.familyMembers
+                // O(F + A) — answer 마다 O(F) firstOrNull 선형 탐색하던 nested loop 를
+                // dict 인덱스 1회 구축으로 대체 (iOS MG-68 패리티).
+                val memberById = members.associateBy { it.id }
                 val familyAnswers = allAnswers
                     .filter { it.userId != currentUser?.id }
                     .mapNotNull { answer ->
-                        val user = members.firstOrNull { it.id == answer.userId }
+                        val user = memberById[answer.userId]
                         user?.let { FamilyAnswer(user = it, answer = answer) }
                     }
 

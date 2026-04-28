@@ -209,10 +209,7 @@ fun SearchScreen(
             }
 
             uiState.results.isNotEmpty() -> {
-                // 플랫 리스트로 변환하여 11개마다 광고 삽입 (iOS 동일)
-                val flatResults = uiState.results
-                val totalCount = flatResults.size
-
+                // iOS MG-60 패리티 — ViewModel 사전 계산 groupedResults / adAnchorIds 소비
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -229,17 +226,14 @@ fun SearchScreen(
                         Spacer(modifier = Modifier.height(MongleSpacing.md))
                     }
 
-                    // 날짜별 그룹핑
-                    val grouped = uiState.results.groupBy { it.date.toDateKey() }
-                    var globalIndex = 0
-                    grouped.entries.sortedByDescending { it.key }.forEach { (_, items) ->
-                        item {
-                            DateGroupHeader(date = items.first().date)
+                    // iOS MG-60 패리티 — ViewModel 사전 계산 groupedResults / adAnchorIds 사용.
+                    // 매 렌더링마다 groupBy + sortedByDescending + DateFormatter 재실행하던 비용 제거.
+                    uiState.groupedResults.forEach { section ->
+                        item(key = "header_${section.dateKey}") {
+                            DateGroupHeaderPrecomputed(displayLabel = section.displayLabel)
                             Spacer(modifier = Modifier.height(MongleSpacing.sm))
                         }
-                        items.forEach { result ->
-                            val currentIndex = globalIndex
-                            globalIndex++
+                        section.items.forEach { result ->
                             item(key = result.dailyQuestionId) {
                                 SearchResultCard(
                                     result = result,
@@ -247,16 +241,16 @@ fun SearchScreen(
                                 )
                                 Spacer(modifier = Modifier.height(MongleSpacing.sm))
                             }
-                            // 11개마다 또는 마지막 아이템 뒤에 광고 배너 삽입
-                            if ((currentIndex + 1) % 11 == 0 || currentIndex + 1 == totalCount) {
-                                item(key = "ad_$currentIndex") {
+                            // O(1) Set lookup
+                            if (uiState.adAnchorIds.contains(result.dailyQuestionId)) {
+                                item(key = "ad_${result.dailyQuestionId}") {
                                     AdBannerSection(
                                         modifier = Modifier.padding(vertical = MongleSpacing.sm)
                                     )
                                 }
                             }
                         }
-                        item { Spacer(modifier = Modifier.height(MongleSpacing.xs)) }
+                        item(key = "spacer_${section.dateKey}") { Spacer(modifier = Modifier.height(MongleSpacing.xs)) }
                     }
                     item { Spacer(modifier = Modifier.height(MongleSpacing.xl)) }
                 }
@@ -280,7 +274,7 @@ fun SearchScreen(
 }
 
 @Composable
-private fun DateGroupHeader(date: Date) {
+private fun DateGroupHeaderPrecomputed(displayLabel: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -292,7 +286,7 @@ private fun DateGroupHeader(date: Date) {
             modifier = Modifier.size(13.dp)
         )
         Text(
-            text = date.toDisplayLabel(),
+            text = displayLabel,
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
             color = MongleTextHint
         )
@@ -446,13 +440,3 @@ private fun buildHighlightedText(text: String, query: String) = buildAnnotatedSt
     }
 }
 
-private fun Date.toDateKey(): Long {
-    val cal = Calendar.getInstance().apply {
-        time = this@toDateKey
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-    return cal.timeInMillis
-}

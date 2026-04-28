@@ -34,9 +34,25 @@ data class SearchResultItem(
     val totalAnswerCount: Int
 )
 
+/**
+ * 날짜 그룹별 사전 계산 섹션 (iOS MG-60 패리티).
+ * LazyColumn body 안에서 매 렌더링마다 groupBy + sortedByDescending + DateFormatter 호출하던 비용을
+ * 검색 1회 시점에만 계산해 stored 한다.
+ */
+data class SearchResultSection(
+    val dateKey: Long,
+    val date: Date,
+    val displayLabel: String,
+    val items: List<SearchResultItem>
+)
+
 data class SearchUiState(
     val query: String = "",
     val results: List<SearchResultItem> = emptyList(),
+    /** 그룹별 사전 정렬·displayLabel 캐시 — Screen 에서 groupBy 호출 회피 */
+    val groupedResults: List<SearchResultSection> = emptyList(),
+    /** (currentIndex + 1) % 11 == 0 또는 마지막 anchor 의 dailyQuestionId — Screen 에서 O(1) lookup */
+    val adAnchorIds: Set<String> = emptySet(),
     val isLoading: Boolean = false,
     val showMinLengthHint: Boolean = false,
     val errorMessage: String? = null
@@ -125,7 +141,7 @@ class SearchViewModel @Inject constructor(
     private fun performSearch(query: String) {
         val trimmed = query.trim()
         if (trimmed.length < 2) {
-            _uiState.update { it.copy(results = emptyList()) }
+            _uiState.update { it.copy(results = emptyList(), groupedResults = emptyList(), adAnchorIds = emptySet()) }
             return
         }
         // 아직 히스토리 로딩 중이면 결과를 비우지 않고 대기 (로드 완료 후 재검색)
@@ -178,7 +194,39 @@ class SearchViewModel @Inject constructor(
         // 날짜 내림차순 정렬
         results.sortByDescending { it.date }
 
-        _uiState.update { it.copy(results = results) }
+        // iOS MG-60 패리티: 그룹핑/displayLabel/광고 anchor 를 검색 1회 시점에 사전 계산.
+        val sections = makeSections(results)
+        val anchors = makeAdAnchorIds(results)
+
+        _uiState.update {
+            it.copy(results = results, groupedResults = sections, adAnchorIds = anchors)
+        }
+    }
+
+    private fun makeSections(results: List<SearchResultItem>): List<SearchResultSection> {
+        if (results.isEmpty()) return emptyList()
+        val grouped = results.groupBy { it.date.toDateKeyMillis() }
+        return grouped.entries.sortedByDescending { it.key }.map { (key, items) ->
+            val firstDate = items.first().date
+            SearchResultSection(
+                dateKey = key,
+                date = firstDate,
+                displayLabel = firstDate.toDisplayLabel(),
+                items = items
+            )
+        }
+    }
+
+    private fun makeAdAnchorIds(results: List<SearchResultItem>): Set<String> {
+        if (results.isEmpty()) return emptySet()
+        val total = results.size
+        val anchors = HashSet<String>(total / 11 + 2)
+        results.forEachIndexed { i, r ->
+            if ((i + 1) % 11 == 0 || i + 1 == total) {
+                anchors.add(r.dailyQuestionId)
+            }
+        }
+        return anchors
     }
 
     fun clearError() {
@@ -204,6 +252,16 @@ class SearchViewModel @Inject constructor(
  */
 private fun String.normalizedForSearch(): String =
     Normalizer.normalize(this, Normalizer.Form.NFC).lowercase()
+
+/** Date 자정 정규화 millis 키 (그룹핑용) */
+private fun Date.toDateKeyMillis(): Long {
+    val cal = Calendar.getInstance().apply {
+        time = this@toDateKeyMillis
+        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+    }
+    return cal.timeInMillis
+}
 
 /** Date를 표시 문자열로 포맷 (오늘/어제/날짜) */
 fun Date.toDisplayLabel(): String {
