@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.res.stringResource
+import com.ycompany.Monggle.R
 import com.mongle.android.ui.common.MonglePopup
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -121,6 +123,22 @@ fun MongleNavHost(
             }
         }
         rootViewModel.clearPendingNotification()
+    }
+
+    // iOS MG-33 패리티 — 토큰 만료(401+refresh 실패) 시 사용자 친화 안내 팝업.
+    // appState 분기와 무관하게 노출되어야 함(이동 직후 Unauthenticated 화면 위로 띄움).
+    if (uiState.showSessionExpiredPopup) {
+        Dialog(
+            onDismissRequest = { rootViewModel.dismissSessionExpiredPopup() },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.session_expired_title),
+                description = stringResource(R.string.session_expired_desc),
+                primaryLabel = stringResource(R.string.session_expired_action),
+                onPrimary = { rootViewModel.dismissSessionExpiredPopup() }
+            )
+        }
     }
 
     when (uiState.appState) {

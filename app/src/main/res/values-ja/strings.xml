@@ -5,6 +5,9 @@
 
     <!-- Common -->
     <string name="common_confirm">確認</string>
+    <string name="session_expired_title">再度ログインが必要です</string>
+    <string name="session_expired_desc">セキュリティのため自動的にログアウトされました。\n再度ログインしてください。</string>
+    <string name="session_expired_action">ログイン</string>
     <string name="common_cancel">キャンセル</string>
     <string name="common_back">戻る</string>
     <string name="common_next">次へ</string>

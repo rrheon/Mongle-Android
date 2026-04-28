@@ -5,6 +5,9 @@
 
     <!-- Common -->
     <string name="common_confirm">OK</string>
+    <string name="session_expired_title">Please log in again</string>
+    <string name="session_expired_desc">For security reasons, you have been logged out.\nPlease log in again.</string>
+    <string name="session_expired_action">Log in</string>
     <string name="common_cancel">Cancel</string>
     <string name="common_back">Back</string>
     <string name="common_next">Next</string>
