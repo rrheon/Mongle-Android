@@ -1,10 +1,13 @@
 package com.mongle.android.ui.notification
 
+import android.content.Context
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.data.remote.AppNotification
 import com.mongle.android.data.remote.ApiNotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,15 +20,35 @@ import javax.inject.Inject
 data class NotificationUiState(
     val notifications: List<AppNotification> = emptyList(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
-) {
-    val unreadCount: Int get() = notifications.count { !it.isRead }
-}
+    val errorMessage: String? = null,
+    /**
+     * 미읽음 수. computed property 대신 stored property 로 두고
+     * notifications mutation 시점에만 갱신해 매 composable 재실행마다
+     * O(n) count 가 반복되는 비용을 제거한다.
+     */
+    val unreadCount: Int = 0
+)
 
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
-    private val notificationRepository: ApiNotificationRepository
+    private val notificationRepository: ApiNotificationRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    /** 미읽음 수를 notifications 기준으로 재계산해 stored 값으로 반영한다. */
+    private fun refreshDerived(state: NotificationUiState): NotificationUiState =
+        state.copy(unreadCount = state.notifications.count { !it.isRead })
+
+    /**
+     * 인앱에서 알림을 모두 읽음/삭제 처리한 시점에 OS 알림 트레이의 푸시도 정리한다.
+     * 시스템 배지(채널 dot/숫자)는 OS 가 활성 알림 기준으로 자동 갱신하므로
+     * cancel 만으로 OS 배지 ↔ 인앱 미읽음 카운트 분리가 해소된다.
+     */
+    private fun cancelOsNotifications() {
+        runCatching {
+            NotificationManagerCompat.from(context).cancelAll()
+        }
+    }
 
     private val _uiState = MutableStateFlow(NotificationUiState())
     val uiState: StateFlow<NotificationUiState> = _uiState.asStateFlow()
@@ -53,7 +76,7 @@ class NotificationViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 val items = notificationRepository.getNotifications(familyId = familyId)
-                _uiState.update { it.copy(isLoading = false, notifications = items) }
+                _uiState.update { refreshDerived(it.copy(isLoading = false, notifications = items)) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
@@ -63,10 +86,12 @@ class NotificationViewModel @Inject constructor(
     fun onMarkAsRead(notificationId: String) {
         // 낙관적 업데이트
         _uiState.update { state ->
-            state.copy(
-                notifications = state.notifications.map { n ->
-                    if (n.id == notificationId) n.copy(isRead = true) else n
-                }
+            refreshDerived(
+                state.copy(
+                    notifications = state.notifications.map { n ->
+                        if (n.id == notificationId) n.copy(isRead = true) else n
+                    }
+                )
             )
         }
         viewModelScope.launch {
@@ -81,8 +106,9 @@ class NotificationViewModel @Inject constructor(
             val updated = state.notifications.map { n ->
                 if (familyId == null || n.familyId == familyId) n.copy(isRead = true) else n
             }
-            state.copy(notifications = updated)
+            refreshDerived(state.copy(notifications = updated))
         }
+        cancelOsNotifications()
         viewModelScope.launch {
             withContext(NonCancellable) {
                 runCatching { notificationRepository.markAllAsRead(familyId) }
@@ -92,7 +118,9 @@ class NotificationViewModel @Inject constructor(
 
     fun onDeleteNotification(notificationId: String) {
         _uiState.update { state ->
-            state.copy(notifications = state.notifications.filter { it.id != notificationId })
+            refreshDerived(
+                state.copy(notifications = state.notifications.filter { it.id != notificationId })
+            )
         }
         // 화면을 즉시 벗어나도 서버 삭제가 완료되도록 NonCancellable 컨텍스트에서 실행한다.
         viewModelScope.launch {
@@ -119,7 +147,8 @@ class NotificationViewModel @Inject constructor(
         }
         if (toDelete.isEmpty()) return
         val remaining = current - toDelete.toSet()
-        _uiState.update { it.copy(notifications = remaining) }
+        _uiState.update { refreshDerived(it.copy(notifications = remaining)) }
+        cancelOsNotifications()
         // 서버 일괄 삭제 API 사용 — 이전에는 개별 삭제를 반복 호출했지만
         // 서버에 DELETE /notifications?group_id= 가 추가되어 1회 호출로 처리한다.
         // NonCancellable 로 화면 전환 시에도 요청 완료 보장.
