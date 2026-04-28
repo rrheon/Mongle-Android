@@ -13,7 +13,14 @@ interface AuthRepository {
     suspend fun socialLogin(credential: SocialLoginCredential): SocialLoginResult
     suspend fun logout()
     suspend fun deleteAccount()
-    suspend fun getCurrentUser(): User?
+
+    /**
+     * 현재 사용자 정보 조회.
+     * @param grantDailyHeart true 면 서버가 데일리 하트를 지급(또는 이미 받음) 후
+     *                        heartGrantedToday 플래그를 응답에 포함. RootViewModel.loadHomeData
+     *                        같은 단일 진입점에서만 true 로 호출해야 한다.
+     */
+    suspend fun getCurrentUser(grantDailyHeart: Boolean = false): User?
 
     /**
      * 약관/개인정보 동의 저장.

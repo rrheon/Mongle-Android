@@ -41,7 +41,13 @@ data class ApiUserResponse(
     val familyId: String?,
     val hearts: Int = 0,
     val moodId: String? = null,
-    val createdAt: String
+    val createdAt: String,
+    /**
+     * 오늘 데일리 하트가 지급되었는지 여부.
+     * users/me?grantDailyHeart=true 호출 시에만 서버가 set 하며, 이미 받은 날에는 false.
+     * 미지원 서버 호환을 위해 nullable.
+     */
+    val heartGrantedToday: Boolean? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -380,7 +386,7 @@ interface MongleApiService {
 
     // Users
     @GET("users/me")
-    suspend fun getMe(): ApiUserResponse
+    suspend fun getMe(@retrofit2.http.Query("grantDailyHeart") grantDailyHeart: Boolean = false): ApiUserResponse
 
     @PUT("users/me")
     suspend fun updateMe(@Body body: UpdateUserRequest): ApiUserResponse

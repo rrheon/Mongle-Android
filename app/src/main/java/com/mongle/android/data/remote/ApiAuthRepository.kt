@@ -58,7 +58,8 @@ class ApiAuthRepository @Inject constructor(
         role = FamilyRole.entries.firstOrNull { it.name == role } ?: FamilyRole.OTHER,
         hearts = hearts,
         moodId = moodId,
-        createdAt = Date()
+        createdAt = Date(),
+        heartGrantedToday = heartGrantedToday ?: false
     )
 
     private suspend fun <T> safeCall(block: suspend () -> T): T {
@@ -192,13 +193,15 @@ class ApiAuthRepository @Inject constructor(
         clearSession()
     }
 
-    override suspend fun getCurrentUser(): User? {
+    override suspend fun getCurrentUser(grantDailyHeart: Boolean): User? {
         // 저장된 토큰이 없으면 미로그인 상태
         val token = prefs.getString(KEY_TOKEN, null) ?: return null
 
         return try {
-            // 서버에서 최신 사용자 정보를 가져와 토큰 유효성 검증
-            val apiUser = api.getMe()
+            // 서버에서 최신 사용자 정보를 가져와 토큰 유효성 검증.
+            // grantDailyHeart=true 호출은 RootViewModel.loadHomeData 에서만 사용하여
+            // 데일리 하트 지급/heartGrantedToday 플래그를 set-only 트리거로 받는다.
+            val apiUser = api.getMe(grantDailyHeart = grantDailyHeart)
             saveSession(apiUser, token, prefs.getString(KEY_REFRESH_TOKEN, null))
             apiUser.toDomain()
         } catch (e: HttpException) {
