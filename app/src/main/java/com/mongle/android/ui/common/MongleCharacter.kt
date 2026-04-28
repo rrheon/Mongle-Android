@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
@@ -577,7 +578,7 @@ private fun SceneMongleItem(
                 hasCurrentUserSkipped -> {
                     Row(
                         modifier = Modifier
-                            .background(Color(0xFF9C27B0).copy(alpha = 0.7f), RoundedCornerShape(50.dp))
+                            .background(pastelColor(0xFF9C27B0).copy(alpha = 0.7f), RoundedCornerShape(50.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -620,7 +621,7 @@ private fun SceneMongleItem(
                 hasAnswered -> {
                     Row(
                         modifier = Modifier
-                            .background(Color(0xFF7CC8A0).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
+                            .background(pastelColor(0xFF7CC8A0).copy(alpha = 0.85f), RoundedCornerShape(50.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -640,7 +641,7 @@ private fun SceneMongleItem(
                 hasSkipped -> {
                     Row(
                         modifier = Modifier
-                            .background(Color(0xFF9C27B0).copy(alpha = 0.7f), RoundedCornerShape(50.dp))
+                            .background(pastelColor(0xFF9C27B0).copy(alpha = 0.7f), RoundedCornerShape(50.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

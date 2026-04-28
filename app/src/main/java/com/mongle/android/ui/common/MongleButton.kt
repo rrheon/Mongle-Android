@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.unit.dp
 import com.mongle.android.ui.theme.MonglePrimary
 import com.mongle.android.ui.theme.MongleRadius
@@ -46,7 +47,7 @@ fun MongleButton(
         MongleButtonStyle.PRIMARY -> {
             val gradient = Brush.linearGradient(
                 colors = if (enabled && !isLoading)
-                    listOf(Color(0xFF8FD5A6), Color(0xFFA5E0BD))
+                    listOf(pastelColor(0xFF8FD5A6), pastelColor(0xFFA5E0BD))
                 else
                     listOf(MonglePrimary.copy(alpha = 0.4f), MonglePrimary.copy(alpha = 0.4f))
             )

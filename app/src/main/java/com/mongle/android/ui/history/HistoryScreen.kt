@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
@@ -104,7 +105,7 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAF8))
+            .background(pastelColor(0xFFF8FAF8))
     ) {
         // ── 헤더: "기록" + 월 네비게이션 ──
         Row(
@@ -175,7 +176,7 @@ fun HistoryScreen(
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                                 color = when (idx) {
                                     0 -> MaterialTheme.colorScheme.error
-                                    6 -> Color(0xFF1565C0)
+                                    6 -> pastelColor(0xFF1565C0)
                                     else -> MongleTextPrimary
                                 }
                             )
@@ -293,7 +294,7 @@ private fun CalendarDayCell(
         isToday -> Color.White
         !isCurrentMonth -> MongleTextHint.copy(alpha = 0.4f)
         dayOfWeek == Calendar.SUNDAY -> MaterialTheme.colorScheme.error
-        dayOfWeek == Calendar.SATURDAY -> Color(0xFF1565C0)
+        dayOfWeek == Calendar.SATURDAY -> pastelColor(0xFF1565C0)
         else -> MongleTextPrimary
     }
 

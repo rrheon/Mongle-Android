@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -160,7 +161,7 @@ fun QuestionSheetBottomSheet(
                     .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
-                            colors = listOf(Color(0xFF8FD5A6), Color(0xFFA5E0BD))
+                            colors = listOf(pastelColor(0xFF8FD5A6), pastelColor(0xFFA5E0BD))
                         )
                     )
                     .clickable { onAnswerTap() },
@@ -175,7 +176,7 @@ fun QuestionSheetBottomSheet(
 
             Spacer(modifier = Modifier.height(MongleSpacing.md))
 
-            HorizontalDivider(color = Color(0xFFEEEEEE))
+            HorizontalDivider(color = pastelColor(0xFFEEEEEE))
 
             Spacer(modifier = Modifier.height(MongleSpacing.xs))
 

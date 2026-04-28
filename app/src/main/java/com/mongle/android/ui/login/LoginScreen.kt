@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -285,7 +286,7 @@ fun LoginScreen(
                     color = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1A1A1A).copy(alpha = 0.85f), RoundedCornerShape(12.dp))
+                        .background(pastelColor(0xFF1A1A1A).copy(alpha = 0.85f), RoundedCornerShape(12.dp))
                         .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.sm)
                 )
             }

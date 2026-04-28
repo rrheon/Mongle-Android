@@ -78,6 +78,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -504,7 +505,7 @@ private fun ProfileEditScreen(
                     text = if (uiState.canChangeName) stringResource(R.string.settings_name_hint)
                            else stringResource(R.string.settings_name_cooldown, uiState.daysUntilNameChange),
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (uiState.canChangeName) MongleTextHint else Color(0xFFFF6B6B)
+                    color = if (uiState.canChangeName) MongleTextHint else pastelColor(0xFFFF6B6B)
                 )
             }
         }
@@ -684,7 +685,7 @@ private fun TransferAdminScreen(
                 itemsIndexed(uiState.transferCandidates) { index, member ->
                     val selected = uiState.selectedTransferMemberId == member.id
                     val bgColor = if (selected) MonglePrimaryLight else Color.White
-                    val borderColor = if (selected) MonglePrimary else Color(0xFFE0D8D0)
+                    val borderColor = if (selected) MonglePrimary else pastelColor(0xFFE0D8D0)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1157,7 +1158,7 @@ private fun AccountManagementScreen(
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(start = 60.dp),
-                            color = Color(0xFFE0E0E0)
+                            color = pastelColor(0xFFE0E0E0)
                         )
                         AccountRow(
                             icon = Icons.Default.Delete,
@@ -1246,7 +1247,7 @@ private fun MonglePanel(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(Color.White)
-            .border(1.dp, Color(0xFFE8E0D8), RoundedCornerShape(16.dp))
+            .border(1.dp, pastelColor(0xFFE8E0D8), RoundedCornerShape(16.dp))
             .then(if (padding > 0.dp) Modifier.padding(padding) else Modifier)
     ) {
         content()
@@ -1432,7 +1433,7 @@ private fun SettingsSection(
                     if (index < rows.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(start = 60.dp),
-                            color = Color(0xFFE0E0E0)
+                            color = pastelColor(0xFFE0E0E0)
                         )
                     }
                 }

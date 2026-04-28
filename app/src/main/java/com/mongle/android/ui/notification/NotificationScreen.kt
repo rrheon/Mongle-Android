@@ -55,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -149,7 +150,7 @@ fun NotificationScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        containerColor = Color(0xFFF8FAF8),
+        containerColor = pastelColor(0xFFF8FAF8),
         snackbarHost = { MongleToastHost(toastData = toastData, onDismiss = { toastData = null }) }
     ) { paddingValues ->
         when {
@@ -248,7 +249,7 @@ fun NotificationScreen(
                                             color = MongleTextSecondary,
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .background(Color(0xFFF2F2F2))
+                                                .background(pastelColor(0xFFF2F2F2))
                                                 .padding(horizontal = 20.dp, vertical = 8.dp)
                                         )
                                     }
@@ -328,7 +329,7 @@ private fun NotificationSwipeItem(
     )
     HorizontalDivider(
         modifier = Modifier.padding(start = 76.dp),
-        color = Color(0xFFE0E0E0)
+        color = pastelColor(0xFFE0E0E0)
     )
 }
 
@@ -448,11 +449,11 @@ private data class NotifStyle(val bg: Color, val icon: ImageVector, val tint: Co
 
 // iOS NotificationCard 아이콘 스타일 기준
 private fun notificationTypeStyle(type: String): NotifStyle = when (type.lowercase()) {
-    "new_question" -> NotifStyle(Color(0xFFE8F2FD), Icons.Default.QuestionMark, Color(0xFF42A5F5))
-    "all_answered" -> NotifStyle(Color(0xFFE8F6EA), Icons.Default.CheckCircle, Color(0xFF4CAF50))
-    "answer_request" -> NotifStyle(Color(0xFFFFF1E2), Icons.Default.Campaign, Color(0xFFFF9800))
-    "badge_earned" -> NotifStyle(Color(0xFFFDDDD8), Icons.Default.CardGiftcard, Color(0xFFFF8A80))
-    else -> NotifStyle(Color(0xFFF5F5F5), Icons.Default.QuestionMark, Color(0xFF9E9E9E))
+    "new_question" -> NotifStyle(pastelColor(0xFFE8F2FD), Icons.Default.QuestionMark, pastelColor(0xFF42A5F5))
+    "all_answered" -> NotifStyle(pastelColor(0xFFE8F6EA), Icons.Default.CheckCircle, pastelColor(0xFF4CAF50))
+    "answer_request" -> NotifStyle(pastelColor(0xFFFFF1E2), Icons.Default.Campaign, pastelColor(0xFFFF9800))
+    "badge_earned" -> NotifStyle(pastelColor(0xFFFDDDD8), Icons.Default.CardGiftcard, pastelColor(0xFFFF8A80))
+    else -> NotifStyle(pastelColor(0xFFF5F5F5), Icons.Default.QuestionMark, pastelColor(0xFF9E9E9E))
 }
 
 // 서버가 보내는 createdAt은 UTC 기준 ISO 8601 문자열.

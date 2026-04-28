@@ -55,6 +55,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.mongle.android.ui.theme.pastelColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
@@ -148,7 +149,7 @@ fun QuestionDetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
-        containerColor = Color(0xFFF8FAF8),
+        containerColor = pastelColor(0xFFF8FAF8),
         modifier = Modifier.clickable(
             indication = null,
             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -357,7 +358,7 @@ private fun MoodCell(
         label = "mood_scale"
     )
     val dotColor by animateColorAsState(
-        targetValue = if (isSelected) MonglePrimary else Color(0xFFE0E0E0),
+        targetValue = if (isSelected) MonglePrimary else pastelColor(0xFFE0E0E0),
         label = "mood_dot"
     )
     val alpha = if (noneSelected || isSelected) 1f else 0.45f
@@ -527,7 +528,7 @@ private fun AnswerCtaButton(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF8FAF8))
+            .background(pastelColor(0xFFF8FAF8))
             .padding(horizontal = MongleSpacing.md, vertical = MongleSpacing.md)
     ) {
         Box(
