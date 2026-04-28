@@ -201,6 +201,13 @@ fun HomeScreen(
                 }
                 is HomeEvent.ShowAnswerFirstToView -> showAnswerFirstDialog = event.memberName
                 is HomeEvent.ShowNudgeUnavailable -> showNudgeUnavailableDialog = event.memberName
+                HomeEvent.ShowGuestLoginRequired -> {
+                    // 게스트 모드 — 로그인 유도 토스트로 안내. iOS MG-50 패리티.
+                    toastData = MongleToastData(
+                        message = "로그인 후 이용할 수 있어요",
+                        type = MongleToastType.ERROR
+                    )
+                }
                 is HomeEvent.ShowError -> {
                     val msg = when {
                         event.message.contains("이미 답변") -> context.getString(R.string.error_already_answered_skip)
@@ -341,7 +348,12 @@ fun HomeScreen(
                 showGroupDropdown = showGroupDropdown,
                 onGroupDropdownToggle = { showGroupDropdown = !showGroupDropdown },
                 onTopBarMeasured = { topBarHeightPx = it },
-                onNotificationTap = onNavigateToNotifications,
+                onNotificationTap = {
+                    // 게스트 모드 가드 — true 일 때만 실제 진입.
+                    if (viewModel.requestNotificationsEntry()) {
+                        onNavigateToNotifications()
+                    }
+                },
                 onGroupManage = onNavigateToGroupSelect
             )
 

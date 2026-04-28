@@ -110,8 +110,19 @@ fun QuestionDetailScreen(
     val focusManager = LocalFocusManager.current
     var toastData by remember { mutableStateOf<MongleToastData?>(null) }
 
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     LaunchedEffect(question, currentUser) {
         viewModel.initialize(question, currentUser, familyMembers, currentUserHearts)
+    }
+    // onResume 동등 — 화면 재진입 시 서버에서 hearts 재조회 (다중 단말 동기화)
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshHearts()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(Unit) {
@@ -141,7 +152,13 @@ fun QuestionDetailScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onClose) {
+                    IconButton(
+                        onClick = {
+                            // 답변 제출 중에는 close 처리하지 않는다.
+                            // 부모의 path.removeLast() 와 race 가 발생할 수 있음 (iOS MG-56 패리티).
+                            if (!uiState.isSubmitting) onClose()
+                        }
+                    ) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },

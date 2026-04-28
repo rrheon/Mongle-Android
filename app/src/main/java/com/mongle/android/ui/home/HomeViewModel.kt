@@ -58,6 +58,8 @@ sealed class HomeEvent {
     data class ShowAnswerFirstToView(val memberName: String) : HomeEvent()
     data class ShowNudgeUnavailable(val memberName: String) : HomeEvent()
     data class ShowError(val message: String) : HomeEvent()
+    /** 게스트 모드(currentUser == null)에서 인증이 필요한 액션 진입 시 노출되는 안내 */
+    object ShowGuestLoginRequired : HomeEvent()
     object NavigateToWriteQuestion : HomeEvent()
 }
 
@@ -380,9 +382,27 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onNudgeTapped(member: User) {
+        if (_uiState.value.currentUser == null) {
+            // 게스트 모드 — 로그인 유도 안내. iOS MG-50 패리티.
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
         viewModelScope.launch {
             _events.emit(HomeEvent.NavigateToNudge(member))
         }
+    }
+
+    /**
+     * 알림 화면 진입 전 게스트 가드. HomeScreen 의 onNotificationTap 콜백이
+     * 호출하여 currentUser == null 이면 로그인 유도 안내를 표시한다.
+     * @return true 면 호출자가 실제 네비게이션 진행, false 면 가드 발화.
+     */
+    fun requestNotificationsEntry(): Boolean {
+        if (_uiState.value.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return false
+        }
+        return true
     }
 
     fun skipQuestion() {
