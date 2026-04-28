@@ -129,9 +129,15 @@ class HistoryViewModel @Inject constructor(
         return days
     }
 
+    /** iOS MG-38 패리티 — 시스템 로케일 기반 월 제목 포맷 */
     private fun computeMonthTitle(month: Date): String {
-        val cal = Calendar.getInstance().apply { time = month }
-        return "${cal.get(Calendar.YEAR)}년 ${cal.get(Calendar.MONTH) + 1}월"
+        val locale = java.util.Locale.getDefault()
+        val pattern = when (locale.language) {
+            "ko" -> "yyyy년 M월"
+            "ja" -> "yyyy年M月"
+            else -> "MMMM yyyy"
+        }
+        return java.text.SimpleDateFormat(pattern, locale).format(month)
     }
 
     private fun loadHistory() {

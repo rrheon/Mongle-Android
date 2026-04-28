@@ -138,7 +138,8 @@ fun PeerAnswerSheet(
                                 color = MongleTextPrimary
                             )
                             val timeStr = runCatching {
-                                SimpleDateFormat("MM/dd HH:mm", Locale.KOREAN).format(answer.createdAt)
+                                // iOS MG-38 패리티 — 시스템 로케일 사용 (ko/en/ja 대응)
+                                SimpleDateFormat("MM/dd HH:mm", Locale.getDefault()).format(answer.createdAt)
                             }.getOrElse { "" }
                             if (timeStr.isNotEmpty()) {
                                 Text(
