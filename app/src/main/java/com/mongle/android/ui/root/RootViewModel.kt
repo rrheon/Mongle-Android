@@ -18,6 +18,7 @@ import com.mongle.android.domain.repository.TreeRepository
 import com.mongle.android.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -93,6 +94,10 @@ class RootViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(RootUiState())
     val uiState: StateFlow<RootUiState> = _uiState.asStateFlow()
+
+    // 빠른 그룹 전환 시 이전 selectFamily/loadHomeData 흐름이 늦게 끝나
+    // 서버 활성 그룹과 클라이언트 활성 그룹이 어긋나는 race 를 차단한다.
+    private var groupSelectionJob: Job? = null
 
     init {
         checkAuthStatus()
@@ -221,7 +226,8 @@ class RootViewModel @Inject constructor(
     }
 
     fun onGroupSelected(familyId: java.util.UUID) {
-        viewModelScope.launch {
+        groupSelectionJob?.cancel()
+        groupSelectionJob = viewModelScope.launch {
             _uiState.update { it.copy(appState = AppState.Loading) }
             runCatching { mongleRepository.selectFamily(familyId) }
             loadHomeData()
@@ -343,12 +349,25 @@ class RootViewModel @Inject constructor(
     }
 
     fun logout() {
+        groupSelectionJob?.cancel()
         viewModelScope.launch {
             runCatching { authRepository.logout() }
+            clearUserScopedPrefs()
             _uiState.update {
                 RootUiState(appState = AppState.Unauthenticated)
             }
         }
+    }
+
+    /**
+     * 다음 계정 로그인 시 이전 사용자의 그룹별 마커/푸시 토큰이 혼입되지 않도록
+     * user-scoped SharedPreferences 를 일괄 정리한다.
+     * mongle_auth 는 authRepository.logout() 에서 정리되고,
+     * mongle_app_prefs (has_seen_onboarding, install sentinel) 는 보존한다.
+     */
+    private fun clearUserScopedPrefs() {
+        context.getSharedPreferences("mongle_heart", Context.MODE_PRIVATE).edit().clear().apply()
+        context.getSharedPreferences("fcm", Context.MODE_PRIVATE).edit().clear().apply()
     }
 
     fun onAnswerSubmitted(answer: Answer? = null, isNewAnswer: Boolean = true) {

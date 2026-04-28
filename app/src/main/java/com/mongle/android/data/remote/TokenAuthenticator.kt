@@ -50,8 +50,15 @@ class TokenAuthenticator @Inject constructor(
             return null
         }
 
+        // 첫 설치 직후 또는 로그아웃 직후처럼 refresh 토큰이 SharedPreferences 에 한 번도
+        // 들어간 적 없는 상태에서는 sessionExpired 신호를 발화하지 않는다.
+        // 발화하면 RootViewModel 이 "세션 만료"로 라우팅돼 사용자에게 불필요한 재로그인 안내가 노출됨.
         val refreshToken = prefs.getString(AUTH_KEY_REFRESH_TOKEN, null) ?: run {
-            notifyAndClear()
+            if (prefs.contains(AUTH_KEY_REFRESH_TOKEN)) {
+                notifyAndClear()
+            } else {
+                prefs.edit().clear().apply()
+            }
             return null
         }
 
