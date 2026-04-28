@@ -109,6 +109,16 @@ fun MongleNavHost(
                     uiState.todayQuestion?.let { showQuestionDetail = it }
                 }
             }
+            "ALL_ANSWERED", "ANSWERER_NUDGE", "REMINDER", "BADGE_EARNED" -> {
+                // 추가 푸시 타입 — 안전하게 오늘 질문 진입(미답변일 때만)
+                if (!uiState.hasAnsweredToday) {
+                    uiState.todayQuestion?.let { showQuestionDetail = it }
+                }
+            }
+            else -> {
+                // 서버에서 신규 type 이 추가돼도 silent fail 하지 않고 홈 노출만 보장.
+                // 의도치 않은 화면 진입을 막기 위해 별도 동작은 하지 않는다.
+            }
         }
         rootViewModel.clearPendingNotification()
     }

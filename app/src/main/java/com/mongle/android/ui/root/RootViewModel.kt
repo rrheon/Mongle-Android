@@ -311,7 +311,16 @@ class RootViewModel @Inject constructor(
         }
         // 로그인 직후엔 항상 그룹선택화면으로 이동 (기존 그룹 있어도 선택하게)
         viewModelScope.launch {
-            _uiState.update { it.copy(currentUser = user, appState = AppState.Loading) }
+            // Unauthenticated 상태에서 도착한 푸시 tap / 딥링크로 설정된 stale pending 신호를
+            // 새 사용자 화면이 자동 소비하지 않도록 명시 정리한다.
+            _uiState.update {
+                it.copy(
+                    currentUser = user,
+                    appState = AppState.Loading,
+                    pendingNotificationType = null,
+                    pendingInviteCode = null
+                )
+            }
             val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
             _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
         }
