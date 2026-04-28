@@ -1,6 +1,7 @@
 package com.mongle.android.ui.login
 
 import android.util.Log
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.LegalDocType
@@ -72,7 +73,7 @@ class LoginViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = e.message ?: "${credential.providerType.value} 로그인에 실패했습니다."
+                        errorMessage = AppError.from(e).toastMessage
                     )
                 }
             }

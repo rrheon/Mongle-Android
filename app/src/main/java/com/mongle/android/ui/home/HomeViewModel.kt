@@ -1,6 +1,7 @@
 package com.mongle.android.ui.home
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Answer
 import com.mongle.android.domain.model.MongleGroup
@@ -212,6 +213,8 @@ class HomeViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 android.util.Log.e("HomeVM", "loadFamilyAnswers failed", e)
+                // 사용자가 "왜 답변이 안 보이지?" 오해하지 않도록 명시 안내.
+                _uiState.update { it.copy(errorMessage = AppError.from(e).toastMessage) }
             }
         }
     }
@@ -261,7 +264,7 @@ class HomeViewModel @Inject constructor(
                 question?.dailyQuestionId?.let { loadFamilyAnswers(it) }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isRefreshing = false, errorMessage = e.message)
+                    it.copy(isRefreshing = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }

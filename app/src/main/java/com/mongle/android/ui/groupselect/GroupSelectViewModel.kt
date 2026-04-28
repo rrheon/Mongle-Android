@@ -1,6 +1,7 @@
 package com.mongle.android.ui.groupselect
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.MongleGroup
@@ -43,9 +44,18 @@ class GroupSelectViewModel @Inject constructor(
 
     fun loadGroups() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val groups = runCatching { familyRepository.getMyFamilies() }.getOrElse { emptyList() }
-            _uiState.update { it.copy(groups = groups, isLoading = false) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching { familyRepository.getMyFamilies() }
+                .onSuccess { groups ->
+                    _uiState.update { it.copy(groups = groups, isLoading = false) }
+                }
+                .onFailure { e ->
+                    // 이전엔 emptyList() 로 silent fallback 하여 사용자가 "그룹이 없음"으로 오해.
+                    // 빈 목록 + errorMessage 로 명확히 안내한다.
+                    _uiState.update {
+                        it.copy(groups = emptyList(), isLoading = false, errorMessage = AppError.from(e).toastMessage)
+                    }
+                }
         }
     }
 
@@ -91,11 +101,12 @@ class GroupSelectViewModel @Inject constructor(
                     it.copy(inviteCode = group.inviteCode, step = GroupSelectStep.NOTIFICATION_PERMISSION, isLoading = false)
                 }
             }.onFailure { e ->
-                val msg = e.message ?: "그룹 생성에 실패했어요"
-                if (msg.contains("최대") || msg.contains("3개")) {
+                val appError = AppError.from(e)
+                val rawMsg = (appError as? AppError.Domain)?.message ?: e.message ?: ""
+                if (rawMsg.contains("최대") || rawMsg.contains("3개")) {
                     _uiState.update { it.copy(showMaxGroupsAlert = true, isLoading = false) }
                 } else {
-                    _uiState.update { it.copy(errorMessage = msg, isLoading = false) }
+                    _uiState.update { it.copy(errorMessage = appError.toastMessage, isLoading = false) }
                 }
             }
         }
@@ -126,13 +137,14 @@ class GroupSelectViewModel @Inject constructor(
                 _uiState.update { it.copy(isLoading = false) }
                 onJoined()
             }.onFailure { e ->
-                val msg = e.message ?: "참여에 실패했어요"
-                if (msg.contains("최대") || msg.contains("3개")) {
+                val appError = AppError.from(e)
+                val rawMsg = (appError as? AppError.Domain)?.message ?: e.message ?: ""
+                if (rawMsg.contains("최대") || rawMsg.contains("3개")) {
                     _uiState.update { it.copy(showMaxGroupsAlert = true, isLoading = false) }
-                } else if (msg.contains("유효하지") || msg.contains("찾을 수 없")) {
+                } else if (rawMsg.contains("유효하지") || rawMsg.contains("찾을 수 없")) {
                     _uiState.update { it.copy(errorMessage = "유효하지 않은 초대 코드예요. 다시 확인해 주세요.", isLoading = false) }
                 } else {
-                    _uiState.update { it.copy(errorMessage = msg, isLoading = false) }
+                    _uiState.update { it.copy(errorMessage = appError.toastMessage, isLoading = false) }
                 }
             }
         }

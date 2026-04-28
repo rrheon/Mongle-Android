@@ -1,6 +1,7 @@
 package com.mongle.android.ui.emailauth
 
 import androidx.annotation.StringRes
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ycompany.Monggle.R
@@ -135,7 +136,7 @@ class EmailSignupViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isSendingCode = false,
-                        errorMessage = e.message
+                        errorMessage = AppError.from(e).toastMessage
                     )
                 }
             }
@@ -155,7 +156,7 @@ class EmailSignupViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isSendingCode = false,
-                        errorMessage = e.message
+                        errorMessage = AppError.from(e).toastMessage
                     )
                 }
             }
@@ -193,7 +194,7 @@ class EmailSignupViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isVerifying = false,
-                        codeError = e.message
+                        codeError = AppError.from(e).toastMessage
                     )
                 }
             }

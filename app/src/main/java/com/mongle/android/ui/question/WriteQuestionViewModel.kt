@@ -1,6 +1,7 @@
 package com.mongle.android.ui.question
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.repository.QuestionRepository
@@ -55,7 +56,7 @@ class WriteQuestionViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isSubmitting = false,
-                        errorMessage = e.message ?: "질문 등록에 실패했습니다."
+                        errorMessage = AppError.from(e).toastMessage
                     )
                 }
             }

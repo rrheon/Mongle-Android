@@ -1,6 +1,7 @@
 package com.mongle.android.ui.search
 
 import android.util.Log
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ycompany.Monggle.BuildConfig
@@ -98,7 +99,7 @@ class SearchViewModel @Inject constructor(
                     performSearch(_uiState.value.query)
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage) }
             }
         }
     }

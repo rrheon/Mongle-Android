@@ -1,6 +1,7 @@
 package com.mongle.android.ui.history
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.domain.model.HistorySkippedSummary
@@ -150,7 +151,7 @@ class HistoryViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message)
+                    it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }
