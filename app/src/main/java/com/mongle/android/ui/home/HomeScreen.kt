@@ -503,14 +503,15 @@ fun HomeScreen(
         }
     }
 
-    // 나만의 질문 작성하기 확인 팝업
+    // 나만의 질문 작성하기 확인 팝업 — iOS MG-84 follow-up: 서버 정책 기반 비용 동적 참조
     if (showWriteConfirmDialog) {
         val currentHearts = uiState.currentUser?.hearts ?: 0
+        val writeCost = uiState.currentUser?.heartsWriteCost ?: 3
         Dialog(
             onDismissRequest = { showWriteConfirmDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            if (currentHearts >= 3) {
+            if (currentHearts >= writeCost) {
                 MonglePopup(
                     title = stringResource(R.string.home_write_question_title),
                     description = stringResource(R.string.home_write_question_desc),
@@ -540,14 +541,15 @@ fun HomeScreen(
         }
     }
 
-    // 질문 넘기기 확인 팝업
+    // 질문 넘기기 확인 팝업 — iOS MG-84 follow-up: 서버 정책 기반 비용 동적 참조
     if (showSkipConfirmDialog) {
         val currentHearts = uiState.currentUser?.hearts ?: 0
+        val skipCost = uiState.currentUser?.heartsSkipCost ?: 3
         Dialog(
             onDismissRequest = { showSkipConfirmDialog = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            if (currentHearts >= 3) {
+            if (currentHearts >= skipCost) {
                 MonglePopup(
                     title = stringResource(R.string.home_skip_question_title),
                     description = stringResource(R.string.home_skip_question_desc),
