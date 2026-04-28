@@ -1,6 +1,7 @@
 package com.mongle.android.ui.settings
 
 import android.app.Activity
+import com.mongle.android.ui.common.AppError
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -170,7 +171,7 @@ class SettingsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "프로필 업데이트에 실패했습니다.")
+                    it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }
@@ -237,7 +238,7 @@ class SettingsViewModel @Inject constructor(
                 _events.emit(SettingsEvent.LeftGroup)
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "그룹 탈퇴에 실패했습니다.")
+                    it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }
@@ -262,7 +263,7 @@ class SettingsViewModel @Inject constructor(
                 _events.emit(SettingsEvent.LeftGroup)
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "그룹 탈퇴에 실패했습니다.")
+                    it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }
@@ -287,7 +288,7 @@ class SettingsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(errorMessage = e.message ?: "멤버 내보내기에 실패했습니다.")
+                    it.copy(errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }
@@ -343,7 +344,7 @@ class SettingsViewModel @Inject constructor(
                 _events.emit(SettingsEvent.AccountDeleted)
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "계정 삭제에 실패했습니다.")
+                    it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }

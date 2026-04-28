@@ -1,6 +1,7 @@
 package com.mongle.android.ui.nudge
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.data.remote.ApiNudgeRepository
 import com.mongle.android.data.remote.ApiUserRepository
@@ -63,7 +64,7 @@ class PeerNudgeViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage) }
             }
         }
     }
@@ -87,7 +88,7 @@ class PeerNudgeViewModel @Inject constructor(
                             )
                         }
                     } catch (e: Exception) {
-                        _uiState.update { it.copy(isWatchingAd = false, errorMessage = e.message) }
+                        _uiState.update { it.copy(isWatchingAd = false, errorMessage = AppError.from(e).toastMessage) }
                     }
                 }
             },

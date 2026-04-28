@@ -3,6 +3,7 @@ package com.mongle.android.ui.notification
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.data.remote.AppNotification
 import com.mongle.android.data.remote.ApiNotificationRepository
@@ -78,7 +79,7 @@ class NotificationViewModel @Inject constructor(
                 val items = notificationRepository.getNotifications(familyId = familyId)
                 _uiState.update { refreshDerived(it.copy(isLoading = false, notifications = items)) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage) }
             }
         }
     }
@@ -96,6 +97,10 @@ class NotificationViewModel @Inject constructor(
         }
         viewModelScope.launch {
             runCatching { notificationRepository.markAsRead(notificationId) }
+                .onFailure { e ->
+                    // optimistic update 는 유지(rollback 안 함). 실패 시 사용자 안내만 추가.
+                    _uiState.update { it.copy(errorMessage = AppError.from(e).toastMessage) }
+                }
         }
     }
 
@@ -112,6 +117,9 @@ class NotificationViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(NonCancellable) {
                 runCatching { notificationRepository.markAllAsRead(familyId) }
+                    .onFailure { e ->
+                        _uiState.update { it.copy(errorMessage = AppError.from(e).toastMessage) }
+                    }
             }
         }
     }
@@ -126,6 +134,9 @@ class NotificationViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(NonCancellable) {
                 runCatching { notificationRepository.deleteNotification(notificationId) }
+                    .onFailure { e ->
+                        _uiState.update { it.copy(errorMessage = AppError.from(e).toastMessage) }
+                    }
             }
         }
     }
@@ -155,6 +166,9 @@ class NotificationViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(NonCancellable) {
                 runCatching { notificationRepository.deleteAll(familyId) }
+                    .onFailure { e ->
+                        _uiState.update { it.copy(errorMessage = AppError.from(e).toastMessage) }
+                    }
             }
         }
     }

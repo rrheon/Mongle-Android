@@ -1,6 +1,7 @@
 package com.mongle.android.ui.question
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.data.remote.ApiUserRepository
 import com.mongle.android.domain.model.Answer
@@ -115,7 +116,7 @@ class QuestionDetailViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = AppError.from(e).toastMessage) }
             }
         }
     }
@@ -182,7 +183,7 @@ class QuestionDetailViewModel @Inject constructor(
                         // 광고 시청 후 바로 수정 실행
                         doSubmitAnswer()
                     } catch (e: Exception) {
-                        _uiState.update { it.copy(isWatchingAd = false, errorMessage = e.message) }
+                        _uiState.update { it.copy(isWatchingAd = false, errorMessage = AppError.from(e).toastMessage) }
                     }
                 }
             },
@@ -226,7 +227,7 @@ class QuestionDetailViewModel @Inject constructor(
                 _events.emit(QuestionDetailEvent.AnswerSubmitted(savedAnswer, isNewAnswer))
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isSubmitting = false, errorMessage = e.message ?: "답변 제출에 실패했습니다.")
+                    it.copy(isSubmitting = false, errorMessage = AppError.from(e).toastMessage)
                 }
             }
         }

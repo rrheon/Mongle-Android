@@ -1,6 +1,7 @@
 package com.mongle.android.ui.consent
 
 import androidx.lifecycle.ViewModel
+import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
 import com.mongle.android.domain.model.LegalDocType
 import com.mongle.android.domain.model.LegalVersions
@@ -100,7 +101,7 @@ class ConsentViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isSubmitting = false,
-                        errorMessage = e.message ?: "동의 저장에 실패했습니다."
+                        errorMessage = AppError.from(e).toastMessage
                     )
                 }
             }
