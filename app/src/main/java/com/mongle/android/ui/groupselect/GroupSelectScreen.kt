@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -203,6 +204,47 @@ fun GroupSelectScreen(
         }
     }
 
+    // iOS MG-28 패리티 — 그룹 나가기 1차 확인 다이얼로그
+    if (uiState.showLeaveGroupConfirmation) {
+        Dialog(
+            onDismissRequest = { viewModel.dismissLeaveGroupConfirmation() },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.mgmt_leave_title),
+                description = stringResource(R.string.mgmt_leave_desc),
+                primaryLabel = stringResource(R.string.mgmt_leave_btn),
+                onPrimary = { viewModel.onLeaveGroupFirstConfirmed() },
+                secondaryLabel = stringResource(R.string.common_cancel),
+                onSecondary = { viewModel.dismissLeaveGroupConfirmation() }
+            )
+        }
+    }
+
+    // iOS MG-28 패리티 — 그룹 나가기 2차 (마지막) 확인 다이얼로그
+    if (uiState.showLeaveGroupFinalConfirmation) {
+        Dialog(
+            onDismissRequest = { viewModel.dismissLeaveGroupFinalConfirmation() },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.group_leave_final_title),
+                description = stringResource(R.string.group_leave_final_desc),
+                primaryLabel = stringResource(R.string.group_leave_final_confirm),
+                onPrimary = {
+                    viewModel.onLeaveGroupConfirmed(onLeft = {
+                        toastData = MongleToastData(
+                            message = MongleToastType.GROUP_LEFT.defaultMessage,
+                            type = MongleToastType.GROUP_LEFT
+                        )
+                    })
+                },
+                secondaryLabel = stringResource(R.string.group_leave_final_cancel),
+                onSecondary = { viewModel.dismissLeaveGroupFinalConfirmation() }
+            )
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         when (uiState.step) {
             GroupSelectStep.SELECT -> SelectStep(
@@ -210,6 +252,7 @@ fun GroupSelectScreen(
                 isLoading = uiState.isLoading,
                 onBack = onBack,
                 onGroupSelected = onGroupSelected,
+                onGroupLongPressed = { group -> viewModel.onGroupLongPressed(group) },
                 onCreateClick = { viewModel.goToCreate() },
                 onJoinClick = { viewModel.goToJoin() },
                 onNotificationClick = onNotificationClick
@@ -388,6 +431,7 @@ private fun SelectStep(
     isLoading: Boolean,
     onBack: (() -> Unit)? = null,
     onGroupSelected: (UUID) -> Unit,
+    onGroupLongPressed: (MongleGroup) -> Unit = {},
     onCreateClick: () -> Unit,
     onJoinClick: () -> Unit,
     onNotificationClick: () -> Unit = {}
@@ -452,7 +496,11 @@ private fun SelectStep(
                 )
             } else {
                 groups.forEach { group ->
-                    MongleGroupCard(group = group, onClick = { onGroupSelected(group.id) })
+                    MongleGroupCard(
+                        group = group,
+                        onClick = { onGroupSelected(group.id) },
+                        onLongClick = { onGroupLongPressed(group) }
+                    )
                 }
             }
 
@@ -595,8 +643,13 @@ private fun moodColor(moodId: String?, fallback: Color): Color = when (moodId) {
     else -> fallback
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-private fun MongleGroupCard(group: MongleGroup, onClick: () -> Unit) {
+private fun MongleGroupCard(
+    group: MongleGroup,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit = {}
+) {
     val memberColors = if (group.memberIds.isEmpty()) {
         listOf(fallbackMonggleColors[0])
     } else {
@@ -619,7 +672,8 @@ private fun MongleGroupCard(group: MongleGroup, onClick: () -> Unit) {
             )
             .background(Color.White, RoundedCornerShape(MongleRadius.xl))
             .border(1.dp, MongleBorder, RoundedCornerShape(MongleRadius.xl))
-            .clickable(onClick = onClick)
+            // iOS MG-28 패리티 — long-click 으로 그룹 나가기 메뉴 진입
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = MongleSpacing.lg),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -30,7 +30,13 @@ data class GroupSelectUiState(
     val joinCodeError: Boolean = false,
     val showMaxGroupsAlert: Boolean = false,
     val errorMessage: String? = null,
-    val selectedColorId: String = "calm"
+    val selectedColorId: String = "calm",
+    /** iOS MG-28 패리티 — long-click 으로 set 된 leave 대상 그룹 */
+    val pendingLeaveGroup: MongleGroup? = null,
+    /** 1차 확인 다이얼로그 노출 여부 */
+    val showLeaveGroupConfirmation: Boolean = false,
+    /** 2차 (마지막) 확인 다이얼로그 노출 여부 */
+    val showLeaveGroupFinalConfirmation: Boolean = false
 )
 
 @HiltViewModel
@@ -41,6 +47,64 @@ class GroupSelectViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(GroupSelectUiState())
     val uiState: StateFlow<GroupSelectUiState> = _uiState.asStateFlow()
+
+    // ─── 그룹 나가기 (iOS MG-28 패리티: long-click + 2단계 확인) ───────────────
+
+    fun onGroupLongPressed(group: MongleGroup) {
+        _uiState.update {
+            it.copy(pendingLeaveGroup = group, showLeaveGroupConfirmation = true)
+        }
+    }
+
+    fun dismissLeaveGroupConfirmation() {
+        _uiState.update {
+            it.copy(showLeaveGroupConfirmation = false, pendingLeaveGroup = null)
+        }
+    }
+
+    fun onLeaveGroupFirstConfirmed() {
+        _uiState.update {
+            it.copy(showLeaveGroupConfirmation = false, showLeaveGroupFinalConfirmation = true)
+        }
+    }
+
+    fun dismissLeaveGroupFinalConfirmation() {
+        _uiState.update {
+            it.copy(showLeaveGroupFinalConfirmation = false, pendingLeaveGroup = null)
+        }
+    }
+
+    fun onLeaveGroupConfirmed(onLeft: () -> Unit) {
+        val target = _uiState.value.pendingLeaveGroup ?: return
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    showLeaveGroupFinalConfirmation = false,
+                    errorMessage = null
+                )
+            }
+            runCatching {
+                // 활성 family 를 leave 대상 그룹으로 전환 후 leave (서버 leaveFamily 는 active 그룹 대상)
+                familyRepository.selectFamily(target.id)
+                familyRepository.leaveFamily()
+            }.onSuccess {
+                _uiState.update {
+                    it.copy(isLoading = false, pendingLeaveGroup = null)
+                }
+                loadGroups()
+                onLeft()
+            }.onFailure { e ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        pendingLeaveGroup = null,
+                        errorMessage = AppError.from(e).toastMessage
+                    )
+                }
+            }
+        }
+    }
 
     fun loadGroups() {
         viewModelScope.launch {
