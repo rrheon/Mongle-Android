@@ -104,6 +104,10 @@ class RootViewModel @Inject constructor(
     // 서버 활성 그룹과 클라이언트 활성 그룹이 어긋나는 race 를 차단한다.
     private var groupSelectionJob: Job? = null
 
+    // iOS MG-37 패리티 — scenePhase 빠른 반복(백그라운드↔포그라운드)으로 loadHomeData 가
+    // 누적 호출되는 것을 차단. 다음 진입 시 이전 in-flight 호출 cancel.
+    private var loadHomeDataJob: Job? = null
+
     init {
         checkAuthStatus()
         // 토큰 만료(401 + 갱신 실패) 이벤트 구독 → 안내 팝업 + 로그인 화면 (iOS MG-33 패리티)
@@ -157,7 +161,8 @@ class RootViewModel @Inject constructor(
     }
 
     fun loadHomeData() {
-        viewModelScope.launch {
+        loadHomeDataJob?.cancel()
+        loadHomeDataJob = viewModelScope.launch {
             try {
                 val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
                 val family = familyResult?.first
@@ -366,11 +371,19 @@ class RootViewModel @Inject constructor(
 
     fun logout() {
         groupSelectionJob?.cancel()
+        loadHomeDataJob?.cancel()
         viewModelScope.launch {
             runCatching { authRepository.logout() }
             clearUserScopedPrefs()
+            // iOS MG-37 패리티 — pending 신호 명시 정리. RootUiState() 새 인스턴스로
+            // default null 이 자동 적용되지만 명시적으로 의도를 드러낸다.
             _uiState.update {
-                RootUiState(appState = AppState.Unauthenticated)
+                RootUiState(
+                    appState = AppState.Unauthenticated,
+                    pendingInviteCode = null,
+                    pendingNotificationType = null,
+                    pendingAppleCallbackUri = null
+                )
             }
         }
     }

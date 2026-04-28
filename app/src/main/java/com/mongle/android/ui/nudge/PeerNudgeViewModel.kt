@@ -77,7 +77,8 @@ class PeerNudgeViewModel @Inject constructor(
             onRewarded = {
                 viewModelScope.launch {
                     try {
-                        val heartsAfterAd = userRepository.grantAdHearts(1)
+                        // iOS MG-34 패리티 — AdRewardClient retry 적용
+                        val heartsAfterAd = com.mongle.android.data.remote.AdRewardClient.grantAdHearts(userRepository, 1)
                         _uiState.update { it.copy(hearts = heartsAfterAd, isWatchingAd = false) }
                         val heartsRemaining = nudgeRepository.sendNudge(state.targetUserId)
                         _uiState.update {
