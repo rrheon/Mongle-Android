@@ -62,7 +62,12 @@ data class RootUiState(
     val pendingAppleCallbackUri: android.net.Uri? = null,
     /** 동의 화면에 전달할 컨텍스트 (로그인 응답에서 받음) */
     val pendingConsentRequired: List<LegalDocType> = emptyList(),
-    val pendingLegalVersions: LegalVersions = LegalVersions(terms = "", privacy = "")
+    val pendingLegalVersions: LegalVersions = LegalVersions(terms = "", privacy = ""),
+    /**
+     * 토큰 만료(401+refresh 실패) 시 사용자에게 "다시 로그인이 필요해요" 안내를 노출.
+     * iOS MG-33 패리티. 무음 로그아웃 회피.
+     */
+    val showSessionExpiredPopup: Boolean = false
 )
 
 @HiltViewModel
@@ -101,12 +106,22 @@ class RootViewModel @Inject constructor(
 
     init {
         checkAuthStatus()
-        // 토큰 만료(401 + 갱신 실패) 이벤트 구독 → 로그인 화면으로 이동
+        // 토큰 만료(401 + 갱신 실패) 이벤트 구독 → 안내 팝업 + 로그인 화면 (iOS MG-33 패리티)
         viewModelScope.launch {
             sessionExpiredNotifier.events.collect {
-                _uiState.update { RootUiState(appState = AppState.Unauthenticated) }
+                _uiState.update {
+                    RootUiState(
+                        appState = AppState.Unauthenticated,
+                        showSessionExpiredPopup = true
+                    )
+                }
             }
         }
+    }
+
+    /** sessionExpired 안내 팝업 닫기 */
+    fun dismissSessionExpiredPopup() {
+        _uiState.update { it.copy(showSessionExpiredPopup = false) }
     }
 
     private fun checkAuthStatus() {
