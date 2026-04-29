@@ -10,12 +10,14 @@ import com.mongle.android.domain.model.MongleGroup
 import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
+import com.mongle.android.data.local.UnreadBadgeStore
 import com.mongle.android.data.remote.SessionExpiredNotifier
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
 import com.mongle.android.domain.repository.UserRepository
+import com.mongle.android.util.AppForegroundTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -23,6 +25,8 @@ import retrofit2.HttpException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -79,6 +83,8 @@ class RootViewModel @Inject constructor(
     private val treeRepository: TreeRepository,
     private val userRepository: UserRepository,
     private val sessionExpiredNotifier: SessionExpiredNotifier,
+    private val unreadBadgeStore: UnreadBadgeStore,
+    private val appForegroundTracker: AppForegroundTracker,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -114,6 +120,8 @@ class RootViewModel @Inject constructor(
         // 토큰 만료(401 + 갱신 실패) 이벤트 구독 → 안내 팝업 + 로그인 화면 (iOS MG-33 패리티)
         viewModelScope.launch {
             sessionExpiredNotifier.events.collect {
+                // 세션 만료 시 이전 사용자 잔존 배지 카운터를 폐기해 다음 로그인 사용자에 혼입되지 않게 한다.
+                unreadBadgeStore.clear()
                 _uiState.update {
                     RootUiState(
                         appState = AppState.Unauthenticated,
@@ -122,6 +130,29 @@ class RootViewModel @Inject constructor(
                 }
             }
         }
+        // iOS MG-55 패리티 — appState 변경을 AppForegroundTracker 에 반영해
+        // FCM Service 가 인증 흐름 화면(로그인/온보딩/약관) 도중 트레이 배너를 노출하지 않도록 한다.
+        viewModelScope.launch {
+            _uiState
+                .map { it.appState }
+                .distinctUntilChanged()
+                .collect { state -> syncForegroundTracker(state) }
+        }
+    }
+
+    private fun syncForegroundTracker(state: AppState) {
+        appForegroundTracker.currentScreen = when (state) {
+            AppState.Loading -> AppForegroundTracker.Screen.LOADING
+            AppState.Onboarding -> AppForegroundTracker.Screen.ONBOARDING
+            AppState.Unauthenticated -> AppForegroundTracker.Screen.UNAUTHENTICATED
+            AppState.EmailLogin -> AppForegroundTracker.Screen.EMAIL_LOGIN
+            AppState.EmailSignup -> AppForegroundTracker.Screen.EMAIL_SIGNUP
+            AppState.ConsentRequired -> AppForegroundTracker.Screen.CONSENT_REQUIRED
+            AppState.GroupSelection -> AppForegroundTracker.Screen.GROUP_SELECTION
+            AppState.Authenticated -> AppForegroundTracker.Screen.AUTHENTICATED
+        }
+        appForegroundTracker.isAuthenticated =
+            state == AppState.Authenticated || state == AppState.GroupSelection
     }
 
     /** sessionExpired 안내 팝업 닫기 */
@@ -417,6 +448,8 @@ class RootViewModel @Inject constructor(
     private fun clearUserScopedPrefs() {
         context.getSharedPreferences("mongle_heart", Context.MODE_PRIVATE).edit().clear().apply()
         context.getSharedPreferences("fcm", Context.MODE_PRIVATE).edit().clear().apply()
+        // iOS MG-39 패리티 — 다음 사용자에게 이전 미읽음 카운터가 혼입되지 않도록 정리.
+        unreadBadgeStore.clear()
     }
 
     fun onAnswerSubmitted(answer: Answer? = null, isNewAnswer: Boolean = true) {
