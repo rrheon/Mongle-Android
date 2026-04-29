@@ -12,8 +12,13 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.mongle.android.MainActivity
+import com.mongle.android.data.local.UnreadBadgeStore
+import com.mongle.android.util.AppForegroundTracker
 import com.ycompany.Monggle.R
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MongleFcmService : FirebaseMessagingService() {
 
     companion object {
@@ -21,6 +26,9 @@ class MongleFcmService : FirebaseMessagingService() {
         // AtomicInteger 단조 증가로 알림 ID 충돌을 원천 차단.
         private val notificationIdSeq = java.util.concurrent.atomic.AtomicInteger(1000)
     }
+
+    @Inject lateinit var unreadBadgeStore: UnreadBadgeStore
+    @Inject lateinit var appForegroundTracker: AppForegroundTracker
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
@@ -39,10 +47,19 @@ class MongleFcmService : FirebaseMessagingService() {
         val title = message.notification?.title ?: message.data["title"] ?: return
         val body = message.notification?.body ?: message.data["body"] ?: ""
         val type = message.data["type"] ?: ""
-        showNotification(title, body, type)
+
+        // iOS MG-55 패리티 — 로그인/온보딩/약관 도중에는 트레이 배너로 흐름을 끊지 않는다.
+        // unread 카운터는 그대로 증가시켜 사용자가 인증 후 알림 화면에서 누적 확인 가능.
+        if (appForegroundTracker.isInAuthFlow()) {
+            unreadBadgeStore.incrementAndGet()
+            return
+        }
+
+        val unread = unreadBadgeStore.incrementAndGet()
+        showNotification(title, body, type, unread)
     }
 
-    private fun showNotification(title: String, body: String, type: String = "") {
+    private fun showNotification(title: String, body: String, type: String, unread: Int) {
         val channelId = "mongle_default"
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -74,6 +91,9 @@ class MongleFcmService : FirebaseMessagingService() {
             .setContentText(body)
             .setAutoCancel(true)
             .setPriority(priority)
+            // iOS MG-39 패리티 — 런처 아이콘 배지에 미읽음 숫자 표시. Pixel/One UI 등 setNumber
+            // 를 지원하는 런처에서 active. 미지원 런처에서는 dot 만 표시되며 이 값은 무시된다.
+            .setNumber(unread)
             .setContentIntent(pending)
             .build()
 

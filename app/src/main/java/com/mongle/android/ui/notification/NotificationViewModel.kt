@@ -5,6 +5,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
 import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.viewModelScope
+import com.mongle.android.data.local.UnreadBadgeStore
 import com.mongle.android.data.remote.AppNotification
 import com.mongle.android.data.remote.ApiNotificationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,12 +34,19 @@ data class NotificationUiState(
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: ApiNotificationRepository,
+    private val unreadBadgeStore: UnreadBadgeStore,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     /** 미읽음 수를 notifications 기준으로 재계산해 stored 값으로 반영한다. */
-    private fun refreshDerived(state: NotificationUiState): NotificationUiState =
-        state.copy(unreadCount = state.notifications.count { !it.isRead })
+    private fun refreshDerived(state: NotificationUiState): NotificationUiState {
+        val next = state.copy(unreadCount = state.notifications.count { !it.isRead })
+        // iOS MG-39 패리티 — 알림 mutation/load 직후 OS 아이콘 배지 숫자를 동기화한다.
+        // setNumber() 가 적용된 활성 알림에는 영향이 없지만, 다음 push 도착 시점부터
+        // 사용자가 mark-read 한 상태에 맞춰 정확한 카운터로 시작한다.
+        unreadBadgeStore.set(next.unreadCount)
+        return next
+    }
 
     /**
      * 인앱에서 알림을 모두 읽음/삭제 처리한 시점에 OS 알림 트레이의 푸시도 정리한다.
