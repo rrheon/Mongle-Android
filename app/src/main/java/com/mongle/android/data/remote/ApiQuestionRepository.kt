@@ -140,9 +140,16 @@ class ApiQuestionRepository @Inject constructor(
         }
     }
 
+    // MG-100 SimpleDateFormat 은 thread-unsafe — ThreadLocal 로 인스턴스 격리.
+    // TimeZone 을 default 로 두면 KST 자정 직후 답변이 1일 어긋남 → UTC 명시.
+    private val dateOnlyFormat = ThreadLocal.withInitial {
+        java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+            isLenient = false
+        }
+    }
+
     private fun parseDate(dateStr: String): java.util.Date {
-        return runCatching {
-            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(dateStr) ?: Date()
-        }.getOrElse { Date() }
+        return runCatching { dateOnlyFormat.get()!!.parse(dateStr) }.getOrNull() ?: Date()
     }
 }
