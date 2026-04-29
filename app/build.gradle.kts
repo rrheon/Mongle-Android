@@ -29,8 +29,11 @@ android {
         buildConfigField("String", "KAKAO_APP_KEY", "\"73b4d3e9a62701280ec877fe441949b3\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com\"")
         buildConfigField("String", "APPLE_CLIENT_ID", "\"com.mongle.app.signin\"")
-        buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-4718464707406824/9365243021\"")
-        buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-4718464707406824/2974225929\"")
+        // AdMob 광고 ID — 기본값(디버그 빌드 포함)은 Google 공식 테스트 ID.
+        // 실제 광고 ID 는 release buildType 에서만 주입한다 (계정 정지/정책 위반 방지).
+        // 테스트 ID 출처: https://developers.google.com/admob/android/test-ads
+        buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
     }
 
     signingConfigs {
@@ -57,6 +60,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // release 빌드에서만 실제 AdMob 광고 ID 사용
+            buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-4718464707406824/9365243021\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-4718464707406824/2974225929\"")
         }
     }
 
