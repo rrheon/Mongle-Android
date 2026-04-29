@@ -1,9 +1,8 @@
 package com.mongle.android.data.remote
 import com.ycompany.Monggle.BuildConfig
 
-import android.content.Context
+import android.content.SharedPreferences
 import com.squareup.moshi.Moshi
-import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.Authenticator
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -14,9 +13,9 @@ import okhttp3.Route
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
-private const val AUTH_PREF_NAME = "mongle_auth"
 private const val AUTH_KEY_TOKEN = "auth_token"
 private const val AUTH_KEY_REFRESH_TOKEN = "refresh_token"
 
@@ -27,22 +26,25 @@ private const val AUTH_KEY_REFRESH_TOKEN = "refresh_token"
  */
 @Singleton
 class TokenAuthenticator @Inject constructor(
-    @ApplicationContext private val context: Context,
+    // MG-95 EncryptedSharedPreferences 인스턴스를 SecurityModule 에서 주입.
+    @Named("auth") private val prefs: SharedPreferences,
     private val moshi: Moshi,
     private val sessionExpiredNotifier: SessionExpiredNotifier
 ) : Authenticator {
 
     private val baseUrl = BuildConfig.BASE_URL
 
-    private val prefs by lazy {
-        context.getSharedPreferences(AUTH_PREF_NAME, Context.MODE_PRIVATE)
-    }
-
     // Authenticator 전용 clean client (인터셉터/authenticator 없음, 무한루프 방지)
     private val refreshClient = OkHttpClient.Builder().build()
 
     private val refreshAdapter by lazy {
         moshi.adapter(TokenRefreshResponse::class.java)
+    }
+
+    // MG-93 raw string interpolation 으로 JSON 빌드 시 refresh_token 에 ", \, 제어문자 포함되면
+    // JSON 깨져 서버가 invalid token 으로 판단 → 무고한 강제 로그아웃. Moshi 직렬화로 안전 처리.
+    private val refreshRequestAdapter by lazy {
+        moshi.adapter(RefreshTokenRequest::class.java)
     }
 
     // iOS MG-35 패리티 — 동시 401 발생 시 refresh 가 한 번만 일어나도록 보호한다.
@@ -86,7 +88,7 @@ class TokenAuthenticator @Inject constructor(
 
     private fun performRefresh(refreshToken: String, response: Response): Request? {
         return try {
-            val body = """{"refresh_token":"$refreshToken"}"""
+            val body = refreshRequestAdapter.toJson(RefreshTokenRequest(refresh_token = refreshToken))
                 .toRequestBody("application/json".toMediaType())
 
             val refreshRequest = Request.Builder()

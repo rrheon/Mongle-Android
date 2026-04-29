@@ -120,6 +120,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
 
+    // MG-95 EncryptedSharedPreferences — 토큰/PII 평문 저장 제거
+    implementation(libs.androidx.security.crypto)
+
     // Network
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.moshi)
