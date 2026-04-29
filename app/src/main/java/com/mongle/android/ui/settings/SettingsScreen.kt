@@ -681,7 +681,9 @@ private fun TransferAdminScreen(
                 MongleMonggleGreenLight, MongleMonggleYellow, MongleMongglePink, MongleMonggleBlue, MongleMonggleOrange
             )
             LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                itemsIndexed(uiState.transferCandidates) { index, member ->
+                // MG-103 멤버 ID 를 key 로 지정해 LazyColumn 이 인덱스 대신 ID 로 row 식별.
+                // 멤버가 그룹을 떠나도 selection/애니메이션이 잘못된 row 에 결합되지 않음.
+                itemsIndexed(uiState.transferCandidates, key = { _, m -> m.id }) { index, member ->
                     val selected = uiState.selectedTransferMemberId == member.id
                     val bgColor = if (selected) MonglePrimaryLight else Color.White
                     val borderColor = if (selected) MonglePrimary else Color(0xFFE0D8D0)

@@ -16,6 +16,12 @@ import com.ycompany.Monggle.R
 
 class MongleFcmService : FirebaseMessagingService() {
 
+    companion object {
+        // MG-96 currentTimeMillis().toInt() 는 49.7일 wrap-around + 동일 millisecond 충돌 가능.
+        // AtomicInteger 단조 증가로 알림 ID 충돌을 원천 차단.
+        private val notificationIdSeq = java.util.concurrent.atomic.AtomicInteger(1000)
+    }
+
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         // 토큰 저장 실패가 silent 하게 묻히지 않도록 try-catch + 로그.
@@ -71,6 +77,6 @@ class MongleFcmService : FirebaseMessagingService() {
             .setContentIntent(pending)
             .build()
 
-        manager.notify(System.currentTimeMillis().toInt(), notification)
+        manager.notify(notificationIdSeq.incrementAndGet(), notification)
     }
 }
