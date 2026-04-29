@@ -22,8 +22,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,6 +64,7 @@ fun MongleNavHost(
     adManager: AdManager? = null
 ) {
     val uiState by rootViewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     // MG-98 회전·다크모드 후에도 오버레이/토스트 상태 유지.
     // Question?/User? 복합 객체는 Parcelable Saver 미정의로 rememberSaveable 자동 처리 불가 →
     // 회전 시 닫힘(현재 동작) 유지. boolean/int 만 saveable 처리.
@@ -289,11 +292,17 @@ fun MongleNavHost(
                             currentUserHearts = uiState.currentUser?.hearts ?: 0,
                             adManager = adManager,
                             onAnswerSubmitted = { answer, isNewAnswer ->
+                                // iOS MG-56 패리티 — modal dismiss 와 toast/heart popup 가 같은 프레임에
+                                // 발생해 race(토스트 깜빡임, 모달 dismiss 애니메이션 미완료)를 일으키지 않도록
+                                // close → 350ms delay → toast/heart popup 순서로 분리한다.
                                 rootViewModel.onAnswerSubmitted(answer, isNewAnswer)
                                 showQuestionDetail = null
-                                showAnswerSubmittedToast = true
-                                if (isNewAnswer) showHeartPopup = true
                                 answerSubmittedCount++
+                                coroutineScope.launch {
+                                    delay(350)
+                                    showAnswerSubmittedToast = true
+                                    if (isNewAnswer) showHeartPopup = true
+                                }
                             },
                             onClose = { showQuestionDetail = null }
                         )
