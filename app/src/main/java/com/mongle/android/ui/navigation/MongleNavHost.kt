@@ -165,7 +165,7 @@ fun MongleNavHost(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(MongleSpacing.lg)
                 ) {
-                    MongleLogo(size = MongleLogoSize.MEDIUM)
+                    MongleLogo(size = MongleLogoSize.LARGE)
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }

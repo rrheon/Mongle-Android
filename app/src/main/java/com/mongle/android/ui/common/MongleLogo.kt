@@ -22,7 +22,7 @@ fun MongleLogo(
     val imageSize: Dp = when (size) {
         MongleLogoSize.SMALL -> 64.dp
         MongleLogoSize.MEDIUM -> 96.dp
-        MongleLogoSize.LARGE -> 128.dp
+        MongleLogoSize.LARGE -> 160.dp
     }
 
     Image(

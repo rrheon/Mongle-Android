@@ -150,7 +150,7 @@ fun LoginScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    MongleLogo(size = MongleLogoSize.MEDIUM)
+                    MongleLogo(size = MongleLogoSize.LARGE)
 
                     Spacer(modifier = Modifier.height(MongleSpacing.md))
 

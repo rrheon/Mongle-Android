@@ -148,7 +148,7 @@ private fun OnboardingPage1() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        MongleLogo(size = MongleLogoSize.MEDIUM)
+        MongleLogo(size = MongleLogoSize.LARGE)
 
         Spacer(modifier = Modifier.height(44.dp))
 
