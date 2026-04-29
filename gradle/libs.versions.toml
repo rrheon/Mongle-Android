@@ -22,6 +22,7 @@ moshi = "1.15.1"
 googleMobileAds = "23.3.0"
 userMessagingPlatform = "3.1.0"
 firebaseBom = "33.1.0"
+securityCrypto = "1.1.0-alpha06"
 
 [libraries]
 # Core
@@ -75,6 +76,9 @@ google-user-messaging-platform = { group = "com.google.android.ump", name = "use
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+
+# Jetpack Security — EncryptedSharedPreferences (MG-95)
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 
 # Test
 junit = { group = "junit", name = "junit", version.ref = "junit" }

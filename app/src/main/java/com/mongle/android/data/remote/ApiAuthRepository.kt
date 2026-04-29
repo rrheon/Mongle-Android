@@ -1,6 +1,6 @@
 package com.mongle.android.data.remote
 
-import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import com.mongle.android.domain.model.FamilyRole
 import com.mongle.android.domain.model.LegalDocType
@@ -10,14 +10,13 @@ import com.mongle.android.domain.model.SocialLoginResult
 import com.mongle.android.domain.model.SocialProviderType
 import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AuthRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.HttpException
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
-private const val PREF_NAME = "mongle_auth"
 private const val KEY_TOKEN = "auth_token"
 private const val KEY_REFRESH_TOKEN = "refresh_token"
 private const val KEY_USER_ID = "user_id"
@@ -28,12 +27,9 @@ private const val KEY_USER_ROLE = "user_role"
 @Singleton
 class ApiAuthRepository @Inject constructor(
     private val api: MongleApiService,
-    @ApplicationContext private val context: Context
+    // MG-95 EncryptedSharedPreferences 인스턴스를 SecurityModule 에서 주입.
+    @Named("auth") private val prefs: SharedPreferences
 ) : AuthRepository {
-
-    private val prefs by lazy {
-        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-    }
 
     private fun saveSession(user: ApiUserResponse, token: String, refreshToken: String? = null) {
         prefs.edit()
@@ -70,7 +66,8 @@ class ApiAuthRepository @Inject constructor(
         } catch (e: HttpException) {
             val body = e.response()?.errorBody()?.string() ?: e.message()
             Log.e("MongleApi", "❌ HTTP ${e.code()}")
-            throw Exception(parseServerMessage(body))
+            // MG-102 cause 로 HttpException 보존 → RootViewModel 등이 e.cause.code() 로 401 분기 가능.
+            throw Exception(parseServerMessage(body), e)
         } catch (e: Exception) {
             Log.e("MongleApi", "❌ API 호출 실패: ${e.message}", e)
             throw e
