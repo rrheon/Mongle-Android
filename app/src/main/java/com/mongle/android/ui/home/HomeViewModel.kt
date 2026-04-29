@@ -15,6 +15,7 @@ import com.mongle.android.domain.repository.QuestionRepository
 import com.mongle.android.domain.repository.TreeRepository
 import com.mongle.android.util.AdManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -76,11 +77,18 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<HomeEvent>()
+    // MG-97 collect 단절 사이 이벤트 유실 방지.
+    private val _events = MutableSharedFlow<HomeEvent>(
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val events: SharedFlow<HomeEvent> = _events.asSharedFlow()
 
     /** 질문 넘기기 성공 시 남은 하트 수를 상위로 전파 */
-    private val _skipEvents = MutableSharedFlow<Int>()
+    private val _skipEvents = MutableSharedFlow<Int>(
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val skipEvents: SharedFlow<Int> = _skipEvents.asSharedFlow()
 
     fun initialize(

@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,17 +62,20 @@ fun MongleNavHost(
     adManager: AdManager? = null
 ) {
     val uiState by rootViewModel.uiState.collectAsState()
+    // MG-98 회전·다크모드 후에도 오버레이/토스트 상태 유지.
+    // Question?/User? 복합 객체는 Parcelable Saver 미정의로 rememberSaveable 자동 처리 불가 →
+    // 회전 시 닫힘(현재 동작) 유지. boolean/int 만 saveable 처리.
     var showQuestionDetail by remember { mutableStateOf<Question?>(null) }
-    var showNotifications by remember { mutableStateOf(false) }
+    var showNotifications by rememberSaveable { mutableStateOf(false) }
     var showNudgeTarget by remember { mutableStateOf<User?>(null) }
-    var showWriteQuestion by remember { mutableStateOf(false) }
-    var showGroupSelect by remember { mutableStateOf(false) }
-    var groupLeftToast by remember { mutableStateOf(false) }
-    var showAnswerSubmittedToast by remember { mutableStateOf(false) }
-    var showSkipToast by remember { mutableStateOf(false) }
-    var showWriteQuestionToast by remember { mutableStateOf(false) }
-    var showHeartPopup by remember { mutableStateOf(false) }
-    var answerSubmittedCount by remember { mutableIntStateOf(0) }
+    var showWriteQuestion by rememberSaveable { mutableStateOf(false) }
+    var showGroupSelect by rememberSaveable { mutableStateOf(false) }
+    var groupLeftToast by rememberSaveable { mutableStateOf(false) }
+    var showAnswerSubmittedToast by rememberSaveable { mutableStateOf(false) }
+    var showSkipToast by rememberSaveable { mutableStateOf(false) }
+    var showWriteQuestionToast by rememberSaveable { mutableStateOf(false) }
+    var showHeartPopup by rememberSaveable { mutableStateOf(false) }
+    var answerSubmittedCount by rememberSaveable { mutableIntStateOf(0) }
 
     // 답변 완료 토스트 3초 후 자동 닫기
     LaunchedEffect(showAnswerSubmittedToast) {

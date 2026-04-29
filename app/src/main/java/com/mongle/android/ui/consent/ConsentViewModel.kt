@@ -7,6 +7,7 @@ import com.mongle.android.domain.model.LegalDocType
 import com.mongle.android.domain.model.LegalVersions
 import com.mongle.android.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -46,7 +47,11 @@ class ConsentViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ConsentUiState())
     val uiState: StateFlow<ConsentUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<ConsentEvent>()
+    // MG-97 collect 단절 사이 이벤트 유실 방지.
+    private val _events = MutableSharedFlow<ConsentEvent>(
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val events: SharedFlow<ConsentEvent> = _events.asSharedFlow()
 
     fun setContext(

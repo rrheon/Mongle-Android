@@ -11,6 +11,7 @@ import com.mongle.android.domain.model.User
 import com.mongle.android.domain.repository.AnswerRepository
 import com.mongle.android.util.AdManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -65,7 +66,11 @@ class QuestionDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(QuestionDetailUiState())
     val uiState: StateFlow<QuestionDetailUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<QuestionDetailEvent>()
+    // MG-97 collect 단절 사이 이벤트 유실 방지.
+    private val _events = MutableSharedFlow<QuestionDetailEvent>(
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val events: SharedFlow<QuestionDetailEvent> = _events.asSharedFlow()
 
     private var initialized = false
