@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,7 +57,9 @@ fun MainTabScreen(
     answerSubmittedCount: Int = 0,
     adManager: AdManager? = null
 ) {
-    var selectedTab by remember { mutableStateOf(MainTab.HOME) }
+    // MG-98 회전·다크모드·메모리 부족 시 Activity 재생성 후에도 탭 유지.
+    // enum 은 기본 Saver(autoSaver) 가 처리.
+    var selectedTab by rememberSaveable { mutableStateOf(MainTab.HOME) }
     val homeViewModel: HomeViewModel = hiltViewModel()
     val historyViewModel: HistoryViewModel = hiltViewModel()
 

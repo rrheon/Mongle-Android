@@ -1,25 +1,23 @@
 package com.mongle.android.data.remote
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.SharedPreferences
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
-private const val PREF_NAME = "mongle_auth"
 private const val KEY_TOKEN = "auth_token"
 
 @Singleton
 class AuthInterceptor @Inject constructor(
-    @ApplicationContext private val context: Context
+    // MG-95 EncryptedSharedPreferences 인스턴스를 SecurityModule 에서 주입.
+    @Named("auth") private val authPrefs: SharedPreferences
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = context
-            .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            .getString(KEY_TOKEN, null)
+        val token = authPrefs.getString(KEY_TOKEN, null)
 
         val lang = when (Locale.getDefault().language) {
             "ko" -> "ko"

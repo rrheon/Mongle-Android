@@ -17,6 +17,7 @@ import com.mongle.android.ui.login.unlinkKakao
 import com.mongle.android.util.ConsentManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -90,7 +91,11 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    private val _events = MutableSharedFlow<SettingsEvent>()
+    // MG-97 collect 단절 사이 이벤트 유실 방지.
+    private val _events = MutableSharedFlow<SettingsEvent>(
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val events: SharedFlow<SettingsEvent> = _events.asSharedFlow()
 
     fun initialize(user: User?, providerType: SocialProviderType?) {

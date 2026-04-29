@@ -108,7 +108,8 @@ fun LoginScreen(
         val uri = pendingAppleCallbackUri ?: return@LaunchedEffect
         onAppleCallbackConsumed()
         try {
-            val credential = handleAppleCallback(uri)
+            // MG-99 handleAppleCallback 가 state 일치 검증을 위해 context 를 받음.
+            val credential = handleAppleCallback(context, uri)
             Log.d("LoginScreen", "Apple 토큰 파싱 성공 → 서버 로그인 요청")
             viewModel.loginWithSocial(credential)
         } catch (e: Exception) {

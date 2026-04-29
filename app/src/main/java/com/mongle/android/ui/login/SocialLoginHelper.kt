@@ -151,17 +151,28 @@ suspend fun revokeGoogleAccess(context: Context): Unit = suspendCancellableCorou
 // ── 애플 ────────────────────────────────────────────
 // Apple Sign-In on Android: Custom Tab → Apple OAuth → 서버 콜백 → 앱 딥링크
 
+private const val APPLE_OAUTH_PREFS = "apple_oauth"
+private const val APPLE_OAUTH_STATE_KEY = "state"
+
 /**
  * Apple OAuth URL을 빌드하여 Custom Tab으로 실행합니다.
  * 서버가 form_post를 받아 monggle://apple-callback?id_token=...&code=... 로 리다이렉트합니다.
+ *
+ * MG-99 CSRF 방어 — 매 요청마다 nonce 를 생성해 SharedPreferences 에 저장하고
+ * state 파라미터로 전송. 콜백 시점에 동일한 state 가 돌아왔는지 검증한다.
  */
 fun launchAppleSignIn(context: Context) {
+    val state = java.util.UUID.randomUUID().toString()
+    context.getSharedPreferences(APPLE_OAUTH_PREFS, Context.MODE_PRIVATE)
+        .edit().putString(APPLE_OAUTH_STATE_KEY, state).apply()
+
     val appleAuthUrl = Uri.parse("https://appleid.apple.com/auth/authorize").buildUpon()
         .appendQueryParameter("client_id", APPLE_CLIENT_ID)
         .appendQueryParameter("redirect_uri", APPLE_REDIRECT_URI)
         .appendQueryParameter("response_type", "code id_token")
         .appendQueryParameter("scope", "name email")
         .appendQueryParameter("response_mode", "form_post")
+        .appendQueryParameter("state", state)
         .build()
 
     Log.d("AppleLogin", "Apple OAuth URL: $appleAuthUrl")
@@ -172,9 +183,20 @@ fun launchAppleSignIn(context: Context) {
 
 /**
  * Apple 콜백 딥링크 URI에서 credential을 파싱합니다.
- * URI 형식: monggle://apple-callback?id_token=...&code=...&name=...&email=...
+ * URI 형식: monggle://apple-callback?id_token=...&code=...&state=...&name=...&email=...
+ *
+ * MG-99 state 일치 검증 — launchAppleSignIn 에서 저장한 state 와 다르면 CSRF 의심으로 거부.
  */
-fun handleAppleCallback(uri: Uri): AppleLoginCredential {
+fun handleAppleCallback(context: Context, uri: Uri): AppleLoginCredential {
+    val prefs = context.getSharedPreferences(APPLE_OAUTH_PREFS, Context.MODE_PRIVATE)
+    val expectedState = prefs.getString(APPLE_OAUTH_STATE_KEY, null)
+    val receivedState = uri.getQueryParameter("state")
+    // 검증 후 state 는 1회용이므로 즉시 폐기 (성공/실패 무관).
+    prefs.edit().remove(APPLE_OAUTH_STATE_KEY).apply()
+    if (expectedState == null || receivedState == null || expectedState != receivedState) {
+        throw Exception("Apple 로그인 실패: state 불일치 (CSRF 의심)")
+    }
+
     val idToken = uri.getQueryParameter("id_token")
         ?: throw Exception("Apple 로그인 실패: identity_token이 없습니다.")
     val code = uri.getQueryParameter("code")
