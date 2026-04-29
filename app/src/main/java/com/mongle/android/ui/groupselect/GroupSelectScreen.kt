@@ -329,7 +329,7 @@ private fun MongleMonggleCircle(color: Color, size: Dp, modifier: Modifier = Mod
         Box(
             modifier = Modifier
                 .size(eyeSize + 2.dp)
-                .absoluteOffset(x = -eyeOffset, y = -(eyeSize * 0.3f))
+                .absoluteOffset(x = -eyeOffset, y = eyeSize * 0.3f)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) { Box(Modifier.size(eyeSize).background(Color.Black, CircleShape)) }
@@ -337,7 +337,7 @@ private fun MongleMonggleCircle(color: Color, size: Dp, modifier: Modifier = Mod
         Box(
             modifier = Modifier
                 .size(eyeSize + 2.dp)
-                .absoluteOffset(x = eyeOffset, y = -(eyeSize * 0.3f))
+                .absoluteOffset(x = eyeOffset, y = eyeSize * 0.3f)
                 .background(Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) { Box(Modifier.size(eyeSize).background(Color.Black, CircleShape)) }
