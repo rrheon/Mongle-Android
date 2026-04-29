@@ -19,6 +19,7 @@ import com.mongle.android.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
+import retrofit2.HttpException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -138,11 +139,13 @@ class RootViewModel @Inject constructor(
                 familiesResult.onSuccess { allFamilies ->
                     _uiState.update { it.copy(appState = AppState.GroupSelection, allFamilies = allFamilies) }
                 }.onFailure { e ->
-                    val msg = e.message ?: ""
-                    val isAuthError = msg.contains("401") ||
-                        msg.contains("token", ignoreCase = true) ||
-                        msg.contains("unauthorized", ignoreCase = true) ||
-                        msg.contains("invalid", ignoreCase = true)
+                    // MG-102 에러 메시지 substring 매칭은 i18n 한국어 응답("토큰", "유효하지 않")에서 401
+                    // 누락, 정상 도메인 에러 메시지("invalid name")에서 오탐(잘못된 강제 로그아웃)을 일으켰음.
+                    // HttpException.code() 로 정확히 401 만 인증 에러로 분기.
+                    // (cause 체인까지 들여다보는 이유는 safeCall 류 wrapper 가 HttpException 을 cause 로
+                    //  보존할 수도, 그대로 던질 수도 있어 둘 다 커버하기 위함)
+                    val isAuthError = (e as? HttpException)?.code() == 401 ||
+                        (e.cause as? HttpException)?.code() == 401
                     if (isAuthError) {
                         // 토큰 만료/무효 → 세션 초기화 후 로그인 화면
                         runCatching { authRepository.logout() }
@@ -164,17 +167,24 @@ class RootViewModel @Inject constructor(
         loadHomeDataJob?.cancel()
         loadHomeDataJob = viewModelScope.launch {
             try {
-                val familyResult = runCatching { mongleRepository.getMyFamily() }.getOrNull()
+                // MG-104 네트워크 에러를 빈 데이터로 silent fallback 하면 사용자가 "데이터 없음"으로 오해.
+                // 호출별 실패를 추적해 마지막에 errorMessage 동반 노출 (fallback 동작 자체는 유지 — 점진적 디그라데이션).
+                var lastNetworkError: Throwable? = null
+                val familyResult = runCatching { mongleRepository.getMyFamily() }
+                    .onFailure { lastNetworkError = it }.getOrNull()
                 val family = familyResult?.first
                 val members = familyResult?.second ?: emptyList()
-                var question = runCatching { questionRepository.getTodayQuestion() }.getOrNull()
+                var question = runCatching { questionRepository.getTodayQuestion() }
+                    .onFailure { lastNetworkError = it }.getOrNull()
                 val tree = runCatching { treeRepository.getMyTreeProgress() }.getOrElse { TreeProgress() }
 
-                val allFamilies = runCatching { mongleRepository.getMyFamilies() }.getOrElse { emptyList() }
+                val allFamilies = runCatching { mongleRepository.getMyFamilies() }
+                    .onFailure { lastNetworkError = it }.getOrElse { emptyList() }
 
                 // 오늘의 질문을 찾지 못한 경우 히스토리에서 가장 최근 질문을 fallback으로 사용
                 if (question == null) {
-                    val history = runCatching { questionRepository.getDailyHistory(page = 1, limit = 5) }.getOrElse { emptyList() }
+                    val history = runCatching { questionRepository.getDailyHistory(page = 1, limit = 5) }
+                        .onFailure { lastNetworkError = it }.getOrElse { emptyList() }
                     val recent = history.firstOrNull()
                     if (recent != null) {
                         question = recent.question.copy(
@@ -210,6 +220,9 @@ class RootViewModel @Inject constructor(
                         // refreshedUser 우선 — 서버 grantDailyHeart 응답이 가장 최신.
                         // members 의 me 는 hearts 등 일부 필드만 동기화되며 heartGrantedToday 는 미포함.
                         val syncedUser = refreshedUser ?: serverMe ?: it.currentUser
+                        // MG-104 family 는 위 if 로 이미 보장됨 — question 만 비고 네트워크 에러가 있었으면
+                        // "데이터 없음" 이 아니라 네트워크 안내를 띄움.
+                        val degraded = question == null && lastNetworkError != null
                         it.copy(
                             appState = AppState.Authenticated,
                             todayQuestion = question,
@@ -222,7 +235,8 @@ class RootViewModel @Inject constructor(
                             hasSkippedToday = question?.hasMySkipped ?: false,
                             // set-only — heartGrantedToday=false 응답일 땐 기존 값 유지(이미 본 팝업 재트리거 방지)
                             dailyHeartGranted = if (heartGrantedToday) 1 else it.dailyHeartGranted,
-                            currentUser = syncedUser
+                            currentUser = syncedUser,
+                            errorMessage = if (degraded) lastNetworkError?.message else it.errorMessage
                         )
                     }
                 }
@@ -262,9 +276,15 @@ class RootViewModel @Inject constructor(
             uri.host == "monggle.app" && uri.pathSegments.size >= 2 && uri.pathSegments[0] == "join" -> uri.pathSegments[1].uppercase()
             else -> null
         }
-        if (code != null) {
+        // MG-99 외부 인텐트가 임의 문자열 prefill 하지 못하도록 형식 검증.
+        // 서버 발급 invite code 는 영숫자 6자리. 검증 실패 시 무시.
+        if (code != null && INVITE_CODE_REGEX.matches(code)) {
             _uiState.update { it.copy(pendingInviteCode = code) }
         }
+    }
+
+    private companion object {
+        private val INVITE_CODE_REGEX = Regex("^[A-Z0-9]{6}$")
     }
 
     fun clearPendingAppleCallback() {
