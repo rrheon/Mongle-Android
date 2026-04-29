@@ -385,4 +385,11 @@
     <string name="demo_char_3">Pogeun</string>
     <string name="demo_char_4">Ttatteut</string>
     <string name="demo_char_5">Neukkim</string>
+
+    <!-- iOS MG-38 패리티: DateFormatter 한국어 하드코딩 제거. SimpleDateFormat 패턴/레이블을
+         로케일별 문자열 리소스로 분리해 ko/en/ja 모두 자연스러운 표기를 보장. -->
+    <string name="search_today">Today</string>
+    <string name="search_yesterday">Yesterday</string>
+    <string name="search_date_pattern">MMM d</string>
+    <string name="notif_date_pattern">M/d</string>
 </resources>

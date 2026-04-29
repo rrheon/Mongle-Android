@@ -492,14 +492,9 @@ private fun timeAgo(createdAt: String, res: Resources): String {
         diffHours < 24 -> res.getString(R.string.notif_time_hour, diffHours.toInt())
         diffDays < 7 -> res.getString(R.string.notif_time_day, diffDays.toInt())
         else -> {
-            // iOS MG-38 패리티 — 7일 이상 fallback 도 로케일 분기
-            val locale = Locale.getDefault()
-            val pattern = when (locale.language) {
-                "ko" -> "M월 d일"
-                "ja" -> "M月d日"
-                else -> "M/d"
-            }
-            SimpleDateFormat(pattern, locale).format(date)
+            // iOS MG-38 패리티 — 7일 이상 fallback 패턴은 strings.xml 리소스 기반.
+            val pattern = res.getString(R.string.notif_date_pattern)
+            SimpleDateFormat(pattern, Locale.getDefault()).format(date)
         }
     }
 }

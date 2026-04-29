@@ -1,15 +1,18 @@
 package com.mongle.android.ui.search
 
+import android.content.Context
 import android.util.Log
 import com.mongle.android.ui.common.AppError
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ycompany.Monggle.BuildConfig
+import com.ycompany.Monggle.R
 import com.mongle.android.domain.model.DailyQuestionHistory
 import com.mongle.android.domain.model.HistoryAnswerSummary
 import com.mongle.android.domain.repository.MongleRepository
 import com.mongle.android.domain.repository.QuestionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,7 +67,8 @@ data class SearchUiState(
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val questionRepository: QuestionRepository,
-    private val mongleRepository: MongleRepository
+    private val mongleRepository: MongleRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -205,13 +209,19 @@ class SearchViewModel @Inject constructor(
 
     private fun makeSections(results: List<SearchResultItem>): List<SearchResultSection> {
         if (results.isEmpty()) return emptyList()
+        // iOS MG-38 패리티 — 하드코딩 한국어/일본어 분기 대신 strings.xml 리소스 기반.
+        val locale = java.util.Locale.getDefault()
+        val pattern = context.getString(R.string.search_date_pattern)
+        val todayLabel = " · " + context.getString(R.string.search_today)
+        val yesterdayLabel = " · " + context.getString(R.string.search_yesterday)
+        val formatter = java.text.SimpleDateFormat(pattern, locale)
         val grouped = results.groupBy { it.date.toDateKeyMillis() }
         return grouped.entries.sortedByDescending { it.key }.map { (key, items) ->
             val firstDate = items.first().date
             SearchResultSection(
                 dateKey = key,
                 date = firstDate,
-                displayLabel = firstDate.toDisplayLabel(),
+                displayLabel = firstDate.toDisplayLabel(formatter, todayLabel, yesterdayLabel),
                 items = items
             )
         }
@@ -263,26 +273,24 @@ private fun Date.toDateKeyMillis(): Long {
     return cal.timeInMillis
 }
 
-/** Date를 표시 문자열로 포맷 (오늘/어제/날짜) — 시스템 로케일 기반 i18n (iOS MG-38 패리티) */
-fun Date.toDisplayLabel(): String {
-    val locale = java.util.Locale.getDefault()
-    val pattern = when (locale.language) {
-        "ko" -> "M월 d일"
-        "ja" -> "M月d日"
-        else -> "MMM d"
-    }
-    val datePart = java.text.SimpleDateFormat(pattern, locale).format(this)
-
+/**
+ * Date 를 표시 문자열로 포맷 (오늘/어제/날짜) — strings.xml 기반 i18n (iOS MG-38 패리티).
+ * 패턴/오늘/어제 레이블은 호출부에서 리소스 해상도 후 주입한다(SearchViewModel.makeSections).
+ */
+fun Date.toDisplayLabel(
+    formatter: java.text.SimpleDateFormat,
+    todaySuffix: String,
+    yesterdaySuffix: String
+): String {
+    val datePart = formatter.format(this)
     val cal = Calendar.getInstance().apply { time = this@toDisplayLabel }
     val today = Calendar.getInstance()
     val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
     val suffix = when {
         cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-            cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) ->
-            when (locale.language) { "ko" -> " · 오늘"; "ja" -> " · 今日"; else -> " · Today" }
+            cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) -> todaySuffix
         cal.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) &&
-            cal.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR) ->
-            when (locale.language) { "ko" -> " · 어제"; "ja" -> " · 昨日"; else -> " · Yesterday" }
+            cal.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR) -> yesterdaySuffix
         else -> ""
     }
     return "$datePart$suffix"

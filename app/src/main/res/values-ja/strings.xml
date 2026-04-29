@@ -385,4 +385,10 @@
     <string name="demo_char_3">ほっこりさん</string>
     <string name="demo_char_4">あったかさん</string>
     <string name="demo_char_5">きもちさん</string>
+
+    <!-- iOS MG-38 패리티: DateFormatter 한국어 하드코딩 제거 -->
+    <string name="search_today">今日</string>
+    <string name="search_yesterday">昨日</string>
+    <string name="search_date_pattern">M月d日</string>
+    <string name="notif_date_pattern">M月d日</string>
 </resources>
