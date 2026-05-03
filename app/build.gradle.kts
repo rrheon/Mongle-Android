@@ -21,8 +21,8 @@ android {
         applicationId = "com.ycompany.Monggle"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.0"
+        versionCode = 5
+        versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "BASE_URL", "\"https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/\"")
