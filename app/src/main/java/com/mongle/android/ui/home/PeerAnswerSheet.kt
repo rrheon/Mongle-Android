@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,7 +55,11 @@ fun PeerAnswerSheet(
     questionText: String,
     answer: Answer,
     onDismiss: () -> Unit,
-    characterColor: Color? = null
+    characterColor: Color? = null,
+    // MG-118 — 본인 답변 시트일 때 하단 "답변 수정하기" 버튼 노출.
+    // iOS PeerAnswerFeature.State(isMine: true) + Delegate.editAnswer 패리티.
+    isMine: Boolean = false,
+    onEdit: () -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
@@ -167,6 +173,25 @@ fun PeerAnswerSheet(
                             text = answer.content,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MongleTextSecondary
+                        )
+                    }
+                }
+
+                // MG-118 — 본인 답변일 때만 "답변 수정하기" 버튼. 탭 시 시트 닫고
+                // QuestionDetailScreen 의 수정 모드(detail_edit_submit) 진입.
+                if (isMine) {
+                    Button(
+                        onClick = onEdit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MonglePrimary)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.sheet_answer_edit),
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = Color.White
                         )
                     }
                 }

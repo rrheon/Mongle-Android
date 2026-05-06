@@ -475,13 +475,21 @@ fun HomeScreen(
 
     // PeerAnswerSheet
     peerAnswerData?.let { data ->
+        // MG-118 — 본인 답변 시트일 때 하단 "답변 수정하기" 버튼으로 QuestionDetail 진입.
+        // iOS HomeFeature.myMonggleTapped → PeerAnswer(isMine:true) → editAnswer 패리티.
+        val isMine = uiState.currentUser?.id?.let { it == data.member.id } == true
         PeerAnswerSheet(
             member = data.member,
             memberIndex = data.index,
             questionText = uiState.todayQuestion?.content ?: "",
             answer = data.answer,
             onDismiss = { peerAnswerData = null },
-            characterColor = data.characterColor
+            characterColor = data.characterColor,
+            isMine = isMine,
+            onEdit = {
+                peerAnswerData = null
+                uiState.todayQuestion?.let { onNavigateToQuestionDetail(it) }
+            }
         )
     }
 
