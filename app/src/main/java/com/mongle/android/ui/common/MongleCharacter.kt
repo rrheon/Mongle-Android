@@ -88,7 +88,8 @@ fun MongleCharacter(
     val bodyColor = color ?: characterColors[index % characterColors.size]
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
-    val eyeVOffset = size * 0.07f
+    // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
+    val eyeVOffset = size * 0.04f
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -162,7 +163,8 @@ fun MongleCharacterAvatar(
     val bodyColor = color ?: characterColors[index % characterColors.size]
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
-    val eyeVOffset = size * 0.07f
+    // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
+    val eyeVOffset = size * 0.04f
 
     Box(
         modifier = modifier
@@ -291,7 +293,8 @@ fun MongleSceneView(
 ) {
     val density = LocalDensity.current
     // 화면 밀도에 맞는 실제 픽셀 크기 사용 (화면 밖 이탈 방지)
-    val charSizePx = with(density) { 52.dp.toPx() }
+    // MG-115 — iOS MongleMonggle 기본 size 56pt 와 매칭 (52 → 56).
+    val charSizePx = with(density) { 56.dp.toPx() }
     val collisionRadius = charSizePx * 1.5f
     val wallPadding = charSizePx * 0.9f
     val stepSize = with(density) { 1.8.dp.toPx() }
@@ -343,10 +346,10 @@ fun MongleSceneView(
         }
     }
 
-    // 물리 루프 - iOS와 동일하게 120ms 간격
+    // 물리 루프 — iOS MongleSceneView 의 interval=0.16s (160ms) 와 매칭 (MG-115).
     LaunchedEffect(Unit) {
         while (true) {
-            delay(120)
+            delay(160)
             if (sceneMembers.isEmpty()) continue
             val s = sceneSize
             if (s.width <= 0 || s.height <= 0) continue
@@ -484,10 +487,13 @@ private fun AnimatedSceneMemberBox(
     onAnswerFirstToView: (String) -> Unit,
     onAnswerFirstToNudge: (String) -> Unit,
 ) {
-    val animSpec = tween<Float>(durationMillis = 110, easing = LinearEasing)
+    // MG-115 — iOS MongleSceneView 의 step interval(0.16s) 와 sin 주기(π/5.0) +
+    // hop 진폭(12pt) 으로 정합. 이전 (110ms / π/4.0 / 14dp) 은 사이클이 빠르고 진폭이
+    // 달라 사용자가 점프가 낮게 인지되던 문제 차단.
+    val animSpec = tween<Float>(durationMillis = 150, easing = LinearEasing)
     val animX by animateFloatAsState(targetValue = member.x, animationSpec = animSpec, label = "x")
     val animY by animateFloatAsState(targetValue = member.y, animationSpec = animSpec, label = "y")
-    val hopTarget = (-abs(sin(member.stepCount * PI / 4.0)) * 14).toFloat()
+    val hopTarget = (-abs(sin(member.stepCount * PI / 5.0)) * 12).toFloat()
     val animHop by animateFloatAsState(targetValue = hopTarget, animationSpec = animSpec, label = "hop")
     val half = (charSizePx / 2).roundToInt()
 
@@ -548,7 +554,8 @@ private fun SceneMongleItem(
     val size = 52.dp
     val eyeSize = size * 0.18f
     val eyeHOffset = size * 0.144f
-    val eyeVOffset = size * 0.07f
+    // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
+    val eyeVOffset = size * 0.04f
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         // 상태 배지
