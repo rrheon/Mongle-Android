@@ -15,7 +15,7 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
-monggle-keystore
+monggle-keystore*
 
 # JVM Heap Dumps
 *.hprof
