@@ -63,7 +63,10 @@ class ApiUserRepository @Inject constructor(
     }
 
     suspend fun registerFcmToken(token: String) = safeCall {
-        api.registerDeviceToken(RegisterDeviceTokenRequest(token))
+        // 이전엔 registerDeviceToken (PATCH /users/me/device-token, APNs 엔드포인트) 을
+        // 잘못 호출해 서버 users.fcm_token 컬럼이 영구 null 이었음. RootViewModel 의
+        // runCatching swallow 와 결합돼 logcat 흔적도 남지 않아 장기간 잠복. (MG-112)
+        api.registerFcmToken(RegisterDeviceTokenRequest(token))
     }
 
     override suspend fun claimDailyHeart(): DailyHeartResult? = try {

@@ -262,9 +262,20 @@ class RootViewModel @Inject constructor(
                                     }
                                 }
                         }
+                        // MG-112 — registerFcmToken 결과를 logcat 으로 표면화. 이전엔 outer
+                        // runCatching 이 모든 예외를 swallow 해 잘못된 엔드포인트 호출도 흔적
+                        // 없이 사라졌음. 등록 성공/실패는 디버깅의 핵심 단서이므로 명시 로깅.
                         if (fcmToken != null) {
-                            (userRepository as? com.mongle.android.data.remote.ApiUserRepository)
-                                ?.registerFcmToken(fcmToken)
+                            val repo = userRepository as? com.mongle.android.data.remote.ApiUserRepository
+                            if (repo == null) {
+                                android.util.Log.w("RootVM", "FCM 토큰 등록 skip — userRepository cast 실패")
+                            } else {
+                                runCatching { repo.registerFcmToken(fcmToken) }
+                                    .onSuccess { android.util.Log.d("RootVM", "FCM 토큰 서버 등록 성공") }
+                                    .onFailure { android.util.Log.w("RootVM", "FCM 토큰 서버 등록 실패", it) }
+                            }
+                        } else {
+                            android.util.Log.w("RootVM", "FCM 토큰 미발급 — 서버 등록 skip")
                         }
                     }
 
