@@ -104,32 +104,45 @@ fun MongleNavHost(
         }
     }
 
-    // 알림 탭 네비게이션 처리
+    // 알림 탭 네비게이션 처리 (MG-116) —
+    // 사용자가 즉시 답변해야 하는 알림(ANSWER_REQUEST / REMINDER_UNANSWERED)만 답변 화면으로,
+    // 그 외 그룹 컨텍스트 정보성 알림은 그룹 home 으로 라우팅. iOS 와 동일.
+    // - REMINDER 의 unanswered 여부는 서버 reminderScheduler 가 push payload type 을
+    //   REMINDER_UNANSWERED / REMINDER_ANSWERED 로 suffix 분기해 전달한다.
+    //   DB Notification.type 은 'REMINDER' 그대로 유지.
     LaunchedEffect(uiState.pendingNotificationType) {
         val type = uiState.pendingNotificationType ?: return@LaunchedEffect
         if (uiState.appState != AppState.Authenticated) return@LaunchedEffect
         when (type) {
-            "MEMBER_ANSWERED" -> {
-                // 본인이 답했으면 답변 목록, 안 했으면 답변 입력 화면 → 둘 다 QuestionDetail로 이동 (화면 내에서 분기)
+            "ANSWER_REQUEST", "REMINDER_UNANSWERED" -> {
+                // 답변 화면으로 진입 (재촉 / 본인 미답변 리마인드)
                 uiState.todayQuestion?.let { showQuestionDetail = it }
             }
-            "NEW_QUESTION", "ANSWER_REQUEST" -> {
-                if (!uiState.hasAnsweredToday) {
-                    uiState.todayQuestion?.let { showQuestionDetail = it }
-                }
-            }
-            "ALL_ANSWERED", "ANSWERER_NUDGE", "REMINDER", "BADGE_EARNED" -> {
-                // 추가 푸시 타입 — 안전하게 오늘 질문 진입(미답변일 때만)
-                if (!uiState.hasAnsweredToday) {
-                    uiState.todayQuestion?.let { showQuestionDetail = it }
-                }
+            "NEW_QUESTION", "REMINDER_ANSWERED", "REMINDER",
+            "MEMBER_ANSWERED", "ALL_ANSWERED", "BADGE_EARNED", "ANSWERER_NUDGE" -> {
+                // 그룹 home 으로 — 활성 modal/sub-screen 을 닫아 home 노출.
+                // REMINDER (suffix 미포함 legacy) 도 안전하게 home 처리.
+                showQuestionDetail = null
+                showNudgeTarget = null
+                showWriteQuestion = false
+                showGroupSelect = false
             }
             else -> {
-                // 서버에서 신규 type 이 추가돼도 silent fail 하지 않고 홈 노출만 보장.
-                // 의도치 않은 화면 진입을 막기 위해 별도 동작은 하지 않는다.
+                // 알 수 없는 type — 안전 측 home (modal close).
+                showQuestionDetail = null
             }
         }
         rootViewModel.clearPendingNotification()
+    }
+
+    // MG-116 — 그룹 전환 시 이전 그룹의 sub-screen / modal 을 닫아 무조건 새 그룹의 home 노출.
+    // QuestionDetail / Nudge / WriteQuestion / Notifications 등이 활성 상태에서 그룹 전환하면
+    // 새 그룹 데이터 위로 이전 그룹 화면이 그대로 남는 혼란 방지.
+    LaunchedEffect(uiState.family?.id) {
+        showQuestionDetail = null
+        showNudgeTarget = null
+        showWriteQuestion = false
+        showNotifications = false
     }
 
     // iOS MG-33 패리티 — 토큰 만료(401+refresh 실패) 시 사용자 친화 안내 팝업.
