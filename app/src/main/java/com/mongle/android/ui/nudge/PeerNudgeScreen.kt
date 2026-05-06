@@ -84,20 +84,20 @@ fun PeerNudgeScreen(
         )
     }
 
-    // 재촉 전송 성공 시 하트 잔량을 상위에 알리고 토스트 노출
+    // MG-116 — state 기반 LaunchedEffect 가 화면 재진입 시 stale sentCount/errorMessage 를
+    // 다시 읽어 직전 결과 토스트가 replay 되던 회귀를 차단. one-shot SharedFlow 로 일원화.
     val sentToastMessage = stringResource(R.string.nudge_sent)
-    LaunchedEffect(uiState.sentCount) {
-        val heartsRemaining = uiState.heartsRemaining
-        if (uiState.sentCount > 0 && heartsRemaining != null) {
-            onNudgeSent(heartsRemaining)
-            toastData = MongleToastData(message = sentToastMessage, type = MongleToastType.SUCCESS)
-        }
-    }
-
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let {
-            toastData = MongleToastData(message = it, type = MongleToastType.ERROR)
-            viewModel.dismissError()
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is PeerNudgeEvent.NudgeSent -> {
+                    onNudgeSent(event.heartsRemaining)
+                    toastData = MongleToastData(message = sentToastMessage, type = MongleToastType.SUCCESS)
+                }
+                is PeerNudgeEvent.Error -> {
+                    toastData = MongleToastData(message = event.message, type = MongleToastType.ERROR)
+                }
+            }
         }
     }
 
