@@ -11,6 +11,7 @@ import com.mongle.android.domain.model.Question
 import com.mongle.android.domain.model.TreeProgress
 import com.mongle.android.domain.model.User
 import com.mongle.android.data.local.UnreadBadgeStore
+import com.mongle.android.data.remote.ApiNotificationRepository
 import com.mongle.android.data.remote.SessionExpiredNotifier
 import com.mongle.android.domain.repository.AuthRepository
 import com.mongle.android.domain.repository.MongleRepository
@@ -84,6 +85,7 @@ class RootViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val sessionExpiredNotifier: SessionExpiredNotifier,
     private val unreadBadgeStore: UnreadBadgeStore,
+    private val notificationRepository: ApiNotificationRepository,
     private val appForegroundTracker: AppForegroundTracker,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -326,8 +328,20 @@ class RootViewModel @Inject constructor(
         _uiState.update { it.copy(pendingInviteCode = null) }
     }
 
-    fun handleNotificationTap(type: String) {
-        _uiState.update { it.copy(pendingNotificationType = type) }
+    fun handleNotificationTap(type: String?, notificationId: String? = null) {
+        if (type != null) {
+            _uiState.update { it.copy(pendingNotificationType = type) }
+        }
+        // MG-111 — 트레이 알림 탭 시 서버 알림을 즉시 읽음 처리하고 배지 카운트를 -1.
+        // 알림함 화면 진입 없이 사용자가 푸시만 탭한 케이스에서 unread 가 누적되지 않게 한다.
+        // 실패 시 NotificationViewModel 가 알림함 진입 시 서버 기준으로 재정렬하므로 silent.
+        if (notificationId != null) {
+            viewModelScope.launch {
+                runCatching { notificationRepository.markAsRead(notificationId) }
+                val current = unreadBadgeStore.get()
+                unreadBadgeStore.set((current - 1).coerceAtLeast(0))
+            }
+        }
     }
 
     fun clearPendingNotification() {

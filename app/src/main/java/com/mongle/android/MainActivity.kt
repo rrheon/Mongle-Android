@@ -33,7 +33,10 @@ class MainActivity : ComponentActivity() {
         // 그 외 지역은 동의 폼 표시 후 AdMob 초기화한다.
         consentManager.gatherConsent(this)
         intent?.data?.let { uri -> rootViewModel.handleDeepLink(uri) }
-        intent?.getStringExtra("notification_type")?.let { rootViewModel.handleNotificationTap(it) }
+        rootViewModel.handleNotificationTap(
+            intent?.getStringExtra("notification_type"),
+            intent?.getStringExtra("notification_id")
+        )
         setContent {
             MongleTheme {
                 MongleNavHost(
@@ -57,6 +60,9 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.data?.let { uri -> rootViewModel.handleDeepLink(uri) }
-        intent.getStringExtra("notification_type")?.let { rootViewModel.handleNotificationTap(it) }
+        rootViewModel.handleNotificationTap(
+            intent.getStringExtra("notification_type"),
+            intent.getStringExtra("notification_id")
+        )
     }
 }
