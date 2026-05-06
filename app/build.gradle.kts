@@ -79,6 +79,16 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // Android 15+ 16 KB page size 지원 — .so 를 무압축으로 패키징해 시스템이
+    // mmap 할 때 16 KB aligned segment 그대로 사용하게 한다. AGP 8.0+ 기본값이지만
+    // 명시해 회귀 방지. 16 KB 미지원 native lib 가 transitive 로 들어오면 Play
+    // Console "Devices with 16 KB page size" 보고서에서 추적 가능.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 dependencies {
