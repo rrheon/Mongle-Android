@@ -86,7 +86,8 @@ fun MongleCharacter(
     // 명시적으로 color 가 전달되면 그것을 사용 (HOME 의 moodColor 와 동일색을 PeerAnswerSheet 에서 재사용),
     // 아니면 index 기반 기본색을 fallback 으로 사용한다.
     val bodyColor = color ?: characterColors[index % characterColors.size]
-    val eyeSize = size * 0.18f
+    // MG-122 — 눈(흰 테두리 + 검은 동공) 비례 축소: 0.18 → 0.14 (22% 감소).
+    val eyeSize = size * 0.14f
     val eyeHOffset = size * 0.144f
     // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
     val eyeVOffset = size * 0.04f
@@ -110,7 +111,7 @@ fun MongleCharacter(
             // 왼쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 3.dp)
+                    .size(eyeSize + 2.dp)
                     .offset(x = -eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
@@ -124,7 +125,7 @@ fun MongleCharacter(
             // 오른쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 3.dp)
+                    .size(eyeSize + 2.dp)
                     .offset(x = eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
@@ -161,7 +162,8 @@ fun MongleCharacterAvatar(
     modifier: Modifier = Modifier
 ) {
     val bodyColor = color ?: characterColors[index % characterColors.size]
-    val eyeSize = size * 0.18f
+    // MG-122 — 눈(흰 테두리 + 검은 동공) 비례 축소: 0.18 → 0.14 (22% 감소).
+    val eyeSize = size * 0.14f
     val eyeHOffset = size * 0.144f
     // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
     val eyeVOffset = size * 0.04f
@@ -552,7 +554,8 @@ private fun SceneMongleItem(
     hasCurrentUserSkipped: Boolean = false
 ) {
     val size = 52.dp
-    val eyeSize = size * 0.18f
+    // MG-122 — 눈(흰 테두리 + 검은 동공) 비례 축소: 0.18 → 0.14 (22% 감소).
+    val eyeSize = size * 0.14f
     val eyeHOffset = size * 0.144f
     // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
     val eyeVOffset = size * 0.04f
@@ -698,7 +701,7 @@ private fun SceneMongleItem(
             // 왼쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 3.dp)
+                    .size(eyeSize + 2.dp)
                     .offset(x = -eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
@@ -712,7 +715,7 @@ private fun SceneMongleItem(
             // 오른쪽 눈 (흰 테두리 + textPrimary 원)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 3.dp)
+                    .size(eyeSize + 2.dp)
                     .offset(x = eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
