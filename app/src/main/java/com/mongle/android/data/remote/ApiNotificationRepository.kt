@@ -32,6 +32,14 @@ class ApiNotificationRepository @Inject constructor(
         api.getNotifications(limit, familyId).notifications.map { it.toApp() }
     }
 
+    /**
+     * 서버 기준 전 그룹 미읽음 알림 수. 런처 아이콘 배지 / 콜드스타트 동기화 용도.
+     * iOS NotificationRepository.getUnreadCount() 패리티.
+     */
+    suspend fun getUnreadCount(): Int = safeCall {
+        api.getUnreadCount().count
+    }
+
     suspend fun markAsRead(notificationId: String): AppNotification = safeCall {
         api.markNotificationRead(notificationId).toApp()
     }

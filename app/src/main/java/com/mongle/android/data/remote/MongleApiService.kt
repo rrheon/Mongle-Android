@@ -317,6 +317,11 @@ data class DeleteAllNotificationsResponse(
     val count: Int
 )
 
+@JsonClass(generateAdapter = true)
+data class UnreadCountResponse(
+    val count: Int
+)
+
 // ── 재촉하기 ──────────────────────────────────────────
 
 @JsonClass(generateAdapter = true)
@@ -483,6 +488,10 @@ interface MongleApiService {
         @Query("limit") limit: Int = 50,
         @Query("group_id") groupId: String? = null
     ): GetNotificationsResponse
+
+    // 미읽음 알림 수 — 런처 배지 / 콜드스타트 동기화에 사용. iOS getUnreadCount 패리티.
+    @GET("notifications/unread-count")
+    suspend fun getUnreadCount(): UnreadCountResponse
 
     @PATCH("notifications/{notificationId}/read")
     suspend fun markNotificationRead(@Path("notificationId") notificationId: String): NotificationDto

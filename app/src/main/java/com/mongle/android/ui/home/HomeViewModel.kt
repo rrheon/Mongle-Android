@@ -129,10 +129,14 @@ class HomeViewModel @Inject constructor(
         checkUnreadNotifications()
     }
 
+    // MG-117 — 홈 종 아이콘 indicator 는 현재 그룹의 미읽음만 반영해야 한다. familyId 인자
+    // 없이 호출하면 다른 그룹 미읽음에도 점이 켜져 그룹 전환 후에도 잔존하는 회귀가 발생.
+    // iOS HomeFeature 의 `notifications.contains { !$0.isRead && $0.familyId == currentFamilyId }` 와 동치.
     private fun checkUnreadNotifications() {
         viewModelScope.launch {
+            val familyId = _uiState.value.family?.id?.toString()
             val hasUnread = runCatching {
-                notificationRepository.getNotifications(limit = 20).any { !it.isRead }
+                notificationRepository.getNotifications(limit = 20, familyId = familyId).any { !it.isRead }
             }.getOrElse { false }
             _uiState.update { it.copy(hasUnreadNotifications = hasUnread) }
         }
