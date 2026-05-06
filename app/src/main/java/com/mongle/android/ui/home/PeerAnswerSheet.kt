@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,7 +62,8 @@ fun PeerAnswerSheet(
     isMine: Boolean = false,
     onEdit: () -> Unit = {}
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    // partial 펼침 상태에서 isMine "답변 수정" 버튼이 탭바/navigation bar 에 가림.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -73,6 +75,7 @@ fun PeerAnswerSheet(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = MongleSpacing.xl)
+                .navigationBarsPadding()
         ) {
             // 헤더 (닫기 버튼)
             Row(
