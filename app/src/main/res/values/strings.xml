@@ -76,6 +76,8 @@
 
     <!-- Home -->
     <string name="home_default_group">Mongle</string>
+    <!-- Suffix appended to own character name on group home (MG-119) -->
+    <string name="home_member_me_suffix">(me)</string>
     <string name="home_today_question">Today\'s Question</string>
     <string name="home_question_placeholder">A new question arrives at 11 AM</string>
     <string name="home_answer_complete">Answered</string>

@@ -37,9 +37,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mongle.android.domain.model.User
+import com.ycompany.Monggle.R
 import com.mongle.android.ui.theme.MongleAccentOrange
 import com.mongle.android.ui.theme.MongleMonggleBlue
 import com.mongle.android.ui.theme.MongleMonggleGreenLight
@@ -729,8 +731,15 @@ private fun SceneMongleItem(
         }
 
         Spacer(modifier = Modifier.height(4.dp))
+        // MG-119 — 본인 캐릭터는 이름 옆에 "(나)" suffix 를 붙여 status badge 색상에
+        // 더해 즉시 식별 가능하게 한다. 게스트(currentUserId == null)는 isCurrentUser=false 로 마커 없음.
+        val displayName = if (isCurrentUser) {
+            "$name ${stringResource(R.string.home_member_me_suffix)}"
+        } else {
+            name
+        }
         Text(
-            text = name,
+            text = displayName,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium,
                 fontSize = 11.sp
