@@ -1,6 +1,5 @@
 [versions]
-# AGP 8.5.1+ 부터 16 KB page size alignment 빌드 산출물 생성. 8.7.x = 안정 라인.
-agp = "8.7.3"
+agp = "8.13.2"
 kotlin = "2.0.21"
 kotlinxCoroutines = "1.8.1"
 junit = "4.13.2"

@@ -21,23 +21,37 @@ android {
         applicationId = "com.ycompany.Monggle"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.0.1"
+        versionCode = 10
+        versionName = "1.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // MG-117 — AOS 가 dev stage(1cq1kfgvf1) 를 가리키고 있어 iOS 의 prod stage 와 완전
-        // 분리된 별도 DB/사용자/가족 그룹을 사용하던 구조 차단. AOS#4("iOS 의 답변/재촉 알림을
-        // 받을 수 없음") 의 직접적 root cause.
-        // (기존 AOS 사용자는 본인 + 소수 테스터로 한정 → 데이터 마이그레이션 없이 강제 재가입.)
-        buildConfigField("String", "BASE_URL", "\"https://15i45fprse.execute-api.ap-northeast-2.amazonaws.com/\"")
+        // === [추가 시작] 16KB 페이지 지원을 위한 네이티브 빌드 플래그 ===
+        // 네이티브 라이브러리가 포함된 SDK(AdMob, Kakao 등)가 16KB 환경에서 정상 동작하도록 강제 정렬합니다.
+        externalNativeBuild {
+            cmake {
+                cppFlags("-Wl,-z,max-page-size=16384")
+            }
+            // ndkBuild를 사용하는 종속성을 위해 추가
+            ndkBuild {
+                arguments("APP_LDFLAGS+=-Wl,-z,max-page-size=16384")
+            }
+        }
+        // === [추가 완료] ===
+
+        buildConfigField("String", "BASE_URL", "\"https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/\"")
         buildConfigField("String", "KAKAO_APP_KEY", "\"73b4d3e9a62701280ec877fe441949b3\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com\"")
         buildConfigField("String", "APPLE_CLIENT_ID", "\"com.mongle.app.signin\"")
-        // AdMob 광고 ID — 기본값(디버그 빌드 포함)은 Google 공식 테스트 ID.
-        // 실제 광고 ID 는 release buildType 에서만 주입한다 (계정 정지/정책 위반 방지).
-        // 테스트 ID 출처: https://developers.google.com/admob/android/test-ads
+
         buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-3940256099942544/5224354917\"")
         buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+    }
+
+    packaging {
+        jniLibs {
+            // 네이티브 라이브러리를 압축하지 않고 16KB 경계에 맞춰 정렬하여 저장
+            useLegacyPackaging = false
+        }
     }
 
     signingConfigs {
@@ -64,7 +78,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // release 빌드에서만 실제 AdMob 광고 ID 사용
             buildConfigField("String", "ADMOB_REWARDED_ID", "\"ca-app-pub-4718464707406824/9365243021\"")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"ca-app-pub-4718464707406824/2974225929\"")
         }
@@ -133,14 +146,13 @@ dependencies {
 
     // Google Mobile Ads (AdMob)
     implementation(libs.google.mobile.ads)
-    // UMP SDK — GDPR/CCPA 동의 수집 CMP
     implementation(libs.google.user.messaging.platform)
 
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
 
-    // MG-95 EncryptedSharedPreferences — 토큰/PII 평문 저장 제거
+    // MG-95 EncryptedSharedPreferences
     implementation(libs.androidx.security.crypto)
 
     // Network
