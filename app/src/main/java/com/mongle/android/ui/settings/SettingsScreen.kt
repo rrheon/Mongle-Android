@@ -118,6 +118,8 @@ fun SettingsScreen(
     onAccountDeleted: () -> Unit,
     onGroupLeft: () -> Unit = {},
     familyId: java.util.UUID? = null,
+    // MG-120 — 게스트 모드 로그인 팝업의 "로그인" 버튼 콜백.
+    onRequestLogin: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val rawUiState by viewModel.uiState.collectAsState()
@@ -130,6 +132,18 @@ fun SettingsScreen(
     val context = LocalContext.current
     val navController = rememberNavController()
     var toastData by remember { mutableStateOf<MongleToastData?>(null) }
+    // MG-120 — 게스트 모드 로그인 유도 팝업.
+    var showGuestLoginPopup by remember { mutableStateOf(false) }
+    // 모든 액션을 게스트 가드로 래핑 — currentUser == null 이면 팝업 노출, 아니면 원래 액션 실행.
+    val guarded: (() -> Unit) -> () -> Unit = { action ->
+        {
+            if (uiState.currentUser == null) {
+                showGuestLoginPopup = true
+            } else {
+                action()
+            }
+        }
+    }
 
     LaunchedEffect(currentUser, loginProviderType, familyId) {
         viewModel.initialize(currentUser, loginProviderType)
@@ -184,13 +198,15 @@ fun SettingsScreen(
                 }
                 MyScreen(
                     uiState = uiState,
-                    onProfileEditTapped = {
+                    // MG-120 — 게스트 모드는 모든 행 탭 시 로그인 유도. guarded 래퍼 적용.
+                    onProfileEditTapped = guarded {
                         viewModel.onEditProfileTapped()
                         navController.navigate("profile_edit")
                     },
-                    onNotificationsTapped = { navController.navigate("notifications") },
-                    onGroupManagementTapped = { navController.navigate("group_management") },
-                    onAccountManagementTapped = { navController.navigate("account_management") },
+                    onNotificationsTapped = guarded { navController.navigate("notifications") },
+                    onGroupManagementTapped = guarded { navController.navigate("group_management") },
+                    onAccountManagementTapped = guarded { navController.navigate("account_management") },
+                    // 약관/개인정보/UMP 옵션은 비인증 상태에서도 접근 허용 (법적 의무 / 사용자 권리).
                     onPrivacyOptionsTapped = { act -> viewModel.onPrivacyOptionsTapped(act) }
                 )
             }
@@ -268,6 +284,26 @@ fun SettingsScreen(
             toastData = toastData,
             onDismiss = { toastData = null }
         )
+
+        // MG-120 — 게스트 모드 로그인 유도 팝업 (Home 패턴 동일).
+        if (showGuestLoginPopup) {
+            Dialog(
+                onDismissRequest = { showGuestLoginPopup = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                MonglePopup(
+                    title = stringResource(R.string.guest_login_required_title),
+                    description = stringResource(R.string.guest_login_required_desc),
+                    primaryLabel = stringResource(R.string.guest_login_required_btn_login),
+                    onPrimary = {
+                        showGuestLoginPopup = false
+                        onRequestLogin()
+                    },
+                    secondaryLabel = stringResource(R.string.common_cancel),
+                    onSecondary = { showGuestLoginPopup = false }
+                )
+            }
+        }
     }
 }
 

@@ -163,7 +163,9 @@ fun MainTabScreen(
                     onLogout = onLogout,
                     onAccountDeleted = onLogout,
                     onGroupLeft = onGroupLeft,
-                    familyId = rootUiState.family?.id
+                    familyId = rootUiState.family?.id,
+                    // MG-120 — 게스트 모드 로그인 팝업의 "로그인" 버튼 콜백.
+                    onRequestLogin = onRequestLogin
                 )
             }
         }
