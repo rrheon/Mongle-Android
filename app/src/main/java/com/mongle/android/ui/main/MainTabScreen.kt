@@ -54,6 +54,8 @@ fun MainTabScreen(
     onQuestionSkipped: (Int) -> Unit = {},
     onLogout: () -> Unit = {},
     onGroupLeft: () -> Unit = {},
+    // MG-119 — 게스트 모드에서 로그인 유도 팝업의 "로그인" 버튼 콜백.
+    onRequestLogin: () -> Unit = {},
     answerSubmittedCount: Int = 0,
     adManager: AdManager? = null
 ) {
@@ -146,6 +148,7 @@ fun MainTabScreen(
                     onNavigateToWriteQuestion = onNavigateToWriteQuestion,
                     onNavigateToGroupSelect = onNavigateToGroupSelect,
                     onGroupSelected = onGroupSelected,
+                    onRequestLogin = onRequestLogin,
                     viewModel = homeViewModel,
                     adManager = adManager
                 )

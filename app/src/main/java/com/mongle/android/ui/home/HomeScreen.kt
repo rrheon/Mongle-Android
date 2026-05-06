@@ -138,6 +138,8 @@ fun HomeScreen(
     onNavigateToWriteQuestion: () -> Unit,
     onNavigateToGroupSelect: () -> Unit = {},
     onGroupSelected: (java.util.UUID) -> Unit = {},
+    // MG-119 — 게스트 모드 팝업의 "로그인" 버튼 콜백. iOS HomeFeature delegate(.requestLogin) 패리티.
+    onRequestLogin: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     adManager: com.mongle.android.util.AdManager? = null
 ) {
@@ -161,6 +163,8 @@ fun HomeScreen(
     var showNudgeUnavailableDialog by remember { mutableStateOf<String?>(null) }
     var showSkipConfirmDialog by remember { mutableStateOf(false) }
     var showWriteConfirmDialog by remember { mutableStateOf(false) }
+    // MG-119 — 게스트 모드 로그인 유도 팝업.
+    var showGuestLoginPopup by remember { mutableStateOf(false) }
 
     // 화면 복귀 시 답변 상태 새로고침 (앱 백그라운드 → 포그라운드 복귀)
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -202,11 +206,9 @@ fun HomeScreen(
                 is HomeEvent.ShowAnswerFirstToView -> showAnswerFirstDialog = event.memberName
                 is HomeEvent.ShowNudgeUnavailable -> showNudgeUnavailableDialog = event.memberName
                 HomeEvent.ShowGuestLoginRequired -> {
-                    // 게스트 모드 — 로그인 유도 토스트로 안내. iOS MG-50 패리티.
-                    toastData = MongleToastData(
-                        message = "로그인 후 이용할 수 있어요",
-                        type = MongleToastType.ERROR
-                    )
+                    // MG-119 — Toast 단순 안내에서 MonglePopup(로그인 / 취소) 으로 격상.
+                    // iOS HomeFeature.showGuestLoginPrompt 패리티. 로그인 버튼 → 로그인 화면.
+                    showGuestLoginPopup = true
                 }
                 is HomeEvent.ShowError -> {
                     val msg = when {
@@ -461,6 +463,26 @@ fun HomeScreen(
             onDismiss = { peerAnswerData = null },
             characterColor = data.characterColor
         )
+    }
+
+    // MG-119 — 게스트 모드 로그인 유도 팝업. iOS HomeFeature.showGuestLoginPrompt 패리티.
+    if (showGuestLoginPopup) {
+        Dialog(
+            onDismissRequest = { showGuestLoginPopup = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            MonglePopup(
+                title = stringResource(R.string.guest_login_required_title),
+                description = stringResource(R.string.guest_login_required_desc),
+                primaryLabel = stringResource(R.string.guest_login_required_btn_login),
+                onPrimary = {
+                    showGuestLoginPopup = false
+                    onRequestLogin()
+                },
+                secondaryLabel = stringResource(R.string.common_cancel),
+                onSecondary = { showGuestLoginPopup = false }
+            )
+        }
     }
 
     // 먼저 답변 완료 팝업 (답변 보기 시도)

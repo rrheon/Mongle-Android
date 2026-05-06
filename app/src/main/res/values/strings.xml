@@ -392,4 +392,9 @@
     <string name="search_yesterday">Yesterday</string>
     <string name="search_date_pattern">MMM d</string>
     <string name="notif_date_pattern">M/d</string>
+
+    <!-- MG-119 — 둘러보기 게스트 가드 팝업 -->
+    <string name="guest_login_required_title">Login required</string>
+    <string name="guest_login_required_desc">This feature is only available to logged-in users. Would you like to log in now?</string>
+    <string name="guest_login_required_btn_login">Log in</string>
 </resources>

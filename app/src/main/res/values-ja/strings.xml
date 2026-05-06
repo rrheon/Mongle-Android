@@ -391,4 +391,9 @@
     <string name="search_yesterday">昨日</string>
     <string name="search_date_pattern">M月d日</string>
     <string name="notif_date_pattern">M月d日</string>
+
+    <!-- MG-119 — ゲスト閲覧モード ログイン要求ポップアップ -->
+    <string name="guest_login_required_title">ログインが必要です</string>
+    <string name="guest_login_required_desc">ログイン後にご利用いただける機能です。ログインしますか？</string>
+    <string name="guest_login_required_btn_login">ログイン</string>
 </resources>

@@ -374,6 +374,20 @@ class RootViewModel @Inject constructor(
         }
     }
 
+    /**
+     * MG-119 — 게스트 모드(currentUser == null) 에서 로그인 필요 액션을 트리거한 뒤
+     * 로그인 팝업의 "로그인" 버튼을 탭한 경우. Unauthenticated 로 전환해 NavHost 가
+     * 로그인 화면을 노출하게 한다. iOS HomeFeature delegate(.requestLogin) 패리티.
+     */
+    fun requestLoginFromGuest() {
+        _uiState.update {
+            RootUiState(
+                appState = AppState.Unauthenticated,
+                currentUser = null
+            )
+        }
+    }
+
     fun onLoggedIn(
         user: User,
         needsConsent: Boolean = false,
