@@ -47,6 +47,9 @@ class MongleFcmService : FirebaseMessagingService() {
         val title = message.notification?.title ?: message.data["title"] ?: return
         val body = message.notification?.body ?: message.data["body"] ?: ""
         val type = message.data["type"] ?: ""
+        // 서버(MG-111)가 페이로드에 notificationId 를 실어 보낸다 — PendingIntent 로 전달해
+        // 사용자가 트레이 알림을 탭한 시점에 자동 markAsRead 하기 위함.
+        val notificationId = message.data["notificationId"]
 
         // iOS MG-55 패리티 — 로그인/온보딩/약관 도중에는 트레이 배너로 흐름을 끊지 않는다.
         // unread 카운터는 그대로 증가시켜 사용자가 인증 후 알림 화면에서 누적 확인 가능.
@@ -56,10 +59,10 @@ class MongleFcmService : FirebaseMessagingService() {
         }
 
         val unread = unreadBadgeStore.incrementAndGet()
-        showNotification(title, body, type, unread)
+        showNotification(title, body, type, unread, notificationId)
     }
 
-    private fun showNotification(title: String, body: String, type: String, unread: Int) {
+    private fun showNotification(title: String, body: String, type: String, unread: Int, notificationId: String?) {
         val channelId = "mongle_default"
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -73,9 +76,15 @@ class MongleFcmService : FirebaseMessagingService() {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("notification_type", type)
+            // MG-111 — MainActivity 가 onCreate/onNewIntent 에서 추출해 markAsRead 호출.
+            if (notificationId != null) putExtra("notification_id", notificationId)
         }
+        // requestCode 가 0 으로 고정이면 FLAG_IMMUTABLE 환경에서 시스템이 기존 PendingIntent
+        // 를 재사용해 신규 extra(notification_id 등)가 반영되지 않는다. 알림별로 다른
+        // requestCode 를 부여해 PendingIntent 를 분리. (MG-111)
+        val requestCode = notificationId?.hashCode() ?: System.currentTimeMillis().toInt()
         val pending = PendingIntent.getActivity(
-            this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            this, requestCode, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
         // 앱이 foreground 일 때 heads-up 배너로 흐름을 끊지 않도록 priority 를 낮춘다.
