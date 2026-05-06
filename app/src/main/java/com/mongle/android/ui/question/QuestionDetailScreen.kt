@@ -403,13 +403,14 @@ private fun MoodCell(
             // eyeHOffset = size * 0.144, eyeVOffset = size * 0.04 (아래로),
             // 흰 테두리 두께 +3dp. 이전엔 y 가 -eyeSize * 0.3f (위로!) 로 그려져
             // iOS 와 정반대 방향이었다.
-            val eyeSize = 36.dp * 0.18f
+            // MG-122 — 눈 비례 축소 (0.18 → 0.14, 흰 테두리 +3 → +2dp).
+            val eyeSize = 36.dp * 0.14f
             val eyeHOffset = 36.dp * 0.144f
             val eyeVOffset = 36.dp * 0.04f
             // 왼쪽 눈 (흰 테두리)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 3.dp)
+                    .size(eyeSize + 2.dp)
                     .offset(x = -eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
@@ -423,7 +424,7 @@ private fun MoodCell(
             // 오른쪽 눈 (흰 테두리)
             Box(
                 modifier = Modifier
-                    .size(eyeSize + 3.dp)
+                    .size(eyeSize + 2.dp)
                     .offset(x = eyeHOffset, y = eyeVOffset)
                     .background(Color.White, CircleShape),
                 contentAlignment = Alignment.Center
