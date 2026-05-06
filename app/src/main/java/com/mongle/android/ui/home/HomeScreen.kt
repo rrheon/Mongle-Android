@@ -334,8 +334,17 @@ fun HomeScreen(
                     showQuestionSheet = true
                 }
             },
-            onAnswerFirstToView = { name -> showAnswerFirstDialog = name },
-            onAnswerFirstToNudge = { name -> showNudgeUnavailableDialog = name },
+            // MG-121 — 게스트 모드는 "먼저 답변하세요" 다이얼로그 대신 로그인 유도 팝업.
+            // canView = hasCurrentUserAnswered || hasCurrentUserSkipped 가 게스트에선 항상 false 라
+            // 다른 멤버 탭 시 항상 onAnswerFirst* 분기로 떨어지던 케이스 차단.
+            onAnswerFirstToView = { name ->
+                if (uiState.currentUser == null) showGuestLoginPopup = true
+                else showAnswerFirstDialog = name
+            },
+            onAnswerFirstToNudge = { name ->
+                if (uiState.currentUser == null) showGuestLoginPopup = true
+                else showNudgeUnavailableDialog = name
+            },
             modifier = Modifier.fillMaxSize()
         )
 
