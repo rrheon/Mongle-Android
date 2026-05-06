@@ -7,5 +7,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="mongle_primary">#FF4CAF50</color>
+    <!-- iOS primary 파스텔톤 (#8FD5A6) — MG-121. FCM 알림 colorize 에 사용. -->
+    <color name="mongle_primary">#FF8FD5A6</color>
 </resources>
