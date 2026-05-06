@@ -556,8 +556,8 @@ private fun SceneMongleItem(
     hasCurrentUserSkipped: Boolean = false
 ) {
     val size = 52.dp
-    // MG-122 — 눈(흰 테두리 + 검은 동공) 비례 축소: 0.18 → 0.14 (22% 감소).
-    val eyeSize = size * 0.14f
+    // MG-122 — 눈(흰 테두리 + 검은 동공) 비례 0.16 — 홈/그룹선택 통일.
+    val eyeSize = size * 0.16f
     val eyeHOffset = size * 0.144f
     // MG-115 — iOS MongleMonggle 의 eyeOffset = size * 0.04 와 일치 (0.07f → 0.04f).
     val eyeVOffset = size * 0.04f

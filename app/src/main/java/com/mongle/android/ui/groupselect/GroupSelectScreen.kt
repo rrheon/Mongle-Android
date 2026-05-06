@@ -314,7 +314,8 @@ fun GroupSelectScreen(
 
 @Composable
 private fun MongleMonggleCircle(color: Color, size: Dp, modifier: Modifier = Modifier) {
-    val eyeSize = size * 0.18f
+    // MG-122 — 눈(흰 테두리 + 검은 동공) 비례 0.16 — 홈/그룹선택 통일.
+    val eyeSize = size * 0.16f
     val eyeOffset = size * 0.14f
     Box(
         modifier = modifier
