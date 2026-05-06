@@ -2,17 +2,17 @@ package com.mongle.android.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// MARK: - Primary (iOS 기준: #4CAF50 계열)
-val MonglePrimary = Color(0xFF4CAF50)
-val MonglePrimaryDark = Color(0xFF388E3C)
-val MonglePrimaryLight = Color(0xFFA5D6A7)
-val MonglePrimaryLightDark = Color(0xFFC2E8D4)
-val MonglePrimaryDarker = Color(0xFF43A047)
-val MonglePrimaryDarkerDark = Color(0xFF6BBF93)
-val MonglePrimarySoft = Color(0xFF43A047)
-val MonglePrimarySoftDark = Color(0xFF6BBF93)
-val MonglePrimaryGradientStart = Color(0xFF6BBF93)
-val MonglePrimaryGradientEnd = Color(0xFF7BC8A0)
+// MARK: - Primary (iOS DesignSystem.swift / xcassets 파스텔톤 기준 — MG-121)
+val MonglePrimary = Color(0xFF8FD5A6)            // iOS primary
+val MonglePrimaryDark = Color(0xFF5BAF85)        // iOS primaryDark — 다크 테마 primary
+val MonglePrimaryLight = Color(0xFFA5D6A7)       // iOS primaryLight
+val MonglePrimaryLightDark = Color(0xFFC2E8D4)   // iOS primaryXLight — 다크 테마 primaryContainer
+val MonglePrimaryDarker = Color(0xFF5BAF85)      // iOS primaryMuted — onPrimaryContainer 가독 contrast
+val MonglePrimaryDarkerDark = Color(0xFF6BBF93)  // iOS primarySoft — 다크 테마 onPrimaryContainer
+val MonglePrimarySoft = Color(0xFF6BBF93)        // iOS primarySoft
+val MonglePrimarySoftDark = Color(0xFF6BBF93)    // iOS primarySoft (light/dark 동일)
+val MonglePrimaryGradientStart = Color(0xFF8FD5A6) // iOS gradientStart
+val MonglePrimaryGradientEnd = Color(0xFFA5E0C0)   // iOS gradientEnd
 val MonglePrimaryXLight = Color(0xFFC2E8D4)
 val MonglePrimaryMuted = Color(0xFF5BAF85)
 val MonglePrimaryDeep = Color(0xFF2E7D32)
@@ -74,10 +74,10 @@ val MongleTextSecondary = Color(0xFF6D6D6D)
 val MongleTextHint = Color(0xFF9E9E9E)
 val MongleTextOnPrimary = Color(0xFFFFFFFF)
 
-// MARK: - Status (iOS 기준: success = #4CAF50)
+// MARK: - Status (iOS 기준: success = #8FD5A6 파스텔 — MG-121)
 val MongleError = Color(0xFFF44336)
 val MongleWarning = Color(0xFFFF9800)
-val MongleSuccessLight = Color(0xFF4CAF50)
+val MongleSuccessLight = Color(0xFF8FD5A6)       // iOS success
 val MongleSuccessDark = Color(0xFF66BB6A)
 val MongleInfo = Color(0xFF42A5F5)
 val MongleNotificationDot = Color(0xFFF44336)
