@@ -1236,16 +1236,17 @@ private fun CopyPillButton(isCopied: Boolean, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        // MG-123 — pill 배경(파스텔 그린)과의 contrast 확보. 흰 텍스트/아이콘은 시인성 부족.
         Icon(
             imageVector = if (isCopied) Icons.Default.Check else Icons.Default.ContentCopy,
             contentDescription = null,
-            tint = Color.White,
+            tint = Color.Black,
             modifier = Modifier.size(14.dp)
         )
         Text(
             text = if (isCopied) stringResource(R.string.common_copied) else stringResource(R.string.common_copy),
             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = Color.White
+            color = Color.Black
         )
     }
 }
