@@ -60,20 +60,43 @@ suspend fun loginWithKakao(context: Context): KakaoLoginCredential =
             }
         }
 
+        // MG-114 — KakaoTalk login fallback 분기를 reason 별로 세분화.
+        // 이전엔 Cancelled 외 모든 오류를 무차별 loginWithKakaoAccount 로 재시도해
+        // 카톡 앱이 active 인 상태에서 race 로 fallback 도 실패 → 사용자 입장에선
+        // "카톡 → 앱 복귀 안 됨" 으로 인식되던 케이스를 차단. 또한 reason 별 로그를
+        // 남겨 logcat 으로 정확한 원인을 추적 가능하게 한다.
         if (UserApiClient.instance.isKakaoTalkLoginAvailable(context)) {
+            Log.d("KakaoLogin", "KakaoTalk available — attempting talk login")
             UserApiClient.instance.loginWithKakaoTalk(context) { token, error ->
-                if (error != null) {
-                    // 카카오톡 미설치 또는 사용자 취소가 아닌 경우 계정 로그인 시도
-                    if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
-                        cont.resumeWithException(error)
-                    } else {
-                        UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+                when {
+                    error == null && token != null -> callback(token, null)
+                    error == null -> cont.resumeWithException(Exception("카카오 로그인 실패: 토큰 없음"))
+                    error is ClientError -> when (error.reason) {
+                        ClientErrorCause.Cancelled -> {
+                            Log.d("KakaoLogin", "KakaoTalk login cancelled by user")
+                            cont.resumeWithException(error)
+                        }
+                        ClientErrorCause.NotSupported -> {
+                            // 카톡 앱이 OAuth 미지원 버전이거나 환경 미충족 → 계정 로그인으로 fallback (정상 경로).
+                            Log.d("KakaoLogin", "KakaoTalk login not supported (reason=${error.reason}) — fallback to account")
+                            UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+                        }
+                        else -> {
+                            // IllegalState / Unknown 등 — 기존 패턴 유지하되 명시 로깅.
+                            Log.e("KakaoLogin", "KakaoTalk login ClientError (reason=${error.reason}, msg=${error.msg}) — fallback to account", error)
+                            UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
+                        }
                     }
-                } else {
-                    callback(token, null)
+                    else -> {
+                        // 비ClientError (네트워크/시스템) — 무차별 재시도 차단. 명확한 실패로 종료해
+                        // 사용자가 재시도 / 앱 재시작을 인지하게 한다.
+                        Log.e("KakaoLogin", "KakaoTalk login non-ClientError (${error::class.simpleName}: ${error.message})", error)
+                        cont.resumeWithException(error)
+                    }
                 }
             }
         } else {
+            Log.d("KakaoLogin", "KakaoTalk not available — account login")
             UserApiClient.instance.loginWithKakaoAccount(context, callback = callback)
         }
     }
