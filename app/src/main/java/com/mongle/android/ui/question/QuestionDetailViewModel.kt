@@ -75,18 +75,29 @@ class QuestionDetailViewModel @Inject constructor(
 
     private var initialized = false
 
+    /**
+     * MG-113 — QuestionDetailScreen 은 NavHost 외부의 조건부 composition 으로 렌더되어
+     * hiltViewModel() 이 Activity-scoped 단일 인스턴스에 바인딩된다. 그룹 전환으로
+     * 다른 question 이 들어와도 initialized=true 가 유지되어 직전 그룹의 myAnswer/
+     * answerText 가 carry-over → "수정하기" 버튼이 잘못 표시되던 버그 차단.
+     *
+     * question.id 또는 currentUser.id 가 바뀌면 (그룹 전환 / 계정 전환) state 를 완전
+     * 초기화하고 새 답변을 로드한다. 같은 context 재진입(부모 리컴포지션) 은 기존 동작 유지.
+     */
     fun initialize(question: Question, currentUser: User?, familyMembers: List<User> = emptyList(), hearts: Int = 0) {
-        if (initialized) return
+        val current = _uiState.value
+        val isSameContext = initialized
+            && current.question?.id == question.id
+            && current.currentUser?.id == currentUser?.id
+        if (isSameContext) return
         initialized = true
-        _uiState.update {
-            it.copy(
-                question = question,
-                currentUser = currentUser,
-                familyMembers = familyMembers,
-                hearts = hearts,
-                isLoading = true
-            )
-        }
+        _uiState.value = QuestionDetailUiState(
+            question = question,
+            currentUser = currentUser,
+            familyMembers = familyMembers,
+            hearts = hearts,
+            isLoading = true
+        )
         loadAnswers(question, currentUser)
         // 부모에서 캡처한 hearts 는 stale 일 수 있음(다른 단말에서 답변/스킵/edit 으로 변경됨).
         // 진입 시 서버에서 최신 값을 가져와 editCostPopup/adReward 분기가 올바른 잔량으로 동작하게 한다.
