@@ -314,15 +314,19 @@ fun HomeScreen(
                 user?.let { viewModel.onNudgeTapped(it) }
             },
             onSelfTap = {
+                // MG-120 — 게스트 모드는 본인 캐릭터 탭 시 답변/조회 흐름 진입 차단 + 로그인 유도.
+                val me = uiState.currentUser ?: run {
+                    showGuestLoginPopup = true
+                    return@MongleSceneView
+                }
                 // 본인 몽글캐릭터 탭 시: 어떤 상태에서도 무조건 "보이는 동작"이 있어야 한다.
                 // 1) 답변 완료 + 캐시에 본인 답변 있음 → PeerAnswerSheet 즉시 노출
                 // 2) 그 외(답변 전 / 캐시 미스 등) → 오늘의 질문 바텀시트 노출
                 //    (질문 바텀시트는 hasAnswered 일 땐 "답변 수정", 아니면 "답변하기" 버튼을 보여준다)
                 // 과거에는 viewModel.onViewAnswerTapped 의 silent fail 경로(서버 응답 없음 등)
                 // 때문에 탭이 무반응이 되는 회귀가 있었다 — 동기 fallback 으로 차단한다.
-                val me = uiState.currentUser
-                val cachedMyAnswer = me?.let { uiState.memberAnswers[it.id] }
-                if (me != null && uiState.hasAnsweredToday && cachedMyAnswer != null) {
+                val cachedMyAnswer = uiState.memberAnswers[me.id]
+                if (uiState.hasAnsweredToday && cachedMyAnswer != null) {
                     val idx = uiState.familyMembers.indexOfFirst { it.id == me.id }.coerceAtLeast(0)
                     val color = sceneMembers.find { it.id == me.id }?.color
                     peerAnswerData = PeerAnswerDisplay(me, idx, cachedMyAnswer, color)
@@ -348,7 +352,14 @@ fun HomeScreen(
                 hearts = uiState.currentUser?.hearts ?: 0,
                 hasNotification = uiState.hasUnreadNotifications,
                 showGroupDropdown = showGroupDropdown,
-                onGroupDropdownToggle = { showGroupDropdown = !showGroupDropdown },
+                // MG-120 — 게스트 모드는 그룹 dropdown / 그룹 이름 탭 시 로그인 유도.
+                onGroupDropdownToggle = {
+                    if (uiState.currentUser == null) {
+                        showGuestLoginPopup = true
+                    } else {
+                        showGroupDropdown = !showGroupDropdown
+                    }
+                },
                 onTopBarMeasured = { topBarHeightPx = it },
                 onNotificationTap = {
                     // 게스트 모드 가드 — true 일 때만 실제 진입.
