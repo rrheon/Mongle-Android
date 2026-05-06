@@ -25,7 +25,11 @@ android {
         versionName = "1.0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://1cq1kfgvf1.execute-api.ap-northeast-2.amazonaws.com/\"")
+        // MG-117 — AOS 가 dev stage(1cq1kfgvf1) 를 가리키고 있어 iOS 의 prod stage 와 완전
+        // 분리된 별도 DB/사용자/가족 그룹을 사용하던 구조 차단. AOS#4("iOS 의 답변/재촉 알림을
+        // 받을 수 없음") 의 직접적 root cause.
+        // (기존 AOS 사용자는 본인 + 소수 테스터로 한정 → 데이터 마이그레이션 없이 강제 재가입.)
+        buildConfigField("String", "BASE_URL", "\"https://15i45fprse.execute-api.ap-northeast-2.amazonaws.com/\"")
         buildConfigField("String", "KAKAO_APP_KEY", "\"73b4d3e9a62701280ec877fe441949b3\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"43055125841-in9de5felh4f90rq8vee9lq60uice7uj.apps.googleusercontent.com\"")
         buildConfigField("String", "APPLE_CLIENT_ID", "\"com.mongle.app.signin\"")
