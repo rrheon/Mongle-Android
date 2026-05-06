@@ -303,6 +303,12 @@ class RootViewModel @Inject constructor(
                             errorMessage = if (degraded) lastNetworkError?.message else it.errorMessage
                         )
                     }
+
+                    // MG-117 — 콜드스타트 시 SharedPreferences 의 stale unreadCount 를 서버 기준으로 보정.
+                    // 다른 단말이 mark-as-read 하거나 앱 KILL 동안 새 푸시가 와서 카운트가 어긋난 경우를 정정.
+                    // iOS Root+Reducer.refreshHomeData 직후 setBadgeCount(unreadCountAllGroups) 패리티.
+                    runCatching { notificationRepository.getUnreadCount() }
+                        .onSuccess { unreadBadgeStore.set(it) }
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -363,14 +369,19 @@ class RootViewModel @Inject constructor(
         if (type != null) {
             _uiState.update { it.copy(pendingNotificationType = type) }
         }
-        // MG-111 — 트레이 알림 탭 시 서버 알림을 즉시 읽음 처리하고 배지 카운트를 -1.
-        // 알림함 화면 진입 없이 사용자가 푸시만 탭한 케이스에서 unread 가 누적되지 않게 한다.
-        // 실패 시 NotificationViewModel 가 알림함 진입 시 서버 기준으로 재정렬하므로 silent.
+        // MG-111 — 트레이 알림 탭 시 서버 알림을 즉시 읽음 처리.
+        // MG-117 — 읽음 처리 직후 서버 unread-count 로 배지 동기화. SharedPreferences 의
+        // 단순 -1 fallback 은 다중 단말/스토어 누락 시 음수 누적·중복 차감 위험이 있어
+        // 서버 truth 가 우선. 네트워크 실패 시에만 기존 -1 fallback.
         if (notificationId != null) {
             viewModelScope.launch {
                 runCatching { notificationRepository.markAsRead(notificationId) }
-                val current = unreadBadgeStore.get()
-                unreadBadgeStore.set((current - 1).coerceAtLeast(0))
+                runCatching { notificationRepository.getUnreadCount() }
+                    .onSuccess { unreadBadgeStore.set(it) }
+                    .onFailure {
+                        val current = unreadBadgeStore.get()
+                        unreadBadgeStore.set((current - 1).coerceAtLeast(0))
+                    }
             }
         }
     }
