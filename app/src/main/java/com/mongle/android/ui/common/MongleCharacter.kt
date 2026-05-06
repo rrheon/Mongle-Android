@@ -487,13 +487,13 @@ private fun AnimatedSceneMemberBox(
     onAnswerFirstToView: (String) -> Unit,
     onAnswerFirstToNudge: (String) -> Unit,
 ) {
-    // MG-115 — iOS MongleSceneView 의 step interval(0.16s) 와 sin 주기(π/5.0) +
-    // hop 진폭(12pt) 으로 정합. 이전 (110ms / π/4.0 / 14dp) 은 사이클이 빠르고 진폭이
-    // 달라 사용자가 점프가 낮게 인지되던 문제 차단.
+    // MG-118 — MG-115 에서 iOS 12pt 와 동등 진폭으로 맞췄으나 시각적으로 점프가 부족하다는
+    // 보고로 진폭 12 → 20dp 로 증가. 사이클(π/5.0, 1.6s) 과 step interval(160ms / 150ms tween)
+    // 은 그대로 유지해 자연스러운 호흡감 보존.
     val animSpec = tween<Float>(durationMillis = 150, easing = LinearEasing)
     val animX by animateFloatAsState(targetValue = member.x, animationSpec = animSpec, label = "x")
     val animY by animateFloatAsState(targetValue = member.y, animationSpec = animSpec, label = "y")
-    val hopTarget = (-abs(sin(member.stepCount * PI / 5.0)) * 12).toFloat()
+    val hopTarget = (-abs(sin(member.stepCount * PI / 5.0)) * 20).toFloat()
     val animHop by animateFloatAsState(targetValue = hopTarget, animationSpec = animSpec, label = "hop")
     val half = (charSizePx / 2).roundToInt()
 
