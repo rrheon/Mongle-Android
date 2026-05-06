@@ -391,4 +391,9 @@
     <string name="search_yesterday">어제</string>
     <string name="search_date_pattern">M월 d일</string>
     <string name="notif_date_pattern">M월 d일</string>
+
+    <!-- MG-119 — 둘러보기 게스트 가드 팝업 -->
+    <string name="guest_login_required_title">로그인이 필요해요</string>
+    <string name="guest_login_required_desc">로그인 후 이용할 수 있는 기능이에요. 로그인하시겠어요?</string>
+    <string name="guest_login_required_btn_login">로그인</string>
 </resources>

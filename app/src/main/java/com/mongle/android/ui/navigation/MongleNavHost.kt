@@ -406,6 +406,8 @@ fun MongleNavHost(
                                 groupLeftToast = true
                                 rootViewModel.onGroupLeft()
                             },
+                            // MG-119 — 게스트 모드 로그인 팝업의 "로그인" 버튼.
+                            onRequestLogin = { rootViewModel.requestLoginFromGuest() },
                             answerSubmittedCount = answerSubmittedCount,
                             adManager = adManager
                         )

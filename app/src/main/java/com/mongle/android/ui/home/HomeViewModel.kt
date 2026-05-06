@@ -230,6 +230,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onQuestionTapped() {
+        // MG-119 — 게스트 모드에서 답변 화면 진입 차단 + 로그인 유도 팝업.
+        if (_uiState.value.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
         val question = _uiState.value.todayQuestion ?: return
         viewModelScope.launch {
             _events.emit(HomeEvent.NavigateToQuestionDetail(question))
@@ -302,7 +307,12 @@ class HomeViewModel @Inject constructor(
 
     fun onMemberTapped(member: User) {
         val state = _uiState.value
-        val currentUser = state.currentUser ?: return
+        // MG-119 — 게스트 모드에서 멤버 탭 시 silent return 대신 로그인 유도.
+        if (state.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
+        val currentUser = state.currentUser
         if (member.id == currentUser.id) return
 
         viewModelScope.launch {
@@ -322,6 +332,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onViewAnswerTapped(member: User) {
+        // MG-119 — 게스트는 가족 답변 조회 불가. 로그인 유도.
+        if (_uiState.value.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
         viewModelScope.launch {
             val state = _uiState.value
             val memberIndex = state.familyMembers.indexOfFirst { it.id == member.id }
@@ -414,6 +429,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun skipQuestion() {
+        // MG-119 — 게스트는 질문 다시받기 불가.
+        if (_uiState.value.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             runCatching { questionRepository.skipQuestion() }
@@ -437,6 +457,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun watchAdForWrite(adManager: AdManager) {
+        // MG-119 — 게스트는 나만의 질문 작성 불가.
+        if (_uiState.value.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
         _uiState.update { it.copy(isLoading = true) }
         adManager.showRewardedAd(
             onRewarded = {
@@ -468,6 +493,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun watchAdForSkip(adManager: AdManager) {
+        // MG-119 — 게스트는 광고/스킵 흐름 불가.
+        if (_uiState.value.currentUser == null) {
+            viewModelScope.launch { _events.emit(HomeEvent.ShowGuestLoginRequired) }
+            return
+        }
         _uiState.update { it.copy(isLoading = true) }
         adManager.showRewardedAd(
             onRewarded = {
