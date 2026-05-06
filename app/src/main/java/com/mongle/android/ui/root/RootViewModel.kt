@@ -238,10 +238,30 @@ class RootViewModel @Inject constructor(
                     val refreshedUser = runCatching { authRepository.getCurrentUser(grantDailyHeart = true) }.getOrNull()
                     val heartGrantedToday = refreshedUser?.heartGrantedToday ?: false
 
-                    // FCM 토큰 서버 등록
+                    // MG-123 — FCM 토큰 등록 robustness:
+                    // SharedPreferences("fcm")["token"] 만 의존하면 onNewToken 콜백이 동일 토큰으로
+                    // 재호출되지 않는 케이스(같은 디바이스 재설치 / dev→prod 전환 후 첫 진입 등)에서
+                    // 영구 미등록 결함이 발생한다. FirebaseMessaging.getInstance().token 을 직접
+                    // suspend fetch 해 fallback. 성공 시 SharedPreferences 에 cache 해 다음 호출은 빠름.
                     runCatching {
-                        val fcmToken = context.getSharedPreferences("fcm", Context.MODE_PRIVATE)
+                        val cached = context.getSharedPreferences("fcm", Context.MODE_PRIVATE)
                             .getString("token", null)
+                        val fcmToken = cached ?: kotlinx.coroutines.suspendCancellableCoroutine<String?> { cont ->
+                            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        val freshToken = task.result
+                                        if (freshToken != null) {
+                                            context.getSharedPreferences("fcm", Context.MODE_PRIVATE)
+                                                .edit().putString("token", freshToken).apply()
+                                        }
+                                        cont.resumeWith(Result.success(freshToken))
+                                    } else {
+                                        android.util.Log.w("RootVM", "FCM 토큰 fetch 실패", task.exception)
+                                        cont.resumeWith(Result.success(null))
+                                    }
+                                }
+                        }
                         if (fcmToken != null) {
                             (userRepository as? com.mongle.android.data.remote.ApiUserRepository)
                                 ?.registerFcmToken(fcmToken)
