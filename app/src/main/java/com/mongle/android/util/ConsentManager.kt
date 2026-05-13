@@ -6,6 +6,7 @@ import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
+import com.mongle.android.data.local.AdConfigStore
 import com.ycompany.Monggle.BuildConfig
 import java.util.Locale
 import javax.inject.Inject
@@ -24,7 +25,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class ConsentManager @Inject constructor(
-    private val adManager: AdManager
+    private val adManager: AdManager,
+    private val adConfigStore: AdConfigStore
 ) {
     companion object {
         /** UMP 동의 흐름을 건너뛰는 지역(ISO 3166-1 alpha-2). */
@@ -60,6 +62,12 @@ class ConsentManager @Inject constructor(
      * 동의 거부/오류 상황에서도 AdMob 은 반드시 초기화한다 (UMP 가 비개인화 광고로 자동 전환).
      */
     fun gatherConsent(activity: Activity) {
+        // 서버 /config (MG-132) — 광고 OFF 일 때 UMP 동의 흐름과 AdMob 초기화 모두 건너뛴다.
+        // SDK 가 로드되지 않으므로 메모리/네트워크 풋프린트도 함께 절약.
+        if (!adConfigStore.isAdEnabled) {
+            Log.d(TAG, "광고 비활성 (서버 설정) — UMP / AdMob 초기화 건너뜀")
+            return
+        }
         // DEBUG 빌드에서 디버그 지역 시뮬레이션이 활성화된 경우, KR/JP 면제 로직을 건너뛴다.
         val debugActive = BuildConfig.DEBUG && DEBUG_GEOGRAPHY_ENABLED
         if (!debugActive && isExemptedRegion()) {

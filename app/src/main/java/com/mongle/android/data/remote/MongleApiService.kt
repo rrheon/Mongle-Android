@@ -508,4 +508,13 @@ interface MongleApiService {
     suspend fun deleteAllNotifications(
         @Query("group_id") groupId: String? = null
     ): DeleteAllNotificationsResponse
+
+    // 클라이언트 광고 노출 토글 (MG-132 / 서버 MG-131). 인증 불필요 — 부팅 시 1회 호출.
+    @GET("config")
+    suspend fun getConfig(): ApiConfigResponse
 }
+
+@JsonClass(generateAdapter = true)
+data class ApiConfigResponse(
+    val isAdEnabled: Boolean
+)

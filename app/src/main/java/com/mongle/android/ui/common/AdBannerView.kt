@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdListener
@@ -17,12 +18,16 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
+import com.mongle.android.data.local.AdConfigStore
 
 private const val TAG = "AdBanner"
 private val BANNER_AD_UNIT_ID = BuildConfig.ADMOB_BANNER_ID
 
 @Composable
 fun AdBannerSection(modifier: Modifier = Modifier) {
+    // 서버 /config (MG-132) — 비활성 시 layout 공간도 차지하지 않도록 composable 자체를
+    // no-op 처리. 호출자 (Settings/GroupSelect/Search) 의 분기 코드는 불필요.
+    if (!AdConfigStore.read(LocalContext.current)) return
     Box(
         modifier = modifier
             .fillMaxWidth()
