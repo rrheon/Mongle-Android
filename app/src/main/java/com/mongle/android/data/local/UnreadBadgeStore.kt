@@ -15,8 +15,9 @@ private const val KEY_UNREAD = "unread_count"
  * 숫자를 그린다. 이 store 는 FCM Service / NotificationViewModel / RootViewModel 사이에서
  * 공유되어 push 도착·mark-read·로그아웃 시점에 배지 숫자를 일관되게 동기화한다.
  *
- * 서버 unread-count API 도입 전까지는 클라 push 카운터로만 동작하며,
- * NotificationViewModel 가 알림 목록을 로드할 때 서버 기준 unread 수로 재정렬된다.
+ * MG-130 부터 서버 push 페이로드의 notificationCount 가 source-of-truth — FCM 수신 시
+ * set(serverCount) 로 동기화. 서버 미전송 시 incrementAndGet() 로 fallback. 알림 목록
+ * 로드 시점에는 NotificationViewModel 이 서버 기준 unread 수로 한 번 더 보정한다.
  */
 @Singleton
 class UnreadBadgeStore @Inject constructor(

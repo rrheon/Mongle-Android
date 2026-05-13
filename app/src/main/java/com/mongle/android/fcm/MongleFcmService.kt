@@ -50,15 +50,25 @@ class MongleFcmService : FirebaseMessagingService() {
         // 서버(MG-111)가 페이로드에 notificationId 를 실어 보낸다 — PendingIntent 로 전달해
         // 사용자가 트레이 알림을 탭한 시점에 자동 markAsRead 하기 위함.
         val notificationId = message.data["notificationId"]
+        // 서버(MG-130)가 보낸 unread 합계 — 클라 자체 increment 대신 source-of-truth 로 사용.
+        // 다른 기기에서 읽음 처리되거나 서버에서 알림이 만료(14일 TTL) 되어도 정확히 반영.
+        // 서버 미전송(legacy 서버) 시 incrementAndGet() 로 fallback.
+        val serverUnread = message.data["notificationCount"]?.toIntOrNull()
 
         // iOS MG-55 패리티 — 로그인/온보딩/약관 도중에는 트레이 배너로 흐름을 끊지 않는다.
-        // unread 카운터는 그대로 증가시켜 사용자가 인증 후 알림 화면에서 누적 확인 가능.
+        // unread 카운터는 갱신해 사용자가 인증 후 알림 화면에서 누적 확인 가능.
         if (appForegroundTracker.isInAuthFlow()) {
-            unreadBadgeStore.incrementAndGet()
+            if (serverUnread != null) unreadBadgeStore.set(serverUnread)
+            else unreadBadgeStore.incrementAndGet()
             return
         }
 
-        val unread = unreadBadgeStore.incrementAndGet()
+        val unread = if (serverUnread != null) {
+            unreadBadgeStore.set(serverUnread)
+            serverUnread
+        } else {
+            unreadBadgeStore.incrementAndGet()
+        }
         showNotification(title, body, type, unread, notificationId)
     }
 
