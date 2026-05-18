@@ -384,6 +384,15 @@ class RootViewModel @Inject constructor(
                     }
             }
         }
+        // MG-133 — 알림 탭 진입 시 홈 데이터를 강제 새로고침해 다른 멤버의 답변 ✓ 가
+        // 즉시 반영되도록 한다. HomeScreen 이 컴포지션 안에 있으면 ON_RESUME 가
+        // 별도로 refresh 를 트리거하지만, 다른 탭(예: History)에서 알림을 탭했거나
+        // cold-start 직후에는 ON_RESUME 만으로는 누락 가능. 인증 + 가족 데이터가
+        // 준비된 상태일 때만 호출 — 미인증/그룹 미생성 케이스는 기존 부팅 흐름에서
+        // 알아서 loadHomeData() 가 도착한다.
+        if (type != null && _uiState.value.appState == AppState.Authenticated) {
+            loadHomeData()
+        }
     }
 
     fun clearPendingNotification() {
